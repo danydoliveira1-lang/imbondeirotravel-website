@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Kissama Safari Day</title>
+  <desc id="desc">Illustrated safari landscape with acacia trees, wildlife silhouettes, and warm savannah colors.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f3b45e"/>
+      <stop offset=".55" stop-color="#f7d8a6"/>
+      <stop offset="1" stop-color="#f5ead7"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#6f7b45"/>
+      <stop offset="1" stop-color="#a58743"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#sky)"/>
+  <circle cx="916" cy="150" r="78" fill="#f7d77a" opacity=".92"/>
+  <path d="M0 462c150-45 300-49 450-14 204 48 366 39 546-11 86-24 152-24 204-8v291H0Z" fill="#d9ad63"/>
+  <path d="M0 548c157-41 309-48 458-20 212 39 384 24 545-22 75-21 141-22 197-6v220H0Z" fill="url(#grass)"/>
+  <g fill="#253528">
+    <path d="M146 342c16-75 55-126 117-153 56 26 93 79 107 153h-74l-15 161h-38l-14-161Z"/>
+    <path d="M92 340h342c-21 30-55 49-94 49H186c-39 0-73-19-94-49Z"/>
+    <path d="M254 176h20v374h-20Z"/>
+    <path d="M206 232c-42-23-89-24-142-5 43-54 101-68 174-42Z"/>
+    <path d="M297 236c47-18 96-14 148 13-48-56-111-73-179-46Z"/>
+  </g>
+  <g fill="#2e3928">
+    <path d="M910 301c13-61 45-103 95-125 46 21 77 64 89 125h-61l-12 132h-31l-12-132Z"/>
+    <path d="M863 300h276c-17 24-44 39-76 39H939c-32 0-59-15-76-39Z"/>
+    <path d="M998 166h17v301h-17Z"/>
+  </g>
+  <g fill="#1f2b22">
+    <path d="M500 464c35-31 92-39 139-20l42 17 54-7 39 21 58 9 28 35-18 18-57-17-36 10-42-18-74 5-44 22-76-9-39 13-25-22Z"/>
+    <circle cx="824" cy="462" r="20"/>
+    <path d="M842 452c22-33 48-44 78-33-18 22-42 35-72 38Z"/>
+    <path d="M554 518h24v62h-24zM656 514h24v66h-24zM758 516h24v64h-24zM820 524h22v56h-22z"/>
+    <path d="M475 473c-28-19-53-21-76-7 22 24 46 32 72 24Z"/>
+  </g>
+  <g fill="#34412d">
+    <path d="M248 548c28-23 71-27 105-9l31 16 43-3 31 18 42 8 19 28-15 14-41-12-27 8-32-14-56 4-32 16-58-6-29 10-18-18Z"/>
+    <circle cx="489" cy="548" r="15"/>
+    <path d="M302 588h18v46h-18zM376 584h18v50h-18zM456 588h17v46h-17z"/>
+  </g>
+  <path d="M0 646c140-14 258-15 355-3 151 18 290 17 417-3 153-24 295-26 428-5v85H0Z" fill="#425333"/>
+  <text x="70" y="98" fill="#fff8e9" font-family="Georgia, serif" font-size="56">Kissama Safari Day</text>
+  <text x="72" y="138" fill="#fff8e9" font-family="Arial, sans-serif" font-size="20" letter-spacing="3">WILDLIFE • NATURE • ADVENTURE • LUXURY</text>
+</svg>
