@@ -1,3 +1,0 @@
-Project Baobab Edition 05 production build verified successfully with Next.js 15.5.7 on 2026-07-15.
-Homepage: static prerendered.
-API send-request route: dynamic.
