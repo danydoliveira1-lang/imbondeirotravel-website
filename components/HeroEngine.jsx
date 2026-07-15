@@ -14,6 +14,7 @@ const scenes = [
     place: "Serra da Leba · Huíla",
     youtubeId: "GjNu8OTI8-I",
     title: "Serra da Leba, Angola",
+    fit: "cover",
   },
   {
     id: "wonder",
@@ -22,6 +23,7 @@ const scenes = [
     place: "Kalandula Falls · Malanje",
     src: "/videos/kalandula-falls.mp4",
     title: "Kalandula Falls, Angola",
+    fit: "cover",
   },
   {
     id: "culture",
@@ -30,6 +32,7 @@ const scenes = [
     place: "Traditional Angolan Dance",
     youtubeId: "2H1qkAt4N_4",
     title: "Traditional Angolan dance",
+    fit: "contain",
   },
 ];
 
@@ -115,14 +118,14 @@ export default function HeroEngine() {
       <div className={`hero-media ${fading ? "is-fading" : ""}`} aria-hidden="true">
         <div className="hero-video-fallback" />
         {!reduced && scene.type === "video" && (
-          <video key={scene.src} className="hero-local-video" autoPlay muted loop playsInline preload="metadata">
+          <video key={scene.src} className={`hero-local-video hero-fit-${scene.fit || "cover"}`} autoPlay muted loop playsInline preload="metadata">
             <source src={scene.src} type="video/mp4" />
           </video>
         )}
         {!reduced && scene.type === "youtube" && (
           <iframe
             key={scene.youtubeId}
-            className="hero-youtube"
+            className={`hero-youtube hero-fit-${scene.fit || "cover"}`}
             src={youtubeBackgroundUrl(scene.youtubeId)}
             title={scene.title}
             allow="autoplay; encrypted-media; picture-in-picture"

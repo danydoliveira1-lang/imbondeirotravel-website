@@ -121,3 +121,24 @@
  .hero-scene-dots{right:20px;bottom:72px}
  .world-grid .journey-add-button{font-size:10px}
 }
+
+
+/* BAOBAB EDITION 05.1 — cinematic hero framing fix */
+.hero-motion-only{height:100dvh;min-height:780px;max-height:none;background:#061713}
+.hero-motion-only .hero-media{overflow:hidden;background:#061713}
+.hero-motion-only .hero-local-video.hero-fit-cover{object-fit:cover;object-position:center center}
+.hero-motion-only .hero-youtube.hero-fit-cover{left:50%;top:50%;width:120vw;height:67.5vw;min-width:177.78vh;min-height:100vh;transform:translate(-50%,-50%) scale(1.02)}
+.hero-motion-only .hero-youtube.hero-fit-contain{left:50%;top:50%;width:100%;height:100%;min-width:0;min-height:0;transform:translate(-50%,-50%);object-fit:contain;background:#061713}
+.hero-motion-only:has(.hero-fit-contain) .hero-media:before{content:"";position:absolute;inset:-8%;z-index:0;background:radial-gradient(circle at center,rgba(198,162,90,.14),transparent 55%),linear-gradient(135deg,#061713,#102d27);filter:blur(18px);transform:scale(1.08)}
+.hero-motion-only .hero-youtube,.hero-motion-only .hero-local-video{z-index:1}
+@media(max-width:900px){
+ .hero-motion-only{height:100svh;min-height:720px}
+ .hero-motion-only .hero-youtube.hero-fit-cover{width:177.78vh;height:100vh;min-width:100vw;min-height:56.25vw;transform:translate(-50%,-50%) scale(1.02)}
+ .hero-motion-only .hero-youtube.hero-fit-contain{width:100%;height:100%;transform:translate(-50%,-50%)}
+}
+@media(max-width:640px){
+ .hero-motion-only{height:100svh;min-height:700px}
+ .hero-motion-only .hero-youtube.hero-fit-cover{width:177.78vh;height:100vh;min-width:100vw;min-height:56.25vw}
+ .hero-motion-only .hero-youtube.hero-fit-contain{width:100%;height:100%;min-width:0;min-height:0}
+ .hero-copy{top:47%}
+}
