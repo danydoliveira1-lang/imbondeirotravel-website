@@ -30,3 +30,44 @@
 .angola-map .journey-routes{z-index:3!important}
 .angola-map .destination-marker{z-index:10!important}
 .map-viewport{background:radial-gradient(circle at 50% 46%,rgba(198,162,90,.10),transparent 58%)}
+
+/* Project Baobab map + stable hero patch — July 2026 */
+.hero-stable .hero-single-scene{position:absolute;inset:0;overflow:hidden;animation:heroSceneIn 1.25s ease both;background:#061713}
+.hero-stable .hero-active-poster,.hero-stable .hero-active-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+.hero-stable .hero-active-poster{z-index:0;transform:scale(1.02)}
+.hero-stable .hero-active-media{z-index:1;transform:scale(1.01)}
+.hero-stable .hero-youtube{width:120%;height:120%;left:-10%;top:-10%;pointer-events:none}
+.hero-scene-dots{position:absolute;right:34px;top:50%;z-index:8;display:grid;gap:10px;transform:translateY(-50%)}
+.hero-scene-dots button{width:8px;height:8px;padding:0;border:1px solid rgba(255,255,255,.62);border-radius:50%;background:transparent;cursor:pointer;transition:.25s}
+.hero-scene-dots button.active{background:var(--gold);border-color:var(--gold);transform:scale(1.25);box-shadow:0 0 14px rgba(198,162,90,.7)}
+@keyframes heroSceneIn{from{opacity:.15;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+
+.map-outline{position:relative;min-width:0;overflow:hidden;background:radial-gradient(circle at 18% 20%,rgba(34,111,88,.25),transparent 36%),linear-gradient(145deg,#061f1a,#031411 70%);border:1px solid rgba(198,162,90,.25)}
+.map-viewport{position:relative;width:100%;height:100%;min-height:680px;overflow:hidden;touch-action:none;cursor:grab;user-select:none;background-image:radial-gradient(circle at 60% 44%,rgba(198,162,90,.06),transparent 38%),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:auto,42px 42px,42px 42px}
+.map-viewport.is-dragging{cursor:grabbing}
+.angola-live-map{display:block;width:100%;height:100%;min-height:680px;overflow:visible}
+.map-pan-layer{transition:transform .16s ease-out}
+.map-viewport.is-dragging .map-pan-layer{transition:none}
+.angola-geography{stroke:#d2ad5f;stroke-width:4;vector-effect:non-scaling-stroke;filter:drop-shadow(0 18px 35px rgba(0,0,0,.38))}
+.map-river{fill:none;stroke:#4eb4aa;stroke-opacity:.38;stroke-width:3;vector-effect:non-scaling-stroke}
+.map-contour{fill:none;stroke:#f6f1e8;stroke-opacity:.09;stroke-width:2;vector-effect:non-scaling-stroke}
+.angola-label{fill:rgba(232,207,150,.52);font-family:"Cormorant Garamond",serif;font-size:46px;letter-spacing:11px;text-anchor:middle;pointer-events:none}
+.live-route{fill:none;stroke:#d4b160;stroke-width:3;stroke-opacity:.72;stroke-dasharray:1;stroke-dashoffset:1;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(212,177,96,.68));animation:drawRoute 1.8s ease forwards}
+.svg-marker{cursor:pointer;outline:none;animation:markerArrive .55s ease both}
+.svg-marker .marker-halo{fill:rgba(212,177,96,.10);stroke:rgba(212,177,96,.34);stroke-width:2;opacity:.78;animation:markerPulse 2.8s ease-in-out infinite}
+.svg-marker .marker-pin{fill:#cfa958;stroke:#fae2a3;stroke-width:2;filter:url(#softGlow);transition:.25s}
+.svg-marker .marker-core{fill:#fff2c8;transition:.25s}
+.svg-marker .marker-label rect{fill:rgba(4,24,20,.88);stroke:rgba(212,177,96,.30);stroke-width:1}
+.svg-marker .marker-label text{fill:#f6f1e8;font:600 12px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.svg-marker .marker-check{fill:#073025;font:700 11px Inter,sans-serif;text-anchor:middle;pointer-events:none}
+.svg-marker:hover .marker-pin,.svg-marker.active .marker-pin{fill:#f0c766;transform:scale(1.14)}
+.svg-marker:hover .marker-halo,.svg-marker.active .marker-halo{opacity:1;transform:scale(1.35)}
+.svg-marker.active .marker-label rect{stroke:#e5bd62;stroke-width:2}
+.svg-marker:focus-visible .marker-pin{stroke:#fff;stroke-width:4}
+@keyframes markerPulse{0%,100%{transform:scale(.86);opacity:.45}50%{transform:scale(1.18);opacity:.95}}
+@keyframes markerArrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:1180px){.map-viewport,.angola-live-map{min-height:620px}}
+@media(max-width:860px){.map-outline{order:1}.destination-column{order:2}.journey-sidebar{order:3}.map-viewport,.angola-live-map{min-height:590px}.angola-label{font-size:38px}.marker-label text{font-size:11px}}
+@media(max-width:640px){.hero-stable .hero-youtube{width:180%;height:110%;left:-40%;top:-5%}.hero-scene-dots{right:15px}.map-viewport,.angola-live-map{min-height:520px}.map-outline{min-height:520px}.map-whisper{left:14px;right:60px;bottom:16px;font-size:8px}.svg-marker .marker-label{transform:translate(22px,-11px)}.svg-marker .marker-label text{font-size:10px}.angola-label{font-size:30px;letter-spacing:7px}}
+@media(prefers-reduced-motion:reduce){.hero-stable .hero-single-scene,.svg-marker,.svg-marker .marker-halo,.live-route{animation:none!important}.map-pan-layer{transition:none}}
