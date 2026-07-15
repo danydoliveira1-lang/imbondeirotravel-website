@@ -159,220 +159,66 @@ const categoryDestinations = {
 };
 
 export default function Explorer() {
-  const [choice, setChoice] = useState("Nature");
-  const [selectedId, setSelectedId] = useState("kalandula");
-  const [explored, setExplored] = useState([]);
-  const [ready, setReady] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const dragRef = useRef(null);
+  const [choice,setChoice]=useState("Nature");
+  const [selectedId,setSelectedId]=useState("kalandula");
+  const [journeyIds,setJourneyIds]=useState([]);
+  const [zoom,setZoom]=useState(1);
+  const [pan,setPan]=useState({x:0,y:0});
+  const drag=useRef(null);
 
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("imbondeiro-explored") || "[]");
-      if (Array.isArray(saved)) setExplored(saved.filter((id) => destinations[id]));
-    } catch {}
-    finally { setReady(true); }
-  }, []);
+  useEffect(()=>{
+    try{const saved=JSON.parse(localStorage.getItem("imbondeiro-explored")||"[]");if(Array.isArray(saved))setJourneyIds(saved.filter(id=>destinations[id]));}catch{}
+  },[]);
+  useEffect(()=>{try{localStorage.setItem("imbondeiro-explored",JSON.stringify(journeyIds));}catch{}},[journeyIds]);
 
-  useEffect(() => {
-    if (ready) localStorage.setItem("imbondeiro-explored", JSON.stringify(explored));
-  }, [explored, ready]);
+  const visibleIds=categoryDestinations[choice];
+  const selected=destinations[selectedId]||destinations[visibleIds[0]];
+  const journey=useMemo(()=>journeyIds.map(id=>destinations[id]).filter(Boolean),[journeyIds]);
 
-  const visibleIds = categoryDestinations[choice];
-  const selected = destinations[selectedId] || destinations[visibleIds[0]];
-  const journey = useMemo(() => explored.map((id) => destinations[id]).filter(Boolean), [explored]);
-  const isTakingShape = journey.length >= 3;
+  function chooseCategory(id){setChoice(id);setSelectedId(categoryDestinations[id][0]);setZoom(1);setPan({x:0,y:0});}
+  function toggle(id){setJourneyIds(current=>current.includes(id)?current.filter(x=>x!==id):[...current,id]);}
+  function craft(){const detail=(journey.length?journey:[selected]).map(x=>x.title).join(" → ");window.dispatchEvent(new CustomEvent("imbondeiro-journey",{detail}));document.getElementById("contact")?.scrollIntoView({behavior:"smooth"});}
+  function down(e){if(e.target.closest("button"))return;drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};e.currentTarget.setPointerCapture?.(e.pointerId)}
+  function move(e){if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})}
+  function up(e){drag.current=null;e.currentTarget.releasePointerCapture?.(e.pointerId)}
+  function markerStyle(place){const p=project(place.lng,place.lat);return{left:`${p.x/MAP_W*100}%`,top:`${p.y/MAP_H*100}%`}}
 
-  function chooseCategory(category) {
-    setChoice(category);
-    setSelectedId(categoryDestinations[category][0]);
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  }
-  function toggleJourney(id) {
-    setExplored((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  }
-  function beginDrag(event) {
-    if (event.button !== undefined && event.button !== 0) return;
-    dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
-    setDragging(true);
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  }
-  function moveDrag(event) {
-    if (!dragRef.current) return;
-    const dx = event.clientX - dragRef.current.x;
-    const dy = event.clientY - dragRef.current.y;
-    setPan({ x: dragRef.current.panX + dx, y: dragRef.current.panY + dy });
-  }
-  function endDrag(event) {
-    dragRef.current = null;
-    setDragging(false);
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
-  }
+  return <section className="explorer-section explorer-premium" id="explorer">
+    <div className="section-intro centered"><p className="eyebrow">The Imbondeiro Explorer</p><h2>What calls you to Angola?</h2><p>Choose an experience to explore the destinations that speak to you.</p></div>
+    <div className="experience-tabs luxury-tabs">{categories.map(c=><button key={c.id} type="button" className={choice===c.id?"active":""} onClick={()=>chooseCategory(c.id)}><span>{c.symbol}</span>{c.label}</button>)}</div>
 
-  function craftJourney() {
-    const titles = journey.map((item) => item.title);
-    const detail = titles.length ? titles.join(" → ") : selected.title;
-    window.dispatchEvent(new CustomEvent("imbondeiro-journey", { detail }));
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-  }
+    <div className="living-layout">
+      <aside className="living-left">
+        <div className="living-heading"><h3>Explore <em>{choice}</em> in Angola</h3><p>Select a destination, reveal its story, and add it to your journey.</p></div>
+        <div className="living-cards">{visibleIds.map((id,index)=>{const d=destinations[id],active=selectedId===id,added=journeyIds.includes(id);return <article className={`living-card ${active?"active":""}`} key={id}>
+          <button className="living-card-main" type="button" onClick={()=>setSelectedId(id)}><span className="living-num">{index+1}</span><img src={d.image} alt=""/><span className="living-card-copy"><small>{d.province}</small><strong>{d.title}</strong><i>{d.description}</i></span><b>›</b></button>
+          <button className={`living-add ${added?"added":""}`} type="button" onClick={()=>toggle(id)} aria-label={`${added?"Remove":"Add"} ${d.title}`}>{added?"✓":"+"}</button>
+        </article>})}</div>
+        <p className="living-help">ⓘ Select destinations on the map or from the list to add them to your journey.</p>
+      </aside>
 
-  return (
-    <section className="explorer-section" id="explorer">
-      <div className="section-intro centered">
-        <p className="eyebrow">The Imbondeiro Explorer</p>
-        <h2>What calls you to Angola?</h2>
-        <p>Choose an experience to explore the destinations that speak to you.</p>
+      <div className={`living-map mood-${choice.toLowerCase()}`} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+        <div className="living-map-canvas" style={{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`}}>
+          <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="living-country" aria-label="Interactive map of Angola">
+            <defs><linearGradient id="landLuxury" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#233d31"/><stop offset=".58" stopColor="#102a23"/><stop offset="1" stopColor="#071a16"/></linearGradient><filter id="landShadow"><feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#caa85b" floodOpacity=".24"/></filter><clipPath id="angolaClip">{ANGOLA_POLYGONS.map((polygon,i)=><path key={i} d={polygonPath(polygon)}/>)}</clipPath></defs>
+            <g filter="url(#landShadow)">{ANGOLA_POLYGONS.map((polygon,i)=><path key={i} d={polygonPath(polygon)} className="living-land" fill="url(#landLuxury)"/>)}</g>
+            <g clipPath="url(#angolaClip)" className="living-terrain"><path d="M90 250 C250 180 430 260 720 160"/><path d="M50 420 C250 330 490 470 810 330"/><path d="M70 610 C300 500 500 680 800 520"/><path d="M120 760 C330 650 560 790 760 700"/><path className="river" d="M275 155 C350 250 325 390 430 478 S575 660 515 830"/></g>
+            <text x="445" y="520" className="living-angola-label">ANGOLA</text>
+            {visibleIds.slice(0,-1).map((id,i)=>{const a=project(destinations[id].lng,destinations[id].lat),b=project(destinations[visibleIds[i+1]].lng,destinations[visibleIds[i+1]].lat);return <path key={id} className="living-route" d={`M${a.x} ${a.y} Q${(a.x+b.x)/2+30} ${(a.y+b.y)/2-35} ${b.x} ${b.y}`}/>})}
+          </svg>
+          {visibleIds.map(id=>{const d=destinations[id],active=selectedId===id,added=journeyIds.includes(id);return <button key={id} type="button" className={`living-marker ${active?"active":""} ${added?"added":""}`} style={markerStyle(d)} onPointerDown={e=>e.stopPropagation()} onClick={()=>setSelectedId(id)} aria-label={`Explore ${d.title}`}><span className="pin"><i/></span><span className="marker-name">{d.title}<small>{d.province}</small></span></button>})}
+        </div>
+        <div className="living-map-controls"><button onClick={()=>setZoom(z=>Math.min(1.65,z+.15))}>+</button><button onClick={()=>setZoom(z=>Math.max(.88,z-.15))}>−</button><button onClick={()=>{setZoom(1);setPan({x:0,y:0})}}>⌂</button></div>
+        <div className="living-compass">N<span>✦</span></div>
       </div>
 
-      <div className="explorer-shell">
-        <div className="experience-tabs" aria-label="Choose an experience">
-          {categories.map((category) => (
-            <button type="button" className={choice === category.id ? "active" : ""} onClick={() => chooseCategory(category.id)} key={category.id} aria-pressed={choice === category.id}>
-              <span aria-hidden="true">{category.symbol}</span>{category.label}
-            </button>
-          ))}
-        </div>
+      <aside className="living-journey">
+        <div className="journey-title"><span>▣</span><div><strong>MY JOURNEY</strong><small>Your selected destinations</small></div><b>{journey.length}</b></div>
+        <div className="journey-list">{journey.length?journey.map((d,i)=><article key={d.id}><img src={d.image} alt=""/><span><small>{i+1}</small><strong>{d.title}</strong><em>{d.province}</em></span><button onClick={()=>toggle(d.id)}>×</button></article>):<div className="journey-empty"><span>⌖</span><strong>Your journey is empty</strong><p>Start exploring and add destinations to begin.</p></div>}</div>
+        <div className={`journey-awake ${journey.length>=3?"ready":""}`}><h3>{journey.length>=3?"Your Journey Is Taking Shape":"Keep exploring"}</h3><p>{journey.length>=3?`You’ve selected ${journey.length} inspiring destinations.`:"Add 3 or more destinations to shape your journey."}</p><div className="journey-progress"><i className={journey.length>0?"on":""}/><i className={journey.length>1?"on":""}/><i className={journey.length>2?"on":""}/></div><button className="btn gold" type="button" onClick={craft}>Craft My Journey →</button></div>
+      </aside>
+    </div>
 
-        <div className="explorer-grid">
-          <aside className="destination-column">
-            <div className="destination-column-intro">
-              <h3>Explore <em>{choice}</em> in Angola</h3>
-              <p>Select a destination to reveal its story, then add it to your journey.</p>
-            </div>
-            <div className="destination-selector" aria-label={`${choice} journeys`}>
-              {visibleIds.map((id, index) => {
-                const place = destinations[id];
-                const active = selectedId === id;
-                const added = explored.includes(id);
-                return (
-                  <article className={`destination-choice ${active ? "active" : ""}`} key={id}>
-                    <button type="button" className="destination-choice-main" onClick={() => setSelectedId(id)} aria-pressed={active}>
-                      <span className="choice-number">{index + 1}</span>
-                      <img src={place.image} alt="" />
-                      <span><small>{place.province}</small><strong>{place.title}</strong></span>
-                    </button>
-                    <button type="button" className={`destination-choice-add ${added ? "added" : ""}`} onClick={() => toggleJourney(id)} aria-label={`${added ? "Remove" : "Add"} ${place.title} ${added ? "from" : "to"} My Journey`}>{added ? "✓" : "+"}</button>
-                  </article>
-                );
-              })}
-            </div>
-          </aside>
-
-          <div className={`map-outline mood-${choice.toLowerCase()}`}>
-            <div
-              className={`map-viewport ${dragging ? "is-dragging" : ""}`}
-              onPointerDown={beginDrag}
-              onPointerMove={moveDrag}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              onPointerLeave={endDrag}
-            >
-              <svg className="angola-live-map" viewBox={`0 0 ${MAP_W} ${MAP_H}`} role="img" aria-label={`Interactive map of Angola showing ${choice} destinations`}>
-                <defs>
-                  <linearGradient id="angolaLand" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#193e32" />
-                    <stop offset=".52" stopColor="#0d2e26" />
-                    <stop offset="1" stopColor="#071c18" />
-                  </linearGradient>
-                  <radialGradient id="mapGlow">
-                    <stop offset="0" stopColor="#d9b45f" stopOpacity=".28" />
-                    <stop offset="1" stopColor="#d9b45f" stopOpacity="0" />
-                  </radialGradient>
-                  <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
-                    <feGaussianBlur stdDeviation="8" result="blur" />
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                  <filter id="mapTexture">
-                    <feTurbulence type="fractalNoise" baseFrequency=".018" numOctaves="3" seed="7" result="noise" />
-                    <feColorMatrix in="noise" type="saturate" values="0" result="mono" />
-                    <feComponentTransfer in="mono"><feFuncA type="table" tableValues="0 .17" /></feComponentTransfer>
-                    <feBlend in="SourceGraphic" in2="mono" mode="soft-light" />
-                  </filter>
-                </defs>
-                <g className="map-pan-layer" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: `${MAP_W / 2}px ${MAP_H / 2}px` }}>
-                  <ellipse cx="420" cy="470" rx="380" ry="430" fill="url(#mapGlow)" opacity=".42" />
-                  {ANGOLA_POLYGONS.map((polygon, index) => (
-                    <path key={index} d={polygonPath(polygon)} className="angola-geography" fill="url(#angolaLand)" filter="url(#mapTexture)" />
-                  ))}
-                  <path className="map-river" d="M235 224 C300 300 320 390 402 463 S530 618 487 790" />
-                  <path className="map-contour" d="M180 350 C310 300 470 330 640 282" />
-                  <path className="map-contour" d="M160 515 C310 470 500 535 680 455" />
-                  <path className="map-contour" d="M190 680 C360 610 510 700 650 625" />
-                  <text x="445" y="515" className="angola-label">ANGOLA</text>
-                  {visibleIds.slice(0, -1).map((id, index) => {
-                    const a = project(destinations[id].lng, destinations[id].lat);
-                    const b = project(destinations[visibleIds[index + 1]].lng, destinations[visibleIds[index + 1]].lat);
-                    return <path key={`${id}-route`} className="live-route" d={`M ${a.x} ${a.y} Q ${(a.x+b.x)/2 + 38} ${(a.y+b.y)/2 - 25} ${b.x} ${b.y}`} pathLength="1" />;
-                  })}
-                  {visibleIds.map((id, index) => {
-                    const place = destinations[id];
-                    const p = project(place.lng, place.lat);
-                    const active = selectedId === id;
-                    const visited = explored.includes(id);
-                    return (
-                      <g key={id} className={`svg-marker ${active ? "active" : ""} ${visited ? "visited" : ""}`} transform={`translate(${p.x} ${p.y})`} onClick={(event) => { event.stopPropagation(); setSelectedId(id); }} role="button" tabIndex="0" onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setSelectedId(id); }} aria-label={`Show ${place.title}`}>
-                        <circle className="marker-halo" r="27" />
-                        <path className="marker-pin" d="M0-20C-12-20-21-11-21 1c0 15 21 34 21 34S21 16 21 1C21-11 12-20 0-20Z" />
-                        <circle className="marker-core" cy="0" r="6" />
-                        {visited && <text className="marker-check" x="0" y="4">✓</text>}
-                        <g className="marker-label" transform="translate(28 -13)">
-                          <rect x="0" y="0" rx="5" width={Math.max(112, place.title.length * 8.2)} height="31" />
-                          <text x="10" y="20">{place.title}</text>
-                        </g>
-                      </g>
-                    );
-                  })}
-                </g>
-              </svg>
-            </div>
-            <div className="map-controls" aria-label="Map controls">
-              <button type="button" onClick={() => setZoom((z) => Math.min(1.8, +(z + 0.15).toFixed(2)))} aria-label="Zoom in">+</button>
-              <button type="button" onClick={() => setZoom((z) => Math.max(0.82, +(z - 0.15).toFixed(2)))} aria-label="Zoom out">−</button>
-              <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} aria-label="Reset map">↺</button>
-            </div>
-            <div className="map-whisper">Tap a glowing marker · drag to explore · use + to save</div>
-          </div>
-
-          <aside className={`journey-sidebar ${isTakingShape ? "is-awake" : ""}`} aria-live="polite">
-            <div className="journey-sidebar-head"><p className="eyebrow">My Journey</p><span>{journey.length}</span></div>
-            {journey.length === 0 ? (
-              <div className="journey-empty"><strong>Your journey is empty</strong><p>Start exploring and add destinations to begin.</p></div>
-            ) : (
-              <ol className="journey-sidebar-list">
-                {journey.map((place, index) => (
-                  <li key={place.id}>
-                    <button type="button" onClick={() => setSelectedId(place.id)}>
-                      <img src={place.image} alt=""/><span><small>{String(index + 1).padStart(2, "0")}</small><strong>{place.title}</strong><em>{place.province}</em></span>
-                    </button>
-                    <button type="button" className="journey-remove" onClick={() => toggleJourney(place.id)} aria-label={`Remove ${place.title}`}>×</button>
-                  </li>
-                ))}
-              </ol>
-            )}
-            <div className="journey-sidebar-cta">
-              <h3>{isTakingShape ? "Your Journey Is Taking Shape" : "Keep exploring"}</h3>
-              <p>{isTakingShape ? "You have selected three or more destinations. Your personal Angola route is ready to be crafted." : `Add ${Math.max(0, 3 - journey.length)} more destination${3 - journey.length === 1 ? "" : "s"} to shape your journey.`}</p>
-              {journey.length > 0 && <button type="button" className="btn gold" onClick={craftJourney}>Craft My Journey</button>}
-            </div>
-          </aside>
-        </div>
-
-        <article className="map-panel" key={selected.id}>
-          <div className="destination-photo"><img src={selected.image} alt={selected.title}/></div>
-          <div className="destination-panel-body">
-            <p className="eyebrow">{selected.province} · {selected.category}</p>
-            <h3>{selected.title}</h3>
-            <p>{selected.description}</p>
-            <div className="destination-facts"><span>Recommended stay</span><strong>{selected.duration}</strong></div>
-            <ul>{selected.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}</ul>
-            <blockquote>“{selected.note}”</blockquote>
-            <button type="button" className={`btn gold ${explored.includes(selected.id) ? "is-added" : ""}`} onClick={() => toggleJourney(selected.id)}>{explored.includes(selected.id) ? "Remove from My Journey" : "Add to My Journey"}</button>
-          </div>
-        </article>
-      </div>
-    </section>
-  );
+    <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>Recommended stay</dt><dd>{selected.duration}</dd></div><div><dt>Journey note</dt><dd>“{selected.note}”</dd></div></dl><button className="btn gold" onClick={()=>toggle(selected.id)}>{journeyIds.includes(selected.id)?"Remove from My Journey":"Add to My Journey"}</button></div></div>
+  </section>;
 }
