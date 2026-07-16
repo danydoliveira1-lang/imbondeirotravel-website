@@ -199,6 +199,7 @@ export default function Explorer() {
       </aside>
 
       <div className={`living-map mood-${choice.toLowerCase()}`} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+        <div className="map-chapter-label"><span>ANGOLA</span><small>{choice} collection</small></div>
         <div className="living-map-canvas" style={{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`}}>
           <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="living-country" aria-label="Interactive map of Angola">
             <defs><linearGradient id="landLuxury" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#233d31"/><stop offset=".58" stopColor="#102a23"/><stop offset="1" stopColor="#071a16"/></linearGradient><filter id="landShadow"><feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#caa85b" floodOpacity=".24"/></filter><clipPath id="angolaClip">{ANGOLA_POLYGONS.map((polygon,i)=><path key={i} d={polygonPath(polygon)}/>)}</clipPath></defs>
@@ -209,7 +210,8 @@ export default function Explorer() {
           </svg>
           {visibleIds.map(id=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <button key={id} type="button" className={`living-marker ${active?"active":""} ${added?"added":""}`} style={markerStyle(d)} onPointerDown={e=>e.stopPropagation()} onClick={()=>setSelectedId(id)} aria-label={`Explore ${d.title}`}><span className="pin"><i/></span><span className="marker-name">{d.title}<small>{d.province}</small></span></button>})}
         </div>
-        <div className="living-map-controls"><button onClick={()=>setZoom(z=>Math.min(1.65,z+.15))}>+</button><button onClick={()=>setZoom(z=>Math.max(.88,z-.15))}>−</button><button onClick={()=>{setZoom(1);setPan({x:0,y:0})}}>⌂</button></div>
+        <div className="living-map-controls" aria-label="Map controls"><button type="button" aria-label="Zoom in" onClick={()=>setZoom(z=>Math.min(1.65,z+.15))}>+</button><button type="button" aria-label="Zoom out" onClick={()=>setZoom(z=>Math.max(.88,z-.15))}>−</button><button type="button" aria-label="Reset map" onClick={()=>{setZoom(1);setPan({x:0,y:0})}}>⌂</button></div>
+        <p className="map-instruction">Select a glowing marker · drag to explore · use + to save</p>
         <div className="living-compass">N<span>✦</span></div>
       </div>
 
@@ -221,5 +223,12 @@ export default function Explorer() {
     </div>
 
     <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>Recommended stay</dt><dd>{selected.duration}</dd></div><div><dt>Journey note</dt><dd>“{selected.note}”</dd></div></dl><button className="btn gold" onClick={()=>toggle(selected.id)}>{has(`destination:${selected.id}`)?"Remove from My Journey":"Add to My Journey"}</button></div></div>
+
+    <div className="explorer-benefits" aria-label="Explorer benefits">
+      <article><span>◭</span><div><strong>Curated Landscapes</strong><p>Waterfalls, highlands, coast and living heritage.</p></div></article>
+      <article><span>⌖</span><div><strong>Interactive Discovery</strong><p>Choose freely and let your route take shape.</p></div></article>
+      <article><span>✦</span><div><strong>Personal Journey</strong><p>Every saved place becomes part of your story.</p></div></article>
+      <article><span>▤</span><div><strong>Thoughtful Planning</strong><p>Send one coherent journey to our travel team.</p></div></article>
+    </div>
   </section>;
 }
