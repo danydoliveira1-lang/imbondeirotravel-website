@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "./LanguageContext";
 
 const SCENE_MS = 9000;
 const FADE_MS = 700;
@@ -54,6 +55,7 @@ function youtubeBackgroundUrl(id) {
 }
 
 export default function HeroEngine() {
+  const {t}=useLanguage();
   const [active, setActive] = useState(0);
   const [fading, setFading] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
@@ -138,13 +140,13 @@ export default function HeroEngine() {
       </div>
 
       <div className="hero-copy">
-        <p className="chapter">Chapter One · The Gateway to Angola</p>
+        <p className="chapter">{t("chapter")}</p>
         <p className="hero-word" key={scene.word}>{scene.word}</p>
-        <h1>Your Lifetime<br />Experience<br /><em>Starts Here</em></h1>
-        <p className="hero-lede">Private journeys across Angola and beyond, thoughtfully designed around you.</p>
+        <h1>{t("headline1")}<br />{t("headline2")}<br /><em>{t("headline3")}</em></h1>
+        <p className="hero-lede">{t("heroLede")}</p>
         <div className="hero-actions">
-          <a className="btn gold" href="#contact">Plan Your Journey</a>
-          <a className="text-link" href="#angola">Discover Angola <span>→</span></a>
+          <a className="btn gold" href="#contact">{t("plan")}</a>
+          <a className="text-link" href="#angola">{t("discover")} <span>→</span></a>
         </div>
       </div>
 
@@ -158,7 +160,7 @@ export default function HeroEngine() {
       <div className={`hero-signature ${showSignature ? "show-now" : ""}`} aria-hidden="true">
         <span>Journey</span><b>•</b><span>Wonder</span><b>•</b><span>Culture</span>
       </div>
-      <a className="scroll-cue" href="#angola">Begin your journey through Angola<i /></a>
+      <a className="scroll-cue" href="#angola">{t("begin")}<i /></a>
     </section>
   );
 }

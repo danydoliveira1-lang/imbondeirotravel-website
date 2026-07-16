@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useJourney } from "./JourneyContext";
+import { useLanguage } from "./LanguageContext";
 
 const categories = [
   { id: "Nature", label: "Nature", symbol: "◒" },
@@ -160,6 +161,7 @@ const categoryDestinations = {
 };
 
 export default function Explorer() {
+  const {t}=useLanguage();
   const [choice,setChoice]=useState("Nature");
   const [selectedId,setSelectedId]=useState("kalandula");
   const [zoom,setZoom]=useState(1);
@@ -185,12 +187,12 @@ export default function Explorer() {
   function markerStyle(place){const p=project(place.lng,place.lat);return{left:`${p.x/MAP_W*100}%`,top:`${p.y/MAP_H*100}%`}}
 
   return <section className="explorer-section explorer-premium" id="explorer">
-    <div className="section-intro centered"><p className="eyebrow">The Imbondeiro Explorer</p><h2>What calls you to Angola?</h2><p>Choose an experience to explore the destinations that speak to you.</p></div>
-    <div className="experience-tabs luxury-tabs">{categories.map(c=><button key={c.id} type="button" className={choice===c.id?"active":""} onClick={()=>chooseCategory(c.id)}><span>{c.symbol}</span>{c.label}</button>)}</div>
+    <div className="section-intro centered"><p className="eyebrow">The Imbondeiro Explorer</p><h2>{t("whatCalls")}</h2><p>{t("choose")}</p></div>
+    <div className="experience-tabs luxury-tabs">{categories.map(c=><button key={c.id} type="button" className={choice===c.id?"active":""} onClick={()=>chooseCategory(c.id)}><span>{c.symbol}</span>{t(c.id.toLowerCase())}</button>)}</div>
 
     <div className="living-layout">
       <aside className="living-left">
-        <div className="living-heading"><h3>Explore <em>{choice}</em> in Angola</h3><p>Select a destination, reveal its story, and add it to your journey.</p></div>
+        <div className="living-heading"><h3>{t("explore")} <em>{t(choice.toLowerCase())}</em> {t("inAngola")}</h3><p>{t("selectReveal")}</p></div>
         <div className="living-cards">{visibleIds.map((id,index)=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <article className={`living-card ${active?"active":""}`} key={id}>
           <button className="living-card-main" type="button" onClick={()=>setSelectedId(id)}><span className="living-num">{index+1}</span><img src={d.image} alt=""/><span className="living-card-copy"><small>{d.province}</small><strong>{d.title}</strong><i>{d.description}</i></span><b>›</b></button>
           <button className={`living-add ${added?"added":""}`} type="button" onClick={()=>toggle(id)} aria-label={`${added?"Remove":"Add"} ${d.title}`}>{added?"✓":"+"}</button>
@@ -215,14 +217,14 @@ export default function Explorer() {
         <div className="living-compass">N<span>✦</span></div>
       </div>
 
-      <aside className="living-journey">
-        <div className="journey-title"><span>▣</span><div><strong>MY JOURNEY</strong><small>Your selected destinations</small></div><b>{journey.length}</b></div>
-        <div className="journey-list">{journey.length?journey.map((d,i)=><article key={d.id}><img src={d.image} alt=""/><span><small>{i+1}</small><strong>{d.title}</strong><em>{d.province || d.meta || d.category || "Selected experience"}</em></span><button onClick={()=>toggleJourney(d)}>×</button></article>):<div className="journey-empty"><span>⌖</span><strong>Your journey is empty</strong><p>Start exploring and add destinations to begin.</p></div>}</div>
-        <div className="journey-smart">{summary.estimatedDays&&<span><strong>Estimated duration:</strong> about {summary.estimatedDays} days<br/></span>}{summary.categories.length>0&&<span><strong>Travel style:</strong> {summary.categories.join(" · ")}</span>}</div><div className={`journey-awake ${journey.length>=3?"ready":""}`}><h3>{journey.length>=3?"Your Journey Is Taking Shape":"Keep exploring"}</h3><p>{journey.length>=3?`You’ve selected ${journey.length} inspiring destinations.`:"Add 3 or more destinations to shape your journey."}</p><div className="journey-progress"><i className={journey.length>0?"on":""}/><i className={journey.length>1?"on":""}/><i className={journey.length>2?"on":""}/></div><button className="btn gold" type="button" onClick={craft}>Craft My Journey →</button></div>
+      <aside className="living-journey" id="my-journey">
+        <div className="journey-title"><span>▣</span><div><strong>{t("journey").toUpperCase()}</strong><small>{t("selectedDestinations")}</small></div><b>{journey.length}</b></div>
+        <div className="journey-list">{journey.length?journey.map((d,i)=><article key={d.id}><img src={d.image} alt=""/><span><small>{i+1}</small><strong>{d.title}</strong><em>{d.province || d.meta || d.category || "Selected experience"}</em></span><button onClick={()=>toggleJourney(d)}>×</button></article>):<div className="journey-empty"><span>⌖</span><strong>{t("empty")}</strong><p>{t("emptyHelp")}</p></div>}</div>
+        <div className="journey-smart">{summary.estimatedDays&&<span><strong>{t("duration")}:</strong> about {summary.estimatedDays} days<br/></span>}{summary.categories.length>0&&<span><strong>{t("travelStyle")}:</strong> {summary.categories.join(" · ")}</span>}</div><div className={`journey-awake ${journey.length>=3?"ready":""}`}><h3>{journey.length>=3?t("shape"):t("keep")}</h3><p>{journey.length>=3?`You’ve selected ${journey.length} inspiring destinations.`:t("shapeHelp")}</p><div className="journey-progress"><i className={journey.length>0?"on":""}/><i className={journey.length>1?"on":""}/><i className={journey.length>2?"on":""}/></div><button className="btn gold" type="button" onClick={craft}>{t("craft")} →</button></div>
       </aside>
     </div>
 
-    <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>Recommended stay</dt><dd>{selected.duration}</dd></div><div><dt>Journey note</dt><dd>“{selected.note}”</dd></div></dl><button className="btn gold" onClick={()=>toggle(selected.id)}>{has(`destination:${selected.id}`)?"Remove from My Journey":"Add to My Journey"}</button></div></div>
+    <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>{t("recommended")}</dt><dd>{selected.duration}</dd></div><div><dt>{t("note")}</dt><dd>“{selected.note}”</dd></div></dl><button className="btn gold" onClick={()=>toggle(selected.id)}>{has(`destination:${selected.id}`)?t("remove"):t("add")}</button></div></div>
 
     <div className="explorer-benefits" aria-label="Explorer benefits">
       <article><span>◭</span><div><strong>Curated Landscapes</strong><p>Waterfalls, highlands, coast and living heritage.</p></div></article>
