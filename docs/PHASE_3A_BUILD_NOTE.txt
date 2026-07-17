@@ -1,0 +1,4 @@
+Phase 3A source package prepared on 17 July 2026.
+Structural source checks passed.
+A complete npm production build could not be rerun in the packaging environment because dependency installation timed out. The package preserves the same Next.js dependency versions and structure as the previously working Phase 2.2 release.
+Recommended local verification: npm install && npm run build
