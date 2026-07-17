@@ -1,0 +1,14 @@
+Project Baobab — Phase 3B Editorial Destination Stories
+Build verification: PASSED
+
+Command:
+npm run build
+
+Result:
+- Next.js production compilation successful
+- Static homepage generated successfully
+- Exchange-rate API route compiled
+- Send-request API route compiled
+- Full-page destination story component compiled
+
+Verified: 17 July 2026

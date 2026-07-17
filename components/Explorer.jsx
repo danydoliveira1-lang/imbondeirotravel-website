@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useJourney } from "./JourneyContext";
 import { useLanguage } from "./LanguageContext";
+import DestinationStory from "./DestinationStory";
 
 const categories = [
   { id: "Nature", label: "Nature", symbol: "◒" },
@@ -164,6 +165,7 @@ export default function Explorer() {
   const {t}=useLanguage();
   const [choice,setChoice]=useState("Nature");
   const [selectedId,setSelectedId]=useState("kalandula");
+  const [storyId,setStoryId]=useState(null);
   const [zoom,setZoom]=useState(1);
   const [pan,setPan]=useState({x:0,y:0});
   const drag=useRef(null);
@@ -194,7 +196,7 @@ export default function Explorer() {
       <aside className="living-left">
         <div className="living-heading"><h3>{t("explore")} <em>{t(choice.toLowerCase())}</em> {t("inAngola")}</h3><p>{t("selectReveal")}</p></div>
         <div className="living-cards">{visibleIds.map((id,index)=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <article className={`living-card ${active?"active":""}`} key={id}>
-          <button className="living-card-main" type="button" onClick={()=>setSelectedId(id)}><span className="living-num">{index+1}</span><img src={d.image} alt=""/><span className="living-card-copy"><small>{d.province}</small><strong>{d.title}</strong><i>{d.description}</i></span><b>›</b></button>
+          <button className="living-card-main" type="button" onClick={()=>{setSelectedId(id);setStoryId(id)}}><span className="living-num">{index+1}</span><img src={d.image} alt=""/><span className="living-card-copy"><small>{d.province}</small><strong>{d.title}</strong><i>{d.description}</i></span><b>›</b></button>
           <button className={`living-add ${added?"added":""}`} type="button" onClick={()=>toggle(id)} aria-label={`${added?"Remove":"Add"} ${d.title}`}>{added?"✓":"+"}</button>
         </article>})}</div>
         <p className="living-help">ⓘ Select destinations on the map or from the list to add them to your journey.</p>
@@ -210,7 +212,7 @@ export default function Explorer() {
             <text x="445" y="520" className="living-angola-label">ANGOLA</text>
             {mapJourney.slice(0,-1).map((aItem,i)=>{const bItem=mapJourney[i+1];const a=project(aItem.lng,aItem.lat);const b=project(bItem.lng,bItem.lat);return <path key={`${aItem.id}-${bItem.id}`} className="living-route journey-route" d={`M${a.x} ${a.y} Q${(a.x+b.x)/2+30} ${(a.y+b.y)/2-35} ${b.x} ${b.y}`}/>})}
           </svg>
-          {visibleIds.map(id=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <button key={id} type="button" className={`living-marker ${active?"active":""} ${added?"added":""}`} style={markerStyle(d)} onPointerDown={e=>e.stopPropagation()} onClick={()=>setSelectedId(id)} aria-label={`Explore ${d.title}`}><span className="pin"><i/></span><span className="marker-name">{d.title}<small>{d.province}</small></span></button>})}
+          {visibleIds.map(id=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <button key={id} type="button" className={`living-marker ${active?"active":""} ${added?"added":""}`} style={markerStyle(d)} onPointerDown={e=>e.stopPropagation()} onClick={()=>{setSelectedId(id);setStoryId(id)}} aria-label={`Explore ${d.title}`}><span className="pin"><i/></span><span className="marker-name">{d.title}<small>{d.province}</small></span></button>})}
         </div>
         <div className="living-map-controls" aria-label="Map controls"><button type="button" aria-label="Zoom in" onClick={()=>setZoom(z=>Math.min(1.65,z+.15))}>+</button><button type="button" aria-label="Zoom out" onClick={()=>setZoom(z=>Math.max(.88,z-.15))}>−</button><button type="button" aria-label="Reset map" onClick={()=>{setZoom(1);setPan({x:0,y:0})}}>⌂</button></div>
         <p className="map-instruction">Select a glowing marker · drag to explore · use + to save</p>
@@ -224,7 +226,7 @@ export default function Explorer() {
       </aside>
     </div>
 
-    <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>{t("recommended")}</dt><dd>{selected.duration}</dd></div><div><dt>{t("note")}</dt><dd>“{selected.note}”</dd></div></dl><button className="btn gold" onClick={()=>toggle(selected.id)}>{has(`destination:${selected.id}`)?t("remove"):t("add")}</button></div></div>
+    <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>{t("recommended")}</dt><dd>{selected.duration}</dd></div><div><dt>{t("note")}</dt><dd>“{selected.note}”</dd></div></dl><div className="living-story-actions"><button className="btn gold" onClick={()=>toggle(selected.id)}>{has(`destination:${selected.id}`)?t("remove"):t("add")}</button><button className="btn story-link" onClick={()=>setStoryId(selected.id)}>Discover the full story →</button></div></div></div>
 
     <div className="explorer-benefits" aria-label="Explorer benefits">
       <article><span>◭</span><div><strong>Curated Landscapes</strong><p>Waterfalls, highlands, coast and living heritage.</p></div></article>
@@ -232,5 +234,6 @@ export default function Explorer() {
       <article><span>✦</span><div><strong>Personal Journey</strong><p>Every saved place becomes part of your story.</p></div></article>
       <article><span>▤</span><div><strong>Thoughtful Planning</strong><p>Send one coherent journey to our travel team.</p></div></article>
     </div>
+    <DestinationStory destination={storyId ? destinations[storyId] : null} onClose={()=>setStoryId(null)}/>
   </section>;
 }

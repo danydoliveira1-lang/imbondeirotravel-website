@@ -24,7 +24,7 @@ export default function Header(){
  };
  useEffect(()=>{
   const hash=window.location.hash.replace("#","");
-  const map={world:["world","world"],services:["services","services"],journal:["services","journal"],about:["about","about"],partners:["services","partners"]};
+  const map={experiences:["experiences","experiences"],contact:["contact","contact"],world:["world","world"],services:["services","services"],journal:["services","journal"],about:["about","about"],partners:["services","partners"]};
   if(map[hash])revealChapter(...map[hash]);
  },[]);
  return <>
@@ -46,18 +46,18 @@ export default function Header(){
     <a href="#top" onClick={close}><small>01</small><span>{t("gateway")}</span></a>
     <a href="#angola" onClick={close}><small>02</small><span>{t("meet")}</span></a>
     <a href="#explorer" onClick={close}><small>03</small><span>{t("explorer")}</span></a>
-    <a href="#experiences" onClick={close}><small>04</small><span>{t("signature")}</span></a>
+    <a href="#experiences" onClick={(e)=>{e.preventDefault();revealChapter("experiences")}}><small>04</small><span>{t("signature")}</span></a>
     <a href="#world" onClick={(e)=>{e.preventDefault();revealChapter("world")}}><small>05</small><span>{t("world")}</span></a>
     <a href="#services" onClick={(e)=>{e.preventDefault();revealChapter("services")}}><small>06</small><span>{t("services")}</span></a>
     <a href="#journal" onClick={(e)=>{e.preventDefault();revealChapter("services","journal")}}><small>07</small><span>{t("journal")}</span></a>
     <a href="#about" onClick={(e)=>{e.preventDefault();revealChapter("about")}}><small>08</small><span>{t("story")}</span></a>
     <a href="#partners" onClick={(e)=>{e.preventDefault();revealChapter("services","partners")}}><small>09</small><span>{t("partners")}</span></a>
-    <a href="#contact" onClick={close}><small>10</small><span>{t("contact")}</span></a>
+    <a href="#contact" onClick={(e)=>{e.preventDefault();revealChapter("contact")}}><small>10</small><span>Craft My Journey</span></a>
    </nav>
    <aside className="menu-utilities">
     <section><h3>{t("language")}</h3><div className="utility-options">{languages.map(l=><button key={l.code} className={language===l.code?"active":""} onClick={()=>setLanguage(l.code)}>{l.short}</button>)}</div></section>
     <section><h3>{t("selectedCurrency")}</h3><div className="utility-options">{currencies.map(c=><button key={c} className={currency===c?"active":""} onClick={()=>setCurrency(c)}>{c}</button>)}</div><button className="converter-link" onClick={()=>{setOpen(false);setConverter(true)}}>{t("converter")} →</button></section>
-    <section className="menu-journey-summary"><h3>{t("journey")}</h3><strong>{summary.count}</strong><p>{summary.categories.join(" · ")||t("empty")}</p><a href="#my-journey" onClick={close}>{t("craft")} →</a></section>
+    <section className="menu-journey-summary"><h3>{t("journey")}</h3><strong>{summary.count}</strong><p>{summary.categories.join(" · ")||t("empty")}</p><a href="#contact" onClick={(e)=>{e.preventDefault();revealChapter("contact")}}>{t("craft")} →</a></section>
    </aside>
   </div>
   <div className="menu-footer"><span>imbondeirotravel.com</span><span>Angola · Portugal · South Africa</span></div>
