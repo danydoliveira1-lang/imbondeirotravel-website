@@ -11,6 +11,22 @@ export default function Header(){
  useEffect(()=>{const f=()=>setScrolled(window.scrollY>30);f();addEventListener("scroll",f);return()=>removeEventListener("scroll",f)},[]);
  useEffect(()=>{document.body.classList.toggle("menu-open",open);const key=e=>e.key==="Escape"&&setOpen(false);addEventListener("keydown",key);return()=>{document.body.classList.remove("menu-open");removeEventListener("keydown",key)}},[open]);
  const close=()=>setOpen(false);
+ const revealChapter=(id,targetId=id)=>{
+  setOpen(false);
+  const sections=document.querySelectorAll(".menu-reveal-section");
+  sections.forEach(section=>{section.classList.remove("is-revealed");section.setAttribute("aria-hidden","true")});
+  const section=document.getElementById(id);
+  if(!section)return;
+  document.body.classList.add("chapter-reveal-active");
+  section.classList.add("is-revealed");
+  section.setAttribute("aria-hidden","false");
+  window.setTimeout(()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}),180);
+ };
+ useEffect(()=>{
+  const hash=window.location.hash.replace("#","");
+  const map={world:["world","world"],services:["services","services"],journal:["services","journal"],about:["about","about"],partners:["services","partners"]};
+  if(map[hash])revealChapter(...map[hash]);
+ },[]);
  return <>
  <header className={`site-header chapter-header ${scrolled?"is-scrolled":""} ${open?"menu-active":""}`}>
   <a className="brand" href="#top" aria-label="Imbondeiro Travel"><img src="/assets/imbondeiro-logo-luxury-web.png" alt="Imbondeiro Travel"/></a>
@@ -31,11 +47,11 @@ export default function Header(){
     <a href="#angola" onClick={close}><small>02</small><span>{t("meet")}</span></a>
     <a href="#explorer" onClick={close}><small>03</small><span>{t("explorer")}</span></a>
     <a href="#experiences" onClick={close}><small>04</small><span>{t("signature")}</span></a>
-    <a href="#world" onClick={close}><small>05</small><span>{t("world")}</span></a>
-    <a href="#services" onClick={close}><small>06</small><span>{t("services")}</span></a>
-    <a href="#journal" onClick={close}><small>07</small><span>{t("journal")}</span></a>
-    <a href="#about" onClick={close}><small>08</small><span>{t("story")}</span></a>
-    <a href="#partners" onClick={close}><small>09</small><span>{t("partners")}</span></a>
+    <a href="#world" onClick={(e)=>{e.preventDefault();revealChapter("world")}}><small>05</small><span>{t("world")}</span></a>
+    <a href="#services" onClick={(e)=>{e.preventDefault();revealChapter("services")}}><small>06</small><span>{t("services")}</span></a>
+    <a href="#journal" onClick={(e)=>{e.preventDefault();revealChapter("services","journal")}}><small>07</small><span>{t("journal")}</span></a>
+    <a href="#about" onClick={(e)=>{e.preventDefault();revealChapter("about")}}><small>08</small><span>{t("story")}</span></a>
+    <a href="#partners" onClick={(e)=>{e.preventDefault();revealChapter("services","partners")}}><small>09</small><span>{t("partners")}</span></a>
     <a href="#contact" onClick={close}><small>10</small><span>{t("contact")}</span></a>
    </nav>
    <aside className="menu-utilities">

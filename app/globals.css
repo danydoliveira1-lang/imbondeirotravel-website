@@ -207,3 +207,49 @@ body.menu-open{overflow:hidden}.chapter-header{display:grid;grid-template-column
 /* Keep Meet Angola and Explorer continuously visible on mobile */
 @media(max-width:1050px){.site-header.chapter-header{grid-template-columns:auto 1fr auto}.chapter-nav{display:flex;gap:18px}.chapter-nav a{font-size:10px}.header-actions{justify-self:end}}
 @media(max-width:700px){.site-header.chapter-header{height:104px;grid-template-columns:auto 1fr;grid-template-rows:58px 36px;align-items:center}.site-header.chapter-header.is-scrolled{height:104px}.chapter-nav{grid-column:1/-1;grid-row:2;justify-self:stretch;justify-content:center;gap:0;border-top:1px solid rgba(255,255,255,.11)}.chapter-nav a{width:50%;padding:10px 6px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.chapter-nav a+a{border-left:1px solid rgba(255,255,255,.11)}.header-actions{grid-column:2;grid-row:1}.brand{grid-column:1;grid-row:1}#angola,#explorer,#my-journey{scroll-margin-top:112px}}
+
+/* Phase 2.2 — curated chapter visibility */
+.menu-reveal-section {
+  display: none !important;
+}
+
+.menu-reveal-section.is-revealed {
+  display: block !important;
+  animation: chapterReveal .72s cubic-bezier(.22,.8,.22,1) both;
+}
+
+.menu-only-chapters.menu-reveal-section.is-revealed {
+  display: grid !important;
+}
+
+.chapter-return {
+  appearance: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: .72rem;
+  letter-spacing: .16em;
+  margin: 0 0 2.25rem;
+  padding: 0 0 .35rem;
+  text-transform: uppercase;
+  opacity: .72;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.chapter-return:hover,
+.chapter-return:focus-visible {
+  opacity: 1;
+  transform: translateX(-4px);
+}
+
+@keyframes chapterReveal {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-reveal-section.is-revealed { animation: none; }
+}
