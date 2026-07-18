@@ -6,36 +6,76 @@ import { useJourney } from "./JourneyContext";
 
 const journeyMatches = {
   serra: [
-    {
-      id: "signature:lubango-serra",
-      title: "Lubango & Serra da Leba",
-      meta: "4 days / 3 nights · Highlands",
-      description: "A cinematic journey through Lubango, Tundavala and the legendary curves of Serra da Leba.",
-    },
-    {
-      id: "signature:southern-angola",
-      title: "Southern Angola Grand Journey",
-      meta: "7 days / 6 nights · Private",
-      description: "Combine Huíla’s dramatic highlands with Namibe’s desert, coast and remarkable landscapes.",
-    },
+    { id: "signature:lubango-serra", title: "Lubango & Serra da Leba", meta: "4 days / 3 nights · Highlands", description: "A cinematic journey through Lubango, Tundavala and the legendary curves of Serra da Leba." },
+    { id: "signature:southern-angola", title: "Southern Angola Grand Journey", meta: "7 days / 6 nights · Private", description: "Combine Huíla’s dramatic highlands with Namibe’s desert, coast and remarkable landscapes." },
   ],
   kalandula: [
-    {
-      id: "signature:kalandula-malanje",
-      title: "Kalandula Falls & Malanje",
-      meta: "3 days / 2 nights · Nature",
-      description: "Waterfalls, Pedras Negras and the lush landscapes of Malanje in one carefully paced journey.",
-    },
+    { id: "signature:kalandula-malanje", title: "Kalandula Falls & Malanje", meta: "3 days / 2 nights · Nature", description: "Waterfalls, Pedras Negras and the lush landscapes of Malanje in one carefully paced journey." },
   ],
   kissama: [
-    {
-      id: "signature:kissama",
-      title: "Kissama Safari Escape",
-      meta: "Full day · Wildlife",
-      description: "A guided safari experience within easy reach of Luanda, enriched by river and landscape stops.",
-    },
+    { id: "signature:kissama", title: "Kissama Safari Escape", meta: "Full day · Wildlife", description: "A guided safari experience within easy reach of Luanda, enriched by river and landscape stops." },
+  ],
+  miradouro: [
+    { id: "signature:kwanza", title: "Kwanza River & Southern Luanda", meta: "Full day · Nature & heritage", description: "Combine Miradouro da Lua with the Kwanza River, coastal scenery and cultural landmarks south of Luanda." },
+  ],
+  kwanza: [
+    { id: "signature:kwanza", title: "Kwanza River Journey", meta: "8 hours · Nature & heritage", description: "River tranquillity, cultural history and extraordinary viewpoints south of the capital." },
+  ],
+  luandaCity: [
+    { id: "signature:luanda-city", title: "Luanda City Welcome", meta: "4 hours · Culture", description: "A private introduction to Angola’s capital, its history, bay, architecture and living culture." },
   ],
 };
+
+const heroMedia = {
+  serra: { type: "local", src: "/videos/serra-da-leba.mp4" },
+  kalandula: { type: "local", src: "/videos/kalandula-falls.mp4" },
+  kissama: { type: "local", src: "/videos/journey-angola.mp4" },
+  benguelaCoast: { type: "youtube", id: "Of-AtWK5CtA" },
+  benguelaRomance: { type: "youtube", id: "Of-AtWK5CtA" },
+  mbanzaCulture: { type: "youtube", id: "jkTv2xkPNi8" },
+  mbanzaHeritage: { type: "youtube", id: "jkTv2xkPNi8" },
+  cabo: { type: "youtube", id: "Om6PSHBDB34" },
+  caboRomance: { type: "youtube", id: "Om6PSHBDB34" },
+  luandaCity: { type: "youtube", id: "JXCkN8Xa_AM" },
+  mufete: { type: "youtube", id: "JXCkN8Xa_AM" },
+  memorial: { type: "youtube", id: "JXCkN8Xa_AM" },
+  fortaleza: { type: "youtube", id: "JXCkN8Xa_AM" },
+  kwanza: { type: "youtube", id: "lVGz0m0HW4M" },
+  miradouro: { type: "youtube", id: "GGqtvK7a0tE" },
+  dance: { type: "local", src: "/videos/traditional-dance.mp4" },
+};
+
+const storyHeadings = {
+  serra: "A road carved into the highlands.",
+  kalandula: "Where water becomes wonder.",
+  miradouro: "A landscape that looks beyond Earth.",
+  kwanza: "Angola’s great river, experienced slowly.",
+  luandaCity: "A capital shaped by the Atlantic.",
+  kissama: "The wild begins just beyond the city.",
+  benguelaCoast: "Atlantic light and an unhurried coast.",
+  mbanzaCulture: "A kingdom whose story still lives.",
+  cabo: "Where the city gives way to open ocean.",
+};
+
+function youtubeBackgroundUrl(id) {
+  const params = new URLSearchParams({
+    autoplay: "1", mute: "1", controls: "1", loop: "1", playlist: id,
+    modestbranding: "1", rel: "0", playsinline: "1", iv_load_policy: "3",
+  });
+  return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+}
+
+function HeroMedia({ destination }) {
+  const media = heroMedia[destination.id];
+  if (!media) return <img src={destination.image} alt={destination.title} />;
+  if (media.type === "local") {
+    return <video autoPlay muted loop playsInline poster={destination.image} preload="metadata"><source src={media.src} type="video/mp4" /></video>;
+  }
+  return <>
+    <img className="story-hero-fallback" src={destination.image} alt="" />
+    <iframe className="story-hero-youtube" src={youtubeBackgroundUrl(media.id)} title={`${destination.title} cinematic destination video`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+  </>;
+}
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${value}T12:00:00`));
@@ -76,7 +116,7 @@ export default function DestinationStory({ destination, onClose }) {
   return <div className="destination-story" role="dialog" aria-modal="true" aria-label={`${destination.title} destination story`}>
     <button className="story-close" type="button" onClick={onClose} aria-label="Close destination story"><span>Close</span>×</button>
     <header className="story-hero">
-      {destination.id === "serra" ? <video autoPlay muted loop playsInline poster={destination.image}><source src="/videos/serra-da-leba.mp4" type="video/mp4"/></video> : <img src={destination.image} alt={destination.title}/>} 
+      <HeroMedia destination={destination} />
       <div className="story-hero-shade"/>
       <div className="story-hero-copy"><p>{destination.province} · {destination.category}</p><h1>{destination.title}</h1><blockquote>“{destination.note}”</blockquote></div>
       <span className="story-scroll">Scroll to discover ↓</span>
@@ -85,7 +125,7 @@ export default function DestinationStory({ destination, onClose }) {
     <main className="story-body">
       <section className="story-introduction">
         <p className="eyebrow">The Story</p>
-        <h2>{destination.id === "serra" ? "A road carved into the highlands." : "A place that stays with you."}</h2>
+        <h2>{storyHeadings[destination.id] || "A place that stays with you."}</h2>
         <div><p>{destination.description}</p><p>{destination.id === "serra" ? "From Lubango’s cool plateau, the road descends through a breathtaking sequence of curves into a vast southern landscape. It is not simply a viewpoint; it is one of Angola’s great journeys, best experienced slowly, with time for mountain light, local stories and quiet observation." : "Imbondeiro reveals the destination through local knowledge, thoughtful pacing and experiences selected around the character of the place."}</p></div>
       </section>
 

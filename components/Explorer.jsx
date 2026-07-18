@@ -36,12 +36,26 @@ const destinations = {
     description: "Explore surreal cliffs and sculpted earth formations just south of Luanda, especially striking in the warm evening light.",
     highlights: ["Lunar formations", "Golden-hour views", "Easy Luanda extension"],
   },
+  kwanza: {
+    id: "kwanza", title: "Kwanza River Journey", province: "Luanda / Bengo", category: "Nature",
+    lng: 13.48, lat: -9.35, image: "/assets/kwanza-river-boat.png", duration: "Full day",
+    note: "Follow Angola’s great river through calm waters, living history and wide natural horizons.",
+    description: "Travel along the Kwanza River for a serene day of river scenery, cultural history, birdlife and remarkable landscapes south of Luanda.",
+    highlights: ["Kwanza River cruise", "Birdlife and river scenery", "Cultural and historic stops"],
+  },
   mbanzaCulture: {
     id: "mbanzaCulture", title: "M’banza Kongo", province: "Zaire Province", category: "Culture",
     lng: 14.25, lat: -6.27, image: "/assets/mbanza-kongo-approved.jpg", duration: "2–3 days",
     note: "A living cultural landscape where a historic kingdom still speaks through place and tradition.",
     description: "Discover the political and spiritual heart of the former Kingdom of Kongo and its continuing cultural importance.",
     highlights: ["Kingdom of Kongo", "UNESCO heritage", "Living traditions"],
+  },
+  luandaCity: {
+    id: "luandaCity", title: "Luanda City Tour", province: "Luanda Province", category: "Culture",
+    lng: 13.24, lat: -8.84, image: "/assets/highlight-luanda.jpg", duration: "Half or full day",
+    note: "A capital of Atlantic light, layered history and unmistakable Angolan energy.",
+    description: "Discover Luanda Bay, historic landmarks, contemporary city life and the cultural rhythm of Angola’s capital with an expert local guide.",
+    highlights: ["Luanda Bay", "Historic city landmarks", "Contemporary Angolan culture"],
   },
   mufete: {
     id: "mufete", title: "Luanda & Mufete", province: "Luanda Province", category: "Culture",
@@ -153,8 +167,8 @@ function polygonPath(points) {
 }
 
 const categoryDestinations = {
-  Nature: ["kalandula", "serra", "miradouro"],
-  Culture: ["mbanzaCulture", "mufete", "dance"],
+  Nature: ["kalandula", "serra", "miradouro", "kwanza"],
+  Culture: ["luandaCity", "mbanzaCulture", "mufete", "dance"],
   Wildlife: ["kissama"],
   Coast: ["benguelaCoast", "cabo", "mussuloCoast"],
   Romance: ["benguelaRomance", "mussuloRomance", "caboRomance"],
