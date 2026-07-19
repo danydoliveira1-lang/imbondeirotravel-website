@@ -27,10 +27,11 @@ const journeyMatches = {
 };
 
 const heroMedia = {
-  serra: { type: "youtube", id: "Qb9sOPbUJ-g" },
+  serra: { type: "youtube", id: "FlWYO9zeRGI" },
   kalandula: { type: "youtube", id: "1Bot0Ke7a0Y", start: 50 },
   kissama: { type: "youtube", id: "xBZjmw9AreU" },
   benguelaCoast: { type: "youtube", id: "Of-AtWK5CtA" },
+  lobito: { type: "youtube", id: "Of-AtWK5CtA" },
   benguelaRomance: { type: "youtube", id: "Of-AtWK5CtA" },
   mbanzaCulture: { type: "youtube", id: "jkTv2xkPNi8" },
   mbanzaHeritage: { type: "youtube", id: "jkTv2xkPNi8" },
@@ -55,6 +56,7 @@ const storyHeadings = {
   luandaCity: "A capital shaped by the Atlantic.",
   kissama: "The wild begins just beyond the city.",
   benguelaCoast: "Atlantic light and an unhurried coast.",
+  lobito: "A harbour city where the Atlantic shapes the rhythm of life.",
   mbanzaCulture: "A kingdom whose story still lives.",
   cabo: "Where the city gives way to open ocean.",
 };

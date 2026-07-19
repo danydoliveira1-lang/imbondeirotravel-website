@@ -13,7 +13,7 @@ const scenes = [
     type: "youtube",
     word: "JOURNEY",
     place: "Serra da Leba · Huíla",
-    youtubeId: "Qb9sOPbUJ-g",
+    youtubeId: "FlWYO9zeRGI",
     title: "Serra da Leba, Angola",
     fit: "cover",
   },
