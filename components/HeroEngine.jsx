@@ -3,20 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "./LanguageContext";
 
-const SCENE_MS = 9000;
+const SCENE_MS = 17000;
 const FADE_MS = 700;
 const SIGNATURE_MS = 1200;
 
 const scenes = [
-  {
-    id: "journey",
-    type: "youtube",
-    word: "JOURNEY",
-    place: "Serra da Leba · Namibe",
-    youtubeId: "FlWYO9zeRGI",
-    title: "Serra da Leba, Angola",
-    fit: "cover",
-  },
   {
     id: "wonder",
     type: "youtube",
@@ -161,7 +152,7 @@ export default function HeroEngine() {
         ))}
       </div>
       <div className={`hero-signature ${showSignature ? "show-now" : ""}`} aria-hidden="true">
-        <span>Journey</span><b>•</b><span>Wonder</span><b>•</b><span>Culture</span>
+        <span>Wonder</span><b>•</b><span>Culture</span>
       </div>
       <a className="scroll-cue" href="#angola">{t("begin")}<i /></a>
     </section>

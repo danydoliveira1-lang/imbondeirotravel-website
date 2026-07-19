@@ -24,7 +24,7 @@ const destinations = {
   },
   serra: {
     id: "serra", title: "Serra da Leba", province: "Namibe Province", category: "Nature",
-    lng: 13.2486, lat: -15.0711, mapLng: 13.62, mapLat: -15.02, image: "/assets/serra-da-leba-approved.jpg", duration: "3 days",
+    lng: 13.2486, lat: -15.0711, mapLng: 13.18, mapLat: -14.88, image: "/assets/serra-da-leba-approved.jpg", duration: "3 days",
     note: "Some roads take you somewhere. This one changes how you see the journey.",
     description: "A dramatic mountain pass, cool highland air and one of Angola’s most unforgettable road journeys.",
     highlights: ["Serra da Leba Pass", "Lubango", "Panoramic viewpoints"],
