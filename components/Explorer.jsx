@@ -24,7 +24,7 @@ const destinations = {
   },
   serra: {
     id: "serra", title: "Serra da Leba", province: "Namibe Province", category: "Nature",
-    lng: 13.2486, lat: -15.0711, image: "/assets/serra-da-leba-approved.jpg", duration: "3 days",
+    lng: 13.2486, lat: -15.0711, mapLng: 13.62, mapLat: -15.02, image: "/assets/serra-da-leba-approved.jpg", duration: "3 days",
     note: "Some roads take you somewhere. This one changes how you see the journey.",
     description: "A dramatic mountain pass, cool highland air and one of Angola’s most unforgettable road journeys.",
     highlights: ["Serra da Leba Pass", "Lubango", "Panoramic viewpoints"],
@@ -232,7 +232,7 @@ export default function Explorer() {
   function down(e){if(e.target.closest("button"))return;drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};e.currentTarget.setPointerCapture?.(e.pointerId)}
   function move(e){if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})}
   function up(e){drag.current=null;e.currentTarget.releasePointerCapture?.(e.pointerId)}
-  function markerStyle(place){const p=project(place.lng,place.lat);return{left:`${p.x/MAP_W*100}%`,top:`${p.y/MAP_H*100}%`}}
+  function markerStyle(place){const p=project(place.mapLng ?? place.lng,place.mapLat ?? place.lat);return{left:`${p.x/MAP_W*100}%`,top:`${p.y/MAP_H*100}%`}}
 
   return <section className="explorer-section explorer-premium" id="explorer">
     <div className="section-intro centered"><p className="eyebrow">The Imbondeiro Explorer</p><h2>{t("whatCalls")}</h2><p>{t("choose")}</p></div>

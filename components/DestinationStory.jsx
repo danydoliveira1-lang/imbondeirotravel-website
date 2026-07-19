@@ -45,7 +45,7 @@ const heroMedia = {
   fortaleza: { type: "youtube", id: "JXCkN8Xa_AM" },
   kwanza: { type: "youtube", id: "lVGz0m0HW4M" },
   miradouro: { type: "youtube", id: "GGqtvK7a0tE" },
-  dance: { type: "youtube", id: "2H1qkAt4N_4", start: 25 },
+  dance: { type: "youtube", id: "U9ILT0S2GYA", start: 25 },
 };
 
 const storyHeadings = {

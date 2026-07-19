@@ -32,7 +32,7 @@ const scenes = [
     type: "youtube",
     word: "CULTURE",
     place: "Traditional Angolan Dance",
-    youtubeId: "2H1qkAt4N_4",
+    youtubeId: "U9ILT0S2GYA",
     start: 25,
     title: "Traditional Angolan dance",
     fit: "contain",
