@@ -19,10 +19,11 @@ const scenes = [
   },
   {
     id: "wonder",
-    type: "video",
+    type: "youtube",
     word: "WONDER",
     place: "Kalandula Falls · Malanje",
-    src: "/videos/kalandula-falls.mp4",
+    youtubeId: "1Bot0Ke7a0Y",
+    start: 50,
     title: "Kalandula Falls, Angola",
     fit: "cover",
   },
@@ -37,7 +38,7 @@ const scenes = [
   },
 ];
 
-function youtubeBackgroundUrl(id) {
+function youtubeBackgroundUrl(id, start = 0) {
   const params = new URLSearchParams({
     autoplay: "1",
     mute: "1",
@@ -51,6 +52,7 @@ function youtubeBackgroundUrl(id) {
     disablekb: "1",
     fs: "0",
   });
+  if (start > 0) params.set("start", String(start));
   return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 }
 
@@ -128,7 +130,7 @@ export default function HeroEngine() {
           <iframe
             key={scene.youtubeId}
             className={`hero-youtube hero-fit-${scene.fit || "cover"}`}
-            src={youtubeBackgroundUrl(scene.youtubeId)}
+            src={youtubeBackgroundUrl(scene.youtubeId, scene.start)}
             title={scene.title}
             allow="autoplay; encrypted-media; picture-in-picture"
             referrerPolicy="strict-origin-when-cross-origin"

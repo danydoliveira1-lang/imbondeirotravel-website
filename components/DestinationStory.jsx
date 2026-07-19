@@ -28,7 +28,7 @@ const journeyMatches = {
 
 const heroMedia = {
   serra: { type: "local", src: "/videos/serra-da-leba.mp4" },
-  kalandula: { type: "local", src: "/videos/kalandula-falls.mp4" },
+  kalandula: { type: "youtube", id: "1Bot0Ke7a0Y", start: 50 },
   kissama: { type: "local", src: "/videos/journey-angola.mp4" },
   benguelaCoast: { type: "youtube", id: "Of-AtWK5CtA" },
   benguelaRomance: { type: "youtube", id: "Of-AtWK5CtA" },
@@ -57,11 +57,12 @@ const storyHeadings = {
   cabo: "Where the city gives way to open ocean.",
 };
 
-function youtubeBackgroundUrl(id) {
+function youtubeBackgroundUrl(id, start = 0) {
   const params = new URLSearchParams({
     autoplay: "1", mute: "1", controls: "1", loop: "1", playlist: id,
     modestbranding: "1", rel: "0", playsinline: "1", iv_load_policy: "3",
   });
+  if (start > 0) params.set("start", String(start));
   return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 }
 
@@ -73,7 +74,7 @@ function HeroMedia({ destination }) {
   }
   return <>
     <img className="story-hero-fallback" src={destination.image} alt="" />
-    <iframe className="story-hero-youtube" src={youtubeBackgroundUrl(media.id)} title={`${destination.title} cinematic destination video`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+    <iframe className="story-hero-youtube" src={youtubeBackgroundUrl(media.id, media.start)} title={`${destination.title} cinematic destination video`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
   </>;
 }
 
