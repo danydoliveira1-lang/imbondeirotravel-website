@@ -271,3 +271,7 @@ body.destination-story-open{overflow:hidden}.living-card-main{cursor:pointer}.li
 .story-hero-fallback{z-index:0}
 .story-hero-shade,.story-hero-copy,.story-scroll{z-index:2}
 @media (prefers-reduced-motion:reduce){.story-hero-youtube{display:none}.story-hero-fallback{display:block}}
+
+.living-province-labels{pointer-events:none}.living-province-labels text{fill:rgba(239,220,173,.72);font:600 11px/1 Inter,sans-serif;letter-spacing:.02em;text-anchor:middle;paint-order:stroke;stroke:rgba(3,18,15,.92);stroke-width:3px;stroke-linejoin:round}.living-province-labels text:hover{fill:rgba(255,239,196,.9)}
+@media(max-width:820px){.living-province-labels text{font-size:10px;stroke-width:2.6px}}
+@media(max-width:600px){.living-province-labels text{font-size:8px;stroke-width:2.2px}.living-angola-label{opacity:.28}}

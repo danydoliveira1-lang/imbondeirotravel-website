@@ -27,15 +27,17 @@ const journeyMatches = {
 };
 
 const heroMedia = {
-  serra: { type: "local", src: "/videos/serra-da-leba.mp4" },
+  serra: { type: "youtube", id: "Qb9sOPbUJ-g" },
   kalandula: { type: "youtube", id: "1Bot0Ke7a0Y", start: 50 },
-  kissama: { type: "local", src: "/videos/journey-angola.mp4" },
+  kissama: { type: "youtube", id: "xBZjmw9AreU" },
   benguelaCoast: { type: "youtube", id: "Of-AtWK5CtA" },
   benguelaRomance: { type: "youtube", id: "Of-AtWK5CtA" },
   mbanzaCulture: { type: "youtube", id: "jkTv2xkPNi8" },
   mbanzaHeritage: { type: "youtube", id: "jkTv2xkPNi8" },
   cabo: { type: "youtube", id: "Om6PSHBDB34" },
   caboRomance: { type: "youtube", id: "Om6PSHBDB34" },
+  mussuloCoast: { type: "youtube", id: "VFfqt5AOebE" },
+  mussuloRomance: { type: "youtube", id: "VFfqt5AOebE" },
   luandaCity: { type: "youtube", id: "JXCkN8Xa_AM" },
   mufete: { type: "youtube", id: "JXCkN8Xa_AM" },
   memorial: { type: "youtube", id: "JXCkN8Xa_AM" },

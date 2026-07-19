@@ -166,6 +166,31 @@ function polygonPath(points) {
   }).join(" ") + " Z";
 }
 
+
+const PROVINCE_LABELS = [
+  { name: "Cabinda", lng: 12.30, lat: -5.05 },
+  { name: "Zaire", lng: 14.15, lat: -6.25 },
+  { name: "Uíge", lng: 15.30, lat: -7.35 },
+  { name: "Bengo", lng: 13.75, lat: -8.05 },
+  { name: "Luanda", lng: 13.18, lat: -8.85 },
+  { name: "Icolo e Bengo", lng: 14.25, lat: -9.05 },
+  { name: "Cuanza Norte", lng: 15.15, lat: -9.25 },
+  { name: "Malanje", lng: 16.85, lat: -9.65 },
+  { name: "Lunda Norte", lng: 19.35, lat: -8.45 },
+  { name: "Lunda Sul", lng: 20.00, lat: -10.95 },
+  { name: "Cuanza Sul", lng: 14.75, lat: -11.55 },
+  { name: "Benguela", lng: 13.55, lat: -12.55 },
+  { name: "Huambo", lng: 15.65, lat: -12.75 },
+  { name: "Bié", lng: 17.20, lat: -12.85 },
+  { name: "Moxico", lng: 19.35, lat: -13.45 },
+  { name: "Moxico Leste", lng: 22.20, lat: -12.10 },
+  { name: "Namibe", lng: 12.65, lat: -15.10 },
+  { name: "Huíla", lng: 14.80, lat: -15.05 },
+  { name: "Cunene", lng: 16.05, lat: -16.55 },
+  { name: "Cubango", lng: 18.65, lat: -16.10 },
+  { name: "Cuando", lng: 21.65, lat: -15.25 },
+];
+
 const categoryDestinations = {
   Nature: ["kalandula", "serra", "miradouro", "kwanza"],
   Culture: ["luandaCity", "mbanzaCulture", "mufete", "dance"],
@@ -224,6 +249,12 @@ export default function Explorer() {
             <g filter="url(#landShadow)">{ANGOLA_POLYGONS.map((polygon,i)=><path key={i} d={polygonPath(polygon)} className="living-land" fill="url(#landLuxury)"/>)}</g>
             <g clipPath="url(#angolaClip)" className="living-terrain"><path d="M90 250 C250 180 430 260 720 160"/><path d="M50 420 C250 330 490 470 810 330"/><path d="M70 610 C300 500 500 680 800 520"/><path d="M120 760 C330 650 560 790 760 700"/><path className="river" d="M275 155 C350 250 325 390 430 478 S575 660 515 830"/></g>
             <text x="445" y="520" className="living-angola-label">ANGOLA</text>
+            <g className="living-province-labels" aria-label="Angola province names">
+              {PROVINCE_LABELS.map(province => {
+                const point = project(province.lng, province.lat);
+                return <text key={province.name} x={point.x} y={point.y}>{province.name}</text>;
+              })}
+            </g>
             {mapJourney.slice(0,-1).map((aItem,i)=>{const bItem=mapJourney[i+1];const a=project(aItem.lng,aItem.lat);const b=project(bItem.lng,bItem.lat);return <path key={`${aItem.id}-${bItem.id}`} className="living-route journey-route" d={`M${a.x} ${a.y} Q${(a.x+b.x)/2+30} ${(a.y+b.y)/2-35} ${b.x} ${b.y}`}/>})}
           </svg>
           {visibleIds.map(id=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <button key={id} type="button" className={`living-marker ${active?"active":""} ${added?"added":""}`} style={markerStyle(d)} onPointerDown={e=>e.stopPropagation()} onClick={()=>{setSelectedId(id);setStoryId(id)}} aria-label={`Explore ${d.title}`}><span className="pin"><i/></span><span className="marker-name">{d.title}<small>{d.province}</small></span></button>})}
