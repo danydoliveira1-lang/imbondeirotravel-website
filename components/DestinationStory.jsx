@@ -21,7 +21,7 @@ const journeyMatches = {
 const heroMedia = {
   serra:{type:"youtube",id:"FlWYO9zeRGI"}, kalandula:{type:"youtube",id:"1Bot0Ke7a0Y",start:50},
   kissama:{type:"youtube",id:"xBZjmw9AreU"}, benguelaCoast:{type:"youtube",id:"Of-AtWK5CtA"}, lobito:{type:"youtube",id:"Of-AtWK5CtA"},
-  benguelaRomance:{type:"youtube",id:"Of-AtWK5CtA"}, mbanzaCulture:{type:"youtube",id:"jkTv2xkPNi8",start:20}, mbanzaHeritage:{type:"youtube",id:"jkTv2xkPNi8",start:20},
+  benguelaRomance:{type:"youtube",id:"Of-AtWK5CtA"}, mbanzaCulture:{type:"youtube",id:"jkTv2xkPNi8",start:20,end:225}, mbanzaHeritage:{type:"youtube",id:"jkTv2xkPNi8",start:20,end:225},
   cabo:{type:"youtube",id:"Om6PSHBDB34"}, caboRomance:{type:"youtube",id:"Om6PSHBDB34"}, mussuloCoast:{type:"youtube",id:"VFfqt5AOebE"},
   mussuloRomance:{type:"youtube",id:"VFfqt5AOebE"}, luandaCity:{type:"youtube",id:"JXCkN8Xa_AM"}, mufete:{type:"youtube",id:"5NT13b4YBLU"},
   memorial:{type:"youtube",id:"IrfKcAbqbCY",start:72}, fortaleza:{type:"youtube",id:"yIbhk2kqhA4",start:5}, kwanza:{type:"youtube",id:"lVGz0m0HW4M"},
@@ -42,16 +42,17 @@ const editorial = {
 
 const galleryPool = ["/assets/hero-kalandula.jpg","/assets/highlight-luanda.jpg","/assets/miradouro-da-lua-approved.jpg","/assets/serra-da-leba-approved.jpg","/assets/benguela-coast-approved.webp","/assets/mbanza-kongo-approved.jpg","/assets/cabo-ledo-angola.jpg","/assets/kwanza-river-boat.png"];
 
-function youtubeBackgroundUrl(id,start=0){
+function youtubeBackgroundUrl(id,start=0,end=0){
   const params=new URLSearchParams({autoplay:"1",mute:"1",controls:"0",loop:"1",playlist:id,modestbranding:"1",rel:"0",playsinline:"1",iv_load_policy:"3",cc_load_policy:"0",fs:"0",disablekb:"1"});
   if(start>0)params.set("start",String(start));
+  if(end>0)params.set("end",String(end));
   return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 }
 
 function HeroMedia({destination}){
   const media=heroMedia[destination.id];
   if(!media)return <img src={destination.image} alt={destination.title}/>;
-  return <><img className="story-hero-fallback" src={destination.image} alt=""/><iframe className="story-hero-youtube" src={youtubeBackgroundUrl(media.id,media.start)} title={`${destination.title} cinematic destination video`} allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" loading="eager"/></>;
+  return <><img className="story-hero-fallback" src={destination.image} alt=""/><iframe className="story-hero-youtube" src={youtubeBackgroundUrl(media.id,media.start,media.end)} title={`${destination.title} cinematic destination video`} allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" loading="eager"/></>;
 }
 
 const formatDate=value=>new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"long",year:"numeric"}).format(new Date(`${value}T12:00:00`));

@@ -37,12 +37,28 @@ export async function POST(request) {
       clean(payload.message, "No additional message."),
     ].join("\n");
 
+    const headers = { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" };
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ from: FROM_EMAIL, to: [TO_EMAIL], reply_to: email, subject, text: body })
     });
     if (!resendResponse.ok) return NextResponse.json({ error: "Email delivery failed. Please try WhatsApp instead." }, { status: 502 });
+
+    const confirmation = [
+      `Dear ${name},`,
+      "",
+      "Thank you for contacting Imbondeiro Travel.",
+      `We have received your journey request for: ${destination}.`,
+      "A member of our team will review your preferences and contact you shortly.",
+      "",
+      "Project Imbondeiro · Crafted with passion for Angola and the world.",
+    ].join("\n");
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ from: FROM_EMAIL, to: [email], reply_to: TO_EMAIL, subject: "We received your Imbondeiro journey request", text: confirmation })
+    }).catch(() => null);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });

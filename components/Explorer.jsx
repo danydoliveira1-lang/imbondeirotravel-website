@@ -228,7 +228,7 @@ export default function Explorer() {
   }
   function chooseCategory(id){setChoice(id);setSelectedId(categoryDestinations[id][0]);setZoom(1);setPan({x:0,y:0});}
   function toggle(id){toggleJourney(journeyItem(id));}
-  function craft(){const detail=(journey.length?summary.label:selected.title);window.dispatchEvent(new CustomEvent("imbondeiro-journey",{detail}));document.getElementById("contact")?.scrollIntoView({behavior:"smooth"});}
+  function craft(){const detail=(journey.length?summary.label:selected.title);window.dispatchEvent(new CustomEvent("imbondeiro-journey",{detail}));const contact=document.getElementById("contact");contact?.classList.add("is-revealed");contact?.setAttribute("aria-hidden","false");window.setTimeout(()=>contact?.scrollIntoView({behavior:"smooth",block:"start"}),80);}
   function down(e){if(e.target.closest("button"))return;drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};e.currentTarget.setPointerCapture?.(e.pointerId)}
   function move(e){if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})}
   function up(e){drag.current=null;e.currentTarget.releasePointerCapture?.(e.pointerId)}
