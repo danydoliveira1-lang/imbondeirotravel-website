@@ -28,9 +28,16 @@ export default function SignatureDepartures() {
   const departures = useMemo(() => showAll ? signatureDepartures : signatureDepartures.filter(x => x.featured), [showAll]);
 
   function choosePrivateDates() {
-    const field = document.querySelector('input[name="dates"]');
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.setTimeout(() => field?.focus(), 650);
+    const contact = document.getElementById("contact");
+    contact?.classList.add("is-revealed");
+    contact?.setAttribute("aria-hidden", "false");
+    window.dispatchEvent(new CustomEvent("imbondeiro-journey", { detail: "Private journey — dates and itinerary tailored around me" }));
+
+    // Two animation frames make the previously hidden section measurable on mobile browsers.
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      contact?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => document.querySelector('input[name="dates"]')?.focus({ preventScroll: true }), 500);
+    }));
   }
 
   return <section id="departures" className="signature-departures section-pad">

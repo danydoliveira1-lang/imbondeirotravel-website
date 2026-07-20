@@ -324,3 +324,12 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .journey-confirmation-grid dd{margin:.45rem 0 0;font-weight:600}
 .form-status:not(:empty){padding:.9rem 1rem;border-left:3px solid #b19152;background:rgba(177,145,82,.08)}
 @media (max-width:760px){.journey-confirmation-grid{grid-template-columns:1fr}.form-actions{align-items:stretch}.form-actions .btn{width:100%;text-align:center}}
+
+/* Phase 4.9.1 mobile CTA and direct-contact fixes */
+.contact-direct a,.form-status a{color:#8d7550;text-decoration:underline;text-underline-offset:3px}
+.email-fallback{background:transparent;color:var(--ink);border-color:rgba(24,48,40,.45)}
+@media(max-width:640px){
+  .form-actions{display:grid!important;grid-template-columns:1fr!important;width:100%;gap:12px!important}
+  .form-actions .btn,.form-actions button{width:100%!important;min-height:56px}
+  #contact{scroll-margin-top:78px}
+}
