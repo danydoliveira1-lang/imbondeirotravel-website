@@ -41,6 +41,7 @@ function youtubeBackgroundUrl(id, start = 0) {
     rel: "0",
     playsinline: "1",
     iv_load_policy: "3",
+    cc_load_policy: "0",
     disablekb: "1",
     fs: "0",
   });

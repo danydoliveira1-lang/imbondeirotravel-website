@@ -4,52 +4,47 @@ const TO_EMAIL = process.env.IMBONDEIRO_TO_EMAIL || "imbondeirotravel@gmail.com"
 const FROM_EMAIL = process.env.IMBONDEIRO_FROM_EMAIL || "Imbondeiro Travel <onboarding@resend.dev>";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-const clean = (value, fallback = "") =>
-  String(value || fallback)
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "")
-    .trim()
-    .slice(0, 8000);
+const clean = (value, fallback = "") => String(value || fallback)
+  .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "")
+  .trim().slice(0, 4000);
 
 export async function POST(request) {
   try {
-    if (!RESEND_API_KEY) {
-      return NextResponse.json(
-        { error: "Email service is not configured." },
-        { status: 503 }
-      );
-    }
-
     const payload = await request.json();
-    const subject = clean(payload.subject, "Imbondeiro Travel Request").slice(0, 180);
-    const body = clean(payload.body, "A visitor submitted a request from the website.");
+    if (payload.website) return NextResponse.json({ ok: true });
+    const name = clean(payload.name);
+    const email = clean(payload.email).toLowerCase();
+    if (name.length < 2 || !/^\S+@\S+\.\S+$/.test(email) || payload.consent !== true) {
+      return NextResponse.json({ error: "Please complete your name, a valid email and consent." }, { status: 400 });
+    }
+    if (!RESEND_API_KEY) return NextResponse.json({ error: "Email delivery is not configured yet." }, { status: 503 });
+
+    const destination = clean(payload.destination, "Not specified");
+    const subject = `New journey request — ${destination}`.slice(0, 180);
+    const body = [
+      "NEW IMBONDEIRO TRAVEL REQUEST",
+      "",
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `WhatsApp: ${clean(payload.whatsapp, "Not provided")}`,
+      `Destination / selections: ${destination}`,
+      `Travel dates: ${clean(payload.dates, "Flexible")}`,
+      `Travellers: ${clean(payload.travellers, "Not specified")}`,
+      `Journey style: ${clean(payload.travelStyle, "Not specified")}`,
+      `Indicative budget: ${clean(payload.budget, "Not specified")}`,
+      "",
+      "Message:",
+      clean(payload.message, "No additional message."),
+    ].join("\n");
 
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [TO_EMAIL],
-        subject,
-        text: body
-      })
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM_EMAIL, to: [TO_EMAIL], reply_to: email, subject, text: body })
     });
-
-    if (!resendResponse.ok) {
-      const details = await resendResponse.text();
-      return NextResponse.json(
-        { error: "Email delivery failed.", details },
-        { status: 502 }
-      );
-    }
-
+    if (!resendResponse.ok) return NextResponse.json({ error: "Email delivery failed. Please try WhatsApp instead." }, { status: 502 });
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json(
-      { error: "Invalid request." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 }

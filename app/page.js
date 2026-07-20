@@ -19,7 +19,7 @@ const experiences=[
 ];
 const world=["South Africa","Zanzibar","Morocco","Seychelles","Portugal","France","Italy","Greece","Dubai","Maldives","Bali","Thailand","Brazil","New York","Caribbean"];
 
-export default function Page(){return <LanguageProvider><CurrencyProvider><JourneyProvider><><Header/><main>
+export default function Page(){return <LanguageProvider><CurrencyProvider><JourneyProvider><><Header/><main id="main-content">
  <HeroEngine/>
  <section id="angola" className="meet section-pad"><div className="meet-image"><img src="/assets/kalandula-falls.jfif" alt="Kalandula Falls in Angola"/></div><div className="meet-copy"><p className="eyebrow">Meet Angola</p><h2>Some places are visited.<br/><em>Others are discovered.</em></h2><p className="lead">Angola is a land of extraordinary contrasts—Atlantic coastlines, dramatic mountain passes, powerful waterfalls, wildlife and vibrant traditions.</p><p>Every region reveals another chapter of a country still wonderfully undiscovered. Imbondeiro Travel introduces it with local knowledge, careful planning and genuine hospitality.</p><a className="text-link dark" href="#explorer">Explore the living map <span>→</span></a></div></section>
  <Explorer/>
