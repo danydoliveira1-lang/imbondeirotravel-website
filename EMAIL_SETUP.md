@@ -15,3 +15,6 @@ IMBONDEIRO_FROM_EMAIL=Imbondeiro Travel <requests@your-verified-domain.com>
 `IMBONDEIRO_FROM_EMAIL` must use a sender/domain verified with your email provider.
 
 If the endpoint is not configured yet, the website falls back to opening the visitor's email app with the request prepared.
+
+## Customer confirmation
+The Phase 4 Enterprise route also attempts to send an acknowledgement to the traveller. For production delivery, verify `imbondeirotravel.com` in Resend and use a sender such as `Imbondeiro Travel <journeys@imbondeirotravel.com>`.

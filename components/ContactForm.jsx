@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "./Analytics";
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "244923000000";
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "244945175238";
 
 export default function ContactForm(){
   const [status,setStatus]=useState("");

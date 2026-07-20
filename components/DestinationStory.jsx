@@ -19,7 +19,7 @@ const journeyMatches = {
 };
 
 const heroMedia = {
-  serra:{type:"youtube",id:"FlWYO9zeRGI"}, kalandula:{type:"youtube",id:"1Bot0Ke7a0Y",start:50},
+  serra:{type:"youtube",id:"FlWYO9zeRGI"}, kalandula:{type:"youtube",id:"Gt3K_3KQlOM",start:304,end:322},
   kissama:{type:"youtube",id:"xBZjmw9AreU"}, benguelaCoast:{type:"youtube",id:"Of-AtWK5CtA"}, lobito:{type:"youtube",id:"Of-AtWK5CtA"},
   benguelaRomance:{type:"youtube",id:"Of-AtWK5CtA"}, mbanzaCulture:{type:"youtube",id:"jkTv2xkPNi8",start:20,end:225}, mbanzaHeritage:{type:"youtube",id:"jkTv2xkPNi8",start:20,end:225},
   cabo:{type:"youtube",id:"Om6PSHBDB34"}, caboRomance:{type:"youtube",id:"Om6PSHBDB34"}, mussuloCoast:{type:"youtube",id:"VFfqt5AOebE"},
