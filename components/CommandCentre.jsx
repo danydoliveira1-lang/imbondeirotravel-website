@@ -1,0 +1,144 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+const seed = {
+  tours: [
+    { id: "tour-kalandula", title: "Kalandula Falls & Malanje", location: "Malanje", duration: "2 days / 1 night", price: 1250, status: "Published", video: "Gt3K_3KQlOM", start: "05:04", end: "05:22" },
+    { id: "tour-kissama", title: "Kissama Safari Day", location: "Luanda", duration: "Full day", price: 320, status: "Published", video: "xBZjmw9AreU", start: "00:05", end: "00:28" },
+    { id: "tour-mbanza", title: "M’Banza Kongo Heritage Journey", location: "Zaire", duration: "3 days / 2 nights", price: 980, status: "Draft", video: "jkTv2xkPNi8", start: "00:20", end: "03:45" },
+  ],
+  departures: [
+    { id: "dep-1", tour: "Kalandula Falls & Malanje", date: "2026-09-12", capacity: 20, booked: 14, held: 2, status: "Open", guide: "Carlos Manuel" },
+    { id: "dep-2", tour: "Kissama Safari Day", date: "2026-09-18", capacity: 12, booked: 12, held: 0, status: "Sold Out", guide: "Ana Paulo" },
+    { id: "dep-3", tour: "M’Banza Kongo Heritage Journey", date: "2026-09-24", capacity: 16, booked: 8, held: 2, status: "Open", guide: "João Afonso" },
+  ],
+  reservations: [
+    { id: "IMB-260701", customer: "Amélia Costa", journey: "Kalandula Falls & Malanje", travellers: 2, status: "On Hold", total: 2500, consultant: "Daniela" },
+    { id: "IMB-260702", customer: "Peter Williams", journey: "Kissama Safari Day", travellers: 4, status: "Confirmed", total: 1280, consultant: "Daniela" },
+    { id: "IMB-260703", customer: "Sofia Mendes", journey: "Private Angola Journey", travellers: 2, status: "Enquiry", total: 0, consultant: "Unassigned" },
+  ],
+  customers: [
+    { id: "cust-1", name: "Amélia Costa", email: "amelia@example.com", phone: "+351 912 000 111", language: "Portuguese", preference: "Culture & nature", notes: "Vegetarian" },
+    { id: "cust-2", name: "Peter Williams", email: "peter@example.com", phone: "+44 7700 900222", language: "English", preference: "Wildlife", notes: "Airport meet & greet requested" },
+    { id: "cust-3", name: "Sofia Mendes", email: "sofia@example.com", phone: "+244 923 000 333", language: "Portuguese", preference: "Honeymoon", notes: "Interested in Maldives" },
+  ],
+  media: [
+    { id: "media-1", name: "Kalandula Hero", type: "YouTube", reference: "Gt3K_3KQlOM", usage: "Homepage + destination", status: "Active" },
+    { id: "media-2", name: "Traditional Dance", type: "YouTube", reference: "U9ILT0S2GYA", usage: "Homepage hero", status: "Active" },
+    { id: "media-3", name: "Imbondeiro Brand Mark", type: "Image", reference: "/assets/logo.png", usage: "Global", status: "Active" },
+  ],
+};
+
+const nav = [
+  ["dashboard", "⌂", "Dashboard"], ["tours", "◉", "Tours"], ["departures", "□", "Departures"],
+  ["reservations", "◇", "Reservations"], ["customers", "◎", "Customers"], ["media", "▣", "Media Library"],
+  ["payments", "€", "Payments"], ["operations", "↗", "Operations"], ["reports", "⌁", "Reports"], ["settings", "⚙", "Settings"],
+];
+
+const moduleMeta = {
+  tours: { title: "Tour Manager", singular: "Tour", fields: ["title", "location", "duration", "price", "status", "video", "start", "end"] },
+  departures: { title: "Departure Manager", singular: "Departure", fields: ["tour", "date", "capacity", "booked", "held", "status", "guide"] },
+  reservations: { title: "Reservation Manager", singular: "Reservation", fields: ["customer", "journey", "travellers", "status", "total", "consultant"] },
+  customers: { title: "Customer CRM", singular: "Customer", fields: ["name", "email", "phone", "language", "preference", "notes"] },
+  media: { title: "Media Library", singular: "Media Item", fields: ["name", "type", "reference", "usage", "status"] },
+};
+
+function money(value) { return new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(value || 0)); }
+function titleCase(value) { return value.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase()); }
+
+export default function CommandCentre() {
+  const [ready, setReady] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [active, setActive] = useState("dashboard");
+  const [data, setData] = useState(seed);
+  const [modal, setModal] = useState(null);
+  const [notice, setNotice] = useState("");
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("imbondeiro-command-centre-v51");
+    if (stored) { try { setData(JSON.parse(stored)); } catch {} }
+    setSignedIn(sessionStorage.getItem("imb-cc-session") === "active");
+    setReady(true);
+  }, []);
+
+  useEffect(() => { if (ready) localStorage.setItem("imbondeiro-command-centre-v51", JSON.stringify(data)); }, [data, ready]);
+
+  const stats = useMemo(() => {
+    const enquiries = data.reservations.filter(r => r.status === "Enquiry").length;
+    const held = data.reservations.filter(r => r.status === "On Hold").length;
+    const upcoming = data.departures.filter(d => d.status !== "Cancelled").length;
+    const seats = data.departures.reduce((sum, d) => sum + Math.max(0, Number(d.capacity) - Number(d.booked) - Number(d.held)), 0);
+    const revenue = data.reservations.filter(r => r.status === "Confirmed").reduce((sum, r) => sum + Number(r.total || 0), 0);
+    return { enquiries, held, upcoming, seats, revenue };
+  }, [data]);
+
+  if (!ready) return null;
+  if (!signedIn) return <Login onLogin={() => { sessionStorage.setItem("imb-cc-session", "active"); setSignedIn(true); }} />;
+
+  const saveRecord = (section, record) => {
+    setData(prev => {
+      const exists = prev[section].some(x => x.id === record.id);
+      return { ...prev, [section]: exists ? prev[section].map(x => x.id === record.id ? record : x) : [{ ...record, id: `${section}-${Date.now()}` }, ...prev[section]] };
+    });
+    setModal(null); flash(`${moduleMeta[section].singular} saved successfully.`);
+  };
+  const deleteRecord = (section, id) => { if (confirm("Delete this record?")) { setData(prev => ({ ...prev, [section]: prev[section].filter(x => x.id !== id) })); flash("Record deleted."); } };
+  const flash = message => { setNotice(message); setTimeout(() => setNotice(""), 2600); };
+
+  return <div className="cc-shell">
+    <aside className="cc-sidebar">
+      <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
+      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{["payments","operations","reports"].includes(key) && <small>Soon</small>}</button>)}</nav>
+      <div className="cc-profile"><div className="cc-avatar">DN</div><div><strong>Daniela</strong><span>Administrator</span></div><button title="Sign out" onClick={() => { sessionStorage.removeItem("imb-cc-session"); setSignedIn(false); }}>↪</button></div>
+    </aside>
+
+    <main className="cc-main">
+      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title="Notifications">♢<b>3</b></button></div></header>
+
+      {notice && <div className="cc-notice">✓ {notice}</div>}
+      {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section) => { setActive(section); setModal({ section, record: {} }); }} navigate={setActive} />}
+      {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
+      {["payments","operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
+    </main>
+    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} onClose={() => setModal(null)} onSave={saveRecord} />}
+  </div>;
+}
+
+function Login({ onLogin }) {
+  const [email, setEmail] = useState("daniela@imbondeirotravel.com");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const submit = e => { e.preventDefault(); if (!email || !password) return setError("Enter your email and password."); onLogin(); };
+  return <div className="cc-login"><div className="cc-login-art"><div className="cc-login-copy"><span>PROJECT IMBONDEIRO · PHASE 5.1</span><h1>The operational heart of every remarkable journey.</h1><p>Manage tours, departures, reservations, customers and media—without touching code.</p></div></div><form className="cc-login-card" onSubmit={submit}><div className="cc-login-logo">♧</div><span className="cc-eyebrow">Secure staff access</span><h2>Imbondeiro Command Centre</h2><p>Welcome back. Sign in to continue.</p><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter any password for preview" /></label>{error && <div className="cc-error">{error}</div>}<button className="cc-primary" type="submit">Enter Command Centre <span>→</span></button><small>Phase 5.1 preview mode. Production authentication is prepared for Supabase activation.</small></form></div>;
+}
+
+function Dashboard({ stats, data, open, navigate }) {
+  const cards = [["Today’s enquiries", stats.enquiries, "+18% this week"], ["Reservations on hold", stats.held, "Require follow-up"], ["Upcoming departures", stats.upcoming, "Next 90 days"], ["Available seats", stats.seats, "Across live departures"], ["Confirmed revenue", money(stats.revenue), "Current records"]];
+  return <div className="cc-dashboard">
+    <section className="cc-welcome"><div><span>IMBONDEIRO COMMAND CENTRE</span><h2>Elegant for the traveller.<br/>Powerful for the team.</h2><p>Your Phase 5 workspace is ready. All changes made here are saved in this preview browser.</p></div><div className="cc-orbit"><span>LIVE</span><strong>{stats.upcoming}</strong><small>departures</small></div></section>
+    <section className="cc-stat-grid">{cards.map(([label,value,sub],i)=><article key={label} className={i===4?"wide":""}><span>{label}</span><strong>{value}</strong><small>{sub}</small></article>)}</section>
+    <section className="cc-grid-two"><div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Fast workflows</span><h3>Quick actions</h3></div></div><div className="cc-quick">{[["tours","＋","New tour"],["departures","□","New departure"],["reservations","◇","New reservation"],["customers","◎","New customer"],["media","▣","Add media"]].map(([s,i,l])=><button key={s} onClick={()=>open(s)}><i>{i}</i><span>{l}</span><b>→</b></button>)}</div></div>
+    <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Seat control</span><h3>Upcoming departures</h3></div><button onClick={()=>navigate("departures")}>View all</button></div><div className="cc-departure-list">{data.departures.slice(0,4).map(d=>{const available=Math.max(0,d.capacity-d.booked-d.held);return <div key={d.id}><div className="cc-date"><strong>{new Date(d.date+"T12:00:00").getDate()}</strong><span>{new Date(d.date+"T12:00:00").toLocaleString("en",{month:"short"})}</span></div><div><strong>{d.tour}</strong><span>{d.booked} booked · {d.held} held</span></div><div className="cc-seat"><strong>{available}</strong><span>available</span></div><em className={`cc-status ${d.status.toLowerCase().replaceAll(" ","-")}`}>{d.status}</em></div>})}</div></div></section>
+    <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Reservation desk</span><h3>Latest activity</h3></div><button onClick={()=>navigate("reservations")}>Open reservations</button></div><div className="cc-activity">{data.reservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{r.travellers!==1?"s":""}</span></div><em className={`cc-status ${r.status.toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"Awaiting quote"}</b></div>)}</div></section>
+  </div>;
+}
+
+function Manager({ section, meta, rows, query, onNew, onEdit, onDelete }) {
+  const filtered = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
+  return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td><div className="cc-row-actions"><button onClick={()=>onEdit(row)}>Edit</button><button className="danger" onClick={()=>onDelete(row.id)}>Delete</button></div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved automatically in preview mode.</span></div></section>;
+}
+
+function RecordModal({ section, meta, initial, onClose, onSave }) {
+  const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
+  const [record, setRecord] = useState({ ...blank, ...initial });
+  const numeric = ["price","capacity","booked","held","travellers","total"];
+  const submit = e => { e.preventDefault(); onSave(section, record); };
+  return <div className="cc-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><form className="cc-modal" onSubmit={submit}><div className="cc-modal-head"><div><span className="cc-eyebrow">No-code editor</span><h2>{initial.id?"Edit":"Add"} {meta.singular}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="cc-form-grid">{meta.fields.map(field=><label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="status"?<select value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{["Draft","Published","Open","Limited Availability","Sold Out","Cancelled","Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Active","Inactive"].map(s=><option key={s}>{s}</option>)}</select>:field==="notes"?<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input required={["title","tour","customer","name"].includes(field)} type={field==="date"?"date":numeric.includes(field)?"number":"text"} value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div><div className="cc-modal-actions"><button type="button" onClick={onClose}>Cancel</button><button className="cc-primary" type="submit">Save {meta.singular}</button></div></form></div>;
+}
+
+function ComingSoon({ type }) {
+  const copy = { payments:["Payments & Invoicing","Deposits, balances, invoices and refunds will connect here in Phase 5.4."], operations:["Operations Desk","Guides, drivers, vehicles, hotels, suppliers and airport assistance arrive in Phase 5.5."], reports:["Business Intelligence","Revenue, occupancy, conversion and market reports arrive in Phase 5.6."], settings:["Command Centre Settings","Staff roles, security, business details and integrations will be activated with the Supabase connection."] }[type];
+  return <div className="cc-coming"><div>♧</div><span className="cc-eyebrow">Prepared for expansion</span><h2>{copy[0]}</h2><p>{copy[1]}</p><button className="cc-primary" onClick={()=>alert("This module is reserved for the next approved Phase 5 milestone.")}>View roadmap</button></div>;
+}

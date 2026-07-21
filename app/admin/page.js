@@ -1,23 +1,11 @@
-"use client";
+import "./command-centre.css";
+import CommandCentre from "../../components/CommandCentre";
 
-import { useEffect, useMemo, useState } from "react";
-import { signatureDepartures as defaults, placesRemaining } from "../../data/signatureDepartures";
+export const metadata = {
+  title: "Imbondeiro Command Centre",
+  robots: { index: false, follow: false },
+};
 
-const KEY="imbondeiro-signature-departures-admin-v1";
-const empty={title:"",startDate:"",endDate:"",capacity:12,booked:0,status:"open",travelStyle:"Curated small group",duration:"",featured:false};
-
-export default function AdminPortal(){
-  const [departures,setDepartures]=useState(defaults);
-  const [draft,setDraft]=useState(empty);
-  const [editing,setEditing]=useState(null);
-  const [ready,setReady]=useState(false);
-  useEffect(()=>{try{const saved=localStorage.getItem(KEY);if(saved)setDepartures(JSON.parse(saved));}catch{}setReady(true)},[]);
-  useEffect(()=>{if(ready)localStorage.setItem(KEY,JSON.stringify(departures));},[departures,ready]);
-  const stats=useMemo(()=>({total:departures.length,open:departures.filter(d=>d.status!=="sold-out").length,seats:departures.reduce((n,d)=>n+Math.max(0,placesRemaining(d)),0)}),[departures]);
-  function save(e){e.preventDefault();const item={...draft,id:editing||`departure-${Date.now()}`,journeyId:draft.journeyId||`signature:${draft.title.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`,capacity:Number(draft.capacity)||0,booked:Number(draft.booked)||0};setDepartures(list=>editing?list.map(x=>x.id===editing?item:x):[...list,item]);setDraft(empty);setEditing(null)}
-  function edit(d){setEditing(d.id);setDraft(d);window.scrollTo({top:0,behavior:"smooth"})}
-  function remove(id){if(confirm("Delete this departure?"))setDepartures(x=>x.filter(d=>d.id!==id))}
-  function reset(){if(confirm("Restore the original departure list?")){setDepartures(defaults);setDraft(empty);setEditing(null)}}
-  function download(){const blob=new Blob([JSON.stringify(departures,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="signature-departures.json";a.click();URL.revokeObjectURL(a.href)}
-  return <main className="portal"><header><p>Project Imbondeiro</p><h1>Management Portal</h1><span>Signature Departure Manager</span></header><section className="stats"><article><b>{stats.total}</b><span>Total departures</span></article><article><b>{stats.open}</b><span>Open departures</span></article><article><b>{stats.seats}</b><span>Places remaining</span></article></section><section className="editor"><h2>{editing?"Edit departure":"Add a departure"}</h2><form onSubmit={save}><label>Title<input required value={draft.title||""} onChange={e=>setDraft({...draft,title:e.target.value})}/></label><label>Start date<input required type="date" value={draft.startDate||""} onChange={e=>setDraft({...draft,startDate:e.target.value})}/></label><label>End date<input type="date" value={draft.endDate||""} onChange={e=>setDraft({...draft,endDate:e.target.value})}/></label><label>Duration<input value={draft.duration||""} placeholder="3 days / 2 nights" onChange={e=>setDraft({...draft,duration:e.target.value})}/></label><label>Capacity<input type="number" min="0" value={draft.capacity||0} onChange={e=>setDraft({...draft,capacity:e.target.value})}/></label><label>Booked<input type="number" min="0" value={draft.booked||0} onChange={e=>setDraft({...draft,booked:e.target.value})}/></label><label>Status<select value={draft.status||"open"} onChange={e=>setDraft({...draft,status:e.target.value})}><option value="open">Open</option><option value="limited">Limited</option><option value="sold-out">Sold out</option></select></label><label>Travel style<input value={draft.travelStyle||""} onChange={e=>setDraft({...draft,travelStyle:e.target.value})}/></label><label className="check"><input type="checkbox" checked={!!draft.featured} onChange={e=>setDraft({...draft,featured:e.target.checked})}/> Featured on homepage</label><div className="actions"><button type="submit">{editing?"Save changes":"Add departure"}</button>{editing&&<button type="button" onClick={()=>{setEditing(null);setDraft(empty)}}>Cancel</button>}</div></form></section><section className="list"><div className="list-head"><h2>Upcoming Signature Departures</h2><div><button onClick={download}>Export JSON</button><button onClick={reset}>Restore defaults</button></div></div>{departures.map(d=><article key={d.id}><div><small>{d.startDate}{d.endDate?` → ${d.endDate}`:""}</small><h3>{d.title}</h3><p>{d.duration} · {d.travelStyle}</p></div><strong>{d.status==="sold-out"?"Sold out":`${placesRemaining(d)} places remaining`}</strong><div><button onClick={()=>edit(d)}>Edit</button><button onClick={()=>remove(d.id)}>Delete</button></div></article>)}</section><footer>Project Imbondeiro · Crafted with passion for Angola and the world.</footer></main>
+export default function AdminPage() {
+  return <CommandCentre />;
 }
