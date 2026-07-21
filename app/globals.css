@@ -333,3 +333,19 @@ button:disabled{opacity:.6;cursor:not-allowed}
   .form-actions .btn,.form-actions button{width:100%!important;min-height:56px}
   #contact{scroll-margin-top:78px}
 }
+
+
+/* Phase 4.9.2 — reliable mobile journey handoff and email fallback */
+.contact-email-line{margin:.25rem 0 0;font-size:.9rem}
+.contact-email-line a{font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.email-fallback{display:inline-flex!important;visibility:visible!important;opacity:1!important}
+@media(max-width:760px){
+  /* Keep the enquiry form rendered on mobile so all journey CTAs can always scroll to it. */
+  #contact.menu-reveal-section{display:block!important;scroll-margin-top:116px}
+  #contact .form-actions{display:grid!important;grid-template-columns:1fr!important}
+  #contact .form-actions .btn{display:flex!important;width:100%!important;min-height:58px!important}
+  #contact .email-fallback{order:2;background:#f7f1e7!important;color:#17352b!important;border:1px solid #b19152!important}
+  #contact .whatsapp{order:3}
+  #contact button[type="submit"]{order:1}
+  .contact-email-line{font-size:1rem;line-height:1.6;overflow-wrap:anywhere}
+}

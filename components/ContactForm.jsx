@@ -101,7 +101,16 @@ export default function ContactForm(){
         body:JSON.stringify(form)
       });
       const result = await response.json().catch(()=>({}));
-      if(!response.ok) throw new Error(result.error || "Unable to send request.");
+      if(!response.ok){
+        // Until the secure Resend key is connected, never leave mobile users
+        // at a dead end: open their email app with the complete request ready.
+        if(response.status === 503){
+          setStatus("Opening your email app with the journey request ready to send…");
+          window.location.href = emailHref;
+          return;
+        }
+        throw new Error(result.error || "Unable to send request.");
+      }
 
       setConfirmation({
         reference: result.reference,
@@ -152,9 +161,10 @@ export default function ContactForm(){
       <div className="full form-actions">
         <button className="btn gold" type="submit" disabled={sending}>{sending ? "Sending…" : "Craft My Journey"}</button>
         <a className="btn whatsapp" href={whatsappHref} target="_blank" rel="noreferrer" onClick={()=>trackEvent("contact",{method:"whatsapp",destination:form.destination||"Not specified"})}>Continue on WhatsApp</a>
-        <a className="btn email-fallback" href={emailHref} onClick={()=>trackEvent("contact",{method:"email_link",destination:form.destination||"Not specified"})}>Send by Email</a>
+        <a className="btn email-fallback" href={emailHref} onClick={()=>trackEvent("contact",{method:"email_link",destination:form.destination||"Not specified"})}>Email My Journey Request</a>
       </div>
-      <p className="full form-status" role="status" aria-live="polite">{status} {!status && <span>Email delivery from the form requires the secure Vercel email key. You may use <a href={emailHref}>email</a> or WhatsApp immediately.</span>}</p>
+      <p className="full contact-email-line">Email: <a href="mailto:imbondeirotravel@gmail.com">imbondeirotravel@gmail.com</a></p>
+      <p className="full form-status" role="status" aria-live="polite">{status} {!status && <span>Automatic confirmation email requires the secure Vercel email key. Until it is connected, <strong>Craft My Journey</strong> will open your email app with the full request ready to send.</span>}</p>
     </form>
   </div>;
 }

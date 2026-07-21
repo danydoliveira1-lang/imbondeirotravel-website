@@ -232,12 +232,19 @@ export default function Explorer() {
     const detail=(journey.length?summary.label:selected.title);
     window.dispatchEvent(new CustomEvent("imbondeiro-journey",{detail}));
     const contact=document.getElementById("contact");
-    contact?.classList.add("is-revealed");
-    contact?.setAttribute("aria-hidden","false");
-    // Mobile Safari/Chrome need the hidden section rendered before scrolling to it.
-    window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{
-      contact?.scrollIntoView({behavior:"smooth",block:"start"});
-    }));
+    if(!contact) return;
+    contact.classList.add("is-revealed");
+    contact.setAttribute("aria-hidden","false");
+    document.body.classList.add("chapter-reveal-active");
+
+    // Use both the URL hash and an explicit scroll. This is more reliable on
+    // mobile Safari/Chrome than scrolling a section immediately after display:none.
+    try { window.history.replaceState(null,"","#contact"); } catch {}
+    window.setTimeout(()=>{
+      const top=contact.getBoundingClientRect().top+window.scrollY-110;
+      window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
+      window.setTimeout(()=>document.querySelector('#contact input[name="name"]')?.focus({preventScroll:true}),650);
+    },80);
   }
   function down(e){if(e.target.closest("button"))return;drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};e.currentTarget.setPointerCapture?.(e.pointerId)}
   function move(e){if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})}
