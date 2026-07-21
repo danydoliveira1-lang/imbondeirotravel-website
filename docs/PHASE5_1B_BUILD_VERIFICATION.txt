@@ -1,0 +1,4 @@
+Project Imbondeiro Phase 5.1B
+Production build: PASSED
+Admin writes: Supabase REST through authenticated server routes
+Public departures: live Supabase data with static fallback
