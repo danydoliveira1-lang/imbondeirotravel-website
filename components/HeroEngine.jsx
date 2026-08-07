@@ -26,6 +26,15 @@ const scenes = [
     title: "Traditional Angolan dance",
     fit: "contain",
   },
+  {
+  id: "journey",
+  type: "video",
+  word: "JOURNEY",
+  place: "Serra da Leba · Namibe",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/serra-da-leba.mp4",
+  title: "Serra da Leba, Angola",
+  fit: "cover",
+},
 ];
 
 function youtubeBackgroundUrl(id, start = 0, end = 0) {
