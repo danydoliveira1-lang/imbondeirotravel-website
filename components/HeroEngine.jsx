@@ -22,7 +22,7 @@ const scenes = [
   type: "video",
   word: "WILDLIFE",
   place: "Kissama National Park",
-  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kissama-hero-v4-no-ranger-v3(1)",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kissama-hero-v4-no-ranger-v3.mp4",
   title: "Wildlife in Kissama National Park, Angola",
   fit: "cover",
 }, 
