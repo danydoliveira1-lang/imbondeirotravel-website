@@ -13,7 +13,7 @@ const scenes = [
     type: "video",
     word: "WONDER",
     place: "Kalandula Falls · Malanje",
-    src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls.mp4",
+    src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls-v3.mp4",
     title: "Kalandula Falls, Angola",
     fit: "cover",
   },
