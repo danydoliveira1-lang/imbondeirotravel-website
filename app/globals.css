@@ -371,3 +371,13 @@ button:disabled{opacity:.6;cursor:not-allowed}
     background: #061713;
   }
 }
+/* =========================================================
+   BUSINESS SEED 002 — DESTINATION MEDIA MOBILE OVERRIDE
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .destination-story .story-hero > video,
+  .destination-story .story-hero-youtube {
+    display: block !important;
+  }
+}
