@@ -19,13 +19,35 @@ const journeyMatches = {
 };
 
 const heroMedia = {
-  serra:{type:"youtube",id:"FlWYO9zeRGI"}, kalandula:{type:"youtube",id:"Gt3K_3KQlOM",start:304,end:322},
-  kissama:{type:"youtube",id:"xBZjmw9AreU"}, benguelaCoast:{type:"youtube",id:"Of-AtWK5CtA"}, lobito:{type:"youtube",id:"Of-AtWK5CtA"},
-  benguelaRomance:{type:"youtube",id:"Of-AtWK5CtA"}, mbanzaCulture:{type:"youtube",id:"jkTv2xkPNi8",start:20,end:225}, mbanzaHeritage:{type:"youtube",id:"jkTv2xkPNi8",start:20,end:225},
-  cabo:{type:"youtube",id:"Om6PSHBDB34"}, caboRomance:{type:"youtube",id:"Om6PSHBDB34"}, mussuloCoast:{type:"youtube",id:"VFfqt5AOebE"},
+  kalandula: {
+  type: "video",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls.mp4"
+},
+kissama: {
+  type: "video",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kissama-safari.mp4"
+},
+serra: {
+  type: "video",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/serra-da-leba.mp4"
+},
+mbanzaCulture: {
+  type: "video",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/mbanza-kongo.mp4"
+},
+mbanzaHeritage: {
+  type: "video",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/mbanza-kongo.mp4"
+},
+dance: {
+  type: "video",
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/traditional-dances.mp4"
+},
+  benguelaCoast:{type:"youtube",id:"Of-AtWK5CtA"}, lobito:{type:"youtube",id:"Of-AtWK5CtA"},
+  benguelaRomance:{type:"youtube",id:"Of-AtWK5CtA"},cabo:{type:"youtube",id:"Om6PSHBDB34"}, caboRomance:{type:"youtube",id:"Om6PSHBDB34"}, mussuloCoast:{type:"youtube",id:"VFfqt5AOebE"},
   mussuloRomance:{type:"youtube",id:"VFfqt5AOebE"}, luandaCity:{type:"youtube",id:"JXCkN8Xa_AM"}, mufete:{type:"youtube",id:"5NT13b4YBLU"},
   memorial:{type:"youtube",id:"IrfKcAbqbCY",start:72}, fortaleza:{type:"youtube",id:"yIbhk2kqhA4",start:5}, kwanza:{type:"youtube",id:"lVGz0m0HW4M"},
-  miradouro:{type:"youtube",id:"GGqtvK7a0tE"}, dance:{type:"youtube",id:"U9ILT0S2GYA",start:25},
+  miradouro:{type:"youtube",id:"GGqtvK7a0tE"}, 
 };
 
 const editorial = {
@@ -49,10 +71,52 @@ function youtubeBackgroundUrl(id,start=0,end=0){
   return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 }
 
-function HeroMedia({destination}){
-  const media=heroMedia[destination.id];
-  if(!media)return <img src={destination.image} alt={destination.title}/>;
-  return <><img className="story-hero-fallback" src={destination.image} alt=""/><iframe className="story-hero-youtube" src={youtubeBackgroundUrl(media.id,media.start,media.end)} title={`${destination.title} cinematic destination video`} allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" loading="eager"/></>;
+function HeroMedia({ destination }) {
+  const media = heroMedia[destination.id];
+
+  if (!media) {
+    return <img src={destination.image} alt={destination.title} />;
+  }
+
+  if (media.type === "video") {
+    return (
+      <>
+        <img
+          className="story-hero-fallback"
+          src={destination.image}
+          alt=""
+        />
+
+        <video
+          className="story-hero-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        >
+          <source src={media.src} type="video/mp4" />
+        </video>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <img
+        className="story-hero-fallback"
+        src={destination.image}
+        alt=""
+      />
+
+      <iframe
+        className="story-hero-youtube"
+        src={youtubeBackgroundUrl(media.id, media.start, media.end)}
+        title={destination.title}
+        allow="autoplay; encrypted-media; picture-in-picture"
+      />
+    </>
+  );
 }
 
 const formatDate=value=>new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"long",year:"numeric"}).format(new Date(`${value}T12:00:00`));
