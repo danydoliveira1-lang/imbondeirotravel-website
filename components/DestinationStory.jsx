@@ -25,7 +25,7 @@ const heroMedia = {
 },
 kissama: {
   type: "video",
-  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kissama-safari.mp4"
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kissama-hero-v4-no-ranger-v3.mp4"
 },
 serra: {
   type: "video",
