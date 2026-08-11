@@ -381,3 +381,28 @@ button:disabled{opacity:.6;cursor:not-allowed}
     display: block !important;
   }
 }
+
+/* =========================================================
+   GROWTH RING X — MOBILE EXPLORER MAP LOCK
+   Keep Angola centred on mobile while preserving tappable pins.
+   Desktop pan/zoom remains unchanged.
+   ========================================================= */
+
+@media (max-width: 820px) {
+  .living-map {
+    touch-action: pan-y !important;
+    overflow: hidden;
+  }
+
+  .living-map .living-canvas {
+    transform: none !important;
+  }
+
+  .living-map-controls {
+    display: none !important;
+  }
+
+  .map-instruction {
+    display: none !important;
+  }
+}
