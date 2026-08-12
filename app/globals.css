@@ -406,3 +406,37 @@ button:disabled{opacity:.6;cursor:not-allowed}
     display: none !important;
   }
 }
+/* ==========================================================
+   GROWTH RING X — MOBILE FULL MENU NAVIGATION LOCK
+   Restore chapter navigation on mobile.
+   Desktop menu remains unchanged.
+   ========================================================== */
+
+@media (max-width: 820px) {
+
+  .full-menu-body {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  .full-menu-body .menu-chapters {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .full-menu-body .menu-chapters a {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .full-menu-body .menu-utilities {
+    display: block !important;
+  }
+}
