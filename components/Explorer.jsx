@@ -246,9 +246,35 @@ export default function Explorer() {
       window.setTimeout(()=>document.querySelector('#contact input[name="name"]')?.focus({preventScroll:true}),650);
     },80);
   }
-  function down(e){if(e.target.closest("button"))return;drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};e.currentTarget.setPointerCapture?.(e.pointerId)}
-  function move(e){if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})}
-  function up(e){drag.current=null;e.currentTarget.releasePointerCapture?.(e.pointerId)}
+  function down(e) {
+  if (window.matchMedia("(max-width: 820px)").matches) return;
+  if (e.target.closest("button")) return;
+
+  drag.current = {
+    x: e.clientX,
+    y: e.clientY,
+    px: pan.x,
+    py: pan.y
+  };
+
+  e.currentTarget.setPointerCapture?.(e.pointerId);
+}
+
+function move(e) {
+  if (window.matchMedia("(max-width: 820px)").matches) return;
+  if (!drag.current) return;
+
+  setPan({
+    x: drag.current.px + e.clientX - drag.current.x,
+    y: drag.current.py + e.clientY - drag.current.y
+  });
+}
+
+function up(e) {
+  drag.current = null;
+  e.currentTarget.releasePointerCapture?.(e.pointerId);
+}
+  
   function markerStyle(place){const p=project(place.mapLng ?? place.lng,place.mapLat ?? place.lat);return{left:`${p.x/MAP_W*100}%`,top:`${p.y/MAP_H*100}%`}}
 
   return <section className="explorer-section explorer-premium" id="explorer">
