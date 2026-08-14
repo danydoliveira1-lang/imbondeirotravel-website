@@ -12,6 +12,7 @@ export default function Header(){
  useEffect(()=>{document.body.classList.toggle("menu-open",open);const key=e=>e.key==="Escape"&&setOpen(false);addEventListener("keydown",key);return()=>{document.body.classList.remove("menu-open");removeEventListener("keydown",key)}},[open]);
  const close=()=>setOpen(false);
  const revealChapter=(id,targetId=id)=>{
+  if (document.body.classList.contains("destination-story-open")) return;
   setOpen(false);
   const sections=document.querySelectorAll(".menu-reveal-section");
   sections.forEach(section=>{section.classList.remove("is-revealed");section.setAttribute("aria-hidden","true")});
