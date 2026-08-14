@@ -285,7 +285,7 @@ function up(e) {
       <aside className="living-left">
         <div className="living-heading"><h3>{t("explore")} <em>{t(choice.toLowerCase())}</em> {t("inAngola")}</h3><p>{t("selectReveal")}</p></div>
         <div className="living-cards">{visibleIds.map((id,index)=>{const d=destinations[id],active=selectedId===id,added=has(`destination:${id}`);return <article className={`living-card ${active?"active":""}`} key={id}>
-          <button className="living-card-main" type="button" onClick={()=>{setSelectedId(id);setStoryId(id)}}><span className="living-num">{index+1}</span><img src={d.image} alt=""/><span className="living-card-copy"><small>{d.province}</small><strong>{d.title}</strong><i>{d.description}</i></span><b>›</b></button>
+          <button className="living-card-main" type="button" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); setSelectedId(id); setStoryId(id);}}><span className="living-num">{index+1}</span><img src={d.image} alt=""/><span className="living-card-copy"><small>{d.province}</small><strong>{d.title}</strong><i>{d.description}</i></span><b>›</b></button>
           <button className={`living-add ${added?"added":""}`} type="button" onClick={()=>toggle(id)} aria-label={`${added?"Remove":"Add"} ${d.title}`}>{added?"✓":"+"}</button>
         </article>})}</div>
         <p className="living-help">ⓘ Select destinations on the map or from the list to add them to your journey.</p>
