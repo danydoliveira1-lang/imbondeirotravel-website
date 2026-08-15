@@ -423,18 +423,49 @@ button:disabled{opacity:.6;cursor:not-allowed}
   }
 
   .full-menu-body .menu-chapters {
-    display: grid !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    min-height: 0 !important;
-  }
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
 
-  .full-menu-body .menu-chapters a {
-    display: grid !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  translate: none !important;
+
+  /* IMPORTANT: menu closed = cannot intercept page taps */
+  pointer-events: none !important;
+}
+
+.full-menu.is-open .full-menu-body .menu-chapters {
+  pointer-events: auto !important;
+}
+
+.full-menu-body .menu-chapters a {
+  display: grid !important;
+  grid-template-columns: 42px 1fr !important;
+  align-items: center !important;
+
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 58px !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+
+  /* IMPORTANT */
+  pointer-events: none !important;
+}
+
+.full-menu.is-open .full-menu-body .menu-chapters a {
+  pointer-events: auto !important;
+}
 
   .full-menu-body .menu-utilities {
     display: block !important;
