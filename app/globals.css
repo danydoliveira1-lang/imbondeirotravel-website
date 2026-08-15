@@ -558,3 +558,20 @@ button:disabled{opacity:.6;cursor:not-allowed}
     touch-action: pan-y !important;
   }
 }
+/* BUSINESS SEED 002 — MOBILE MENU CLOSED-STATE SAFETY TEST */
+@media (max-width: 820px) {
+
+  .full-menu:not(.is-open) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .full-menu.is-open {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
