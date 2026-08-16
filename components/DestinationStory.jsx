@@ -160,38 +160,36 @@ const polygonPoints = (polygon) =>
   {ANGOLA_POLYGONS.map((polygon, index) => (
     <polygon
       key={index}
-      className="story-map-country"
+      className="story-map-angola-shape" 
       points={polygonPoints(polygon)}
     />
   ))}
 
   {(() => {
-    const [pinX, pinY] = projectPoint(x, y);
+  const [pinX, pinY] = projectPoint(x, y);
 
-    return (
-      <g
-        className="story-map-svg-pin"
-        transform={`translate(${pinX} ${pinY})`}
-      >
-        <circle className="story-map-svg-pin-halo" r="18" />
-        <circle className="story-map-svg-pin-dot" r="8" />
+  return (
+    <g
+      className="story-map-svg-pin"
+      transform={`translate(${pinX} ${pinY})`}
+    >
+      <circle className="story-map-svg-pin-halo" r="18" />
+      <circle className="story-map-svg-pin-dot" r="8" />
+
+      <g className="story-map-svg-label" transform="translate(24 -6)">
+        <text className="story-map-svg-province" x="0" y="0">
+          {destination.province}
+        </text>
+        <text className="story-map-svg-title" x="0" y="25">
+          {destination.title}
+        </text>
       </g>
-    );
-  })()}
+    </g>
+  );
+})()}
+          
 </svg>
-
-        <span
-          className="story-map-destination"
-          style={{
-            left: `${Math.max(7, Math.min(93, left))}%`,
-            top: `${Math.max(7, Math.min(93, top))}%`
-          }}
-        >
-          <i />
-          <strong>{destination.title}</strong>
-          <small>{destination.province}</small>
-        </span>
-
+ 
         <span className="story-map-country-name">ANGOLA</span>
 
         <span className="story-map-coordinates">
@@ -246,4 +244,44 @@ export default function DestinationStory({destination,onClose}){
       <section className="story-actions"><div><p className="eyebrow">Your Journey</p><h2>Make this destination part of your story.</h2></div><div><button type="button" className={`story-add ${has(itemId)?"selected":""}`} onClick={addDestination}>{has(itemId)?"✓ Added to My Journey":"+ Add to My Journey"}</button><button type="button" className="story-craft" onClick={craft}>Craft My Journey →</button></div></section>
     </main>
   </div>;
+}
+/* BUSINESS SEED 002.1B — CLEAN SVG ANGOLA LOCATOR */
+
+.story-map-angola-shape {
+  fill: rgba(32, 76, 61, 0.48);
+  stroke: rgba(215, 177, 95, 0.65);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.story-map-svg-pin-halo {
+  fill: rgba(217, 177, 95, 0.18);
+}
+
+.story-map-svg-pin-dot {
+  fill: #d9b15f;
+  stroke: rgba(255,255,255,.55);
+  stroke-width: 3;
+}
+
+.story-map-svg-province {
+  fill: rgba(255,255,255,.68);
+  font: 600 15px Inter, sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.story-map-svg-title {
+  fill: #fff;
+  font: 700 19px Inter, sans-serif;
+}
+
+@media (max-width: 800px) {
+  .story-map-svg-province {
+    font-size: 17px;
+  }
+
+  .story-map-svg-title {
+    font-size: 21px;
+  }
 }
