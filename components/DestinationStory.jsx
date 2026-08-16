@@ -120,7 +120,53 @@ function HeroMedia({ destination }) {
 }
 
 const formatDate=value=>new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"long",year:"numeric"}).format(new Date(`${value}T12:00:00`));
+function DestinationMap({ destination }) 
+{ const x = destination.mapLng ?? destination.lng;  
+ const y = destination.mapLat ?? destination.lat;
 
+  const minLng = 11.3;
+  const maxLng = 24.4;
+  const minLat = -18.35;
+  const maxLat = -4.15;
+
+  const left = ((x - minLng) / (maxLng - minLng)) * 100;
+  const top = ((maxLat - y) / (maxLat - minLat)) * 100;
+
+  return (
+    <div className="story-map-card">
+      <div className="story-map-angola">
+        <svg
+          viewBox="0 0 860 920"
+          className="story-map-angola-svg"
+          aria-label={`Location of ${destination.title} in Angola`}
+        >
+          <path
+            className="story-map-country"
+            d="M190 120 L330 85 L455 125 L590 118 L700 220 L720 390 L680 545 L595 690 L500 830 L355 795 L255 690 L205 520 L145 365 Z"
+          />
+        </svg>
+
+        <span
+          className="story-map-destination"
+          style={{
+            left: `${Math.max(7, Math.min(93, left))}%`,
+            top: `${Math.max(7, Math.min(93, top))}%`
+          }}
+        >
+          <i />
+          <strong>{destination.title}</strong>
+          <small>{destination.province}</small>
+        </span>
+
+        <span className="story-map-country-name">ANGOLA</span>
+
+        <span className="story-map-coordinates">
+          {destination.lat.toFixed(3)}, {destination.lng.toFixed(3)}
+        </span>
+      </div>
+    </div>
+  );
+}
 export default function DestinationStory({destination,onClose}){
   const {toggle,has}=useJourney();
   const closeRef=useRef(null);
@@ -153,7 +199,7 @@ export default function DestinationStory({destination,onClose}){
 
       <section className="story-details"><div><p className="eyebrow">Highlights</p><ul>{destination.highlights.map(h=><li key={h}>{h}</li>)}</ul></div><div><p className="eyebrow">Practical Details</p><dl><div><dt>Recommended stay</dt><dd>{destination.duration}</dd></div><div><dt>Best period</dt><dd>{copy.best}</dd></div><div><dt>Access</dt><dd>{copy.access}</dd></div><div><dt>Journey style</dt><dd>Private or curated small group</dd></div></dl></div></section>
 
-      <section className="story-map-section"><div><p className="eyebrow">Location</p><h2>Place it within your Angola journey.</h2><p>{destination.title} is located in {destination.province}. Imbondeiro coordinates the route, transfers and timing as part of your complete itinerary.</p></div><div className="story-map-card" role="img" aria-label={`Map location for ${destination.title}`}><span className="story-map-country">ANGOLA</span><span className="story-map-pin" style={{left:`${Math.max(12,Math.min(88,((destination.lng-11.5)/12)*100))}%`,top:`${Math.max(12,Math.min(88,((destination.lat+18)/14)*100))}%`}}>●<strong>{destination.title}</strong></span><small>{destination.lat.toFixed(3)}, {destination.lng.toFixed(3)}</small></div></section>
+      <section className="story-details"></section><section className="story-map-section"> <div><p className="eyebrow">Location</p><h2>Place it within your Angola journey.</h2><p>{destination.title} is located in {destination.province}. Imbondeiro coordinates the route, transfers and timing as part of your complete itinerary.</p></div><DestinationMap destination={destination} /></section><section className="story-gallery"></section> 
 
       <section className="story-gallery"><div className="story-section-heading"><p className="eyebrow">Visual Journal</p><h2>Atmosphere, landscape and detail.</h2></div><div className="story-gallery-grid">{gallery.map((src,i)=><figure key={`${src}-${i}`}><img src={src} alt={`${destination.title} travel inspiration ${i+1}`} loading="lazy"/><figcaption>{i===0?destination.title:"Angola through the Imbondeiro lens"}</figcaption></figure>)}</div></section>
 
