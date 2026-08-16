@@ -575,3 +575,151 @@ button:disabled{opacity:.6;cursor:not-allowed}
     pointer-events: auto !important;
   }
 }
+/* =========================================================
+   BUSINESS SEED 002.1 — DESTINATION LOCATION MAP
+   DestinationStory only — Hero / Explorer untouched
+   ========================================================= */
+
+.story-map-card {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid rgba(177, 138, 66, 0.22);
+  background:
+    radial-gradient(circle at 42% 38%, rgba(177, 138, 66, 0.12), transparent 32%),
+    linear-gradient(145deg, #102d25 0%, #071c17 100%);
+}
+
+.story-map-angola {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.story-map-angola::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+.story-map-angola-svg {
+  position: absolute;
+  width: min(72%, 520px);
+  height: 88%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+.story-map-country {
+  fill: rgba(44, 90, 73, 0.34);
+  stroke: rgba(215, 177, 95, 0.55);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 20px 35px rgba(0,0,0,.25));
+}
+
+.story-map-country-name {
+  position: absolute;
+  left: 50%;
+  top: 51%;
+  transform: translate(-50%, -50%);
+  color: rgba(255,255,255,.08);
+  font-family: Georgia, serif;
+  font-size: clamp(42px, 7vw, 92px);
+  letter-spacing: .18em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.story-map-destination {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 135px;
+  color: #fff;
+}
+
+.story-map-destination i {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: #d9b15f;
+  border: 3px solid rgba(255,255,255,.22);
+  box-shadow:
+    0 0 0 7px rgba(217,177,95,.10),
+    0 0 24px rgba(217,177,95,.38);
+}
+
+.story-map-destination strong {
+  display: inline-block;
+  padding: 6px 9px;
+  background: rgba(5, 25, 20, .72);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.story-map-destination small {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 4px 9px;
+  background: rgba(5, 25, 20, .48);
+  color: rgba(255,255,255,.66);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.story-map-coordinates {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  color: rgba(255,255,255,.52);
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+
+@media (max-width: 800px) {
+  .story-map-card,
+  .story-map-angola {
+    min-height: 420px;
+  }
+
+  .story-map-angola-svg {
+    width: 82%;
+    height: 82%;
+  }
+
+  .story-map-country-name {
+    font-size: clamp(34px, 12vw, 62px);
+    letter-spacing: .12em;
+  }
+
+  .story-map-destination {
+    min-width: 105px;
+  }
+
+  .story-map-destination strong {
+    font-size: 11px;
+  }
+
+  .story-map-destination small {
+    font-size: 8px;
+  }
+}
