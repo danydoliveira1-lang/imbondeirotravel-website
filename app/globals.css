@@ -796,3 +796,20 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .story-map-angola {
   background-image: none !important;
 }
+
+/* BUSINESS SEED 002.1D — ANGOLA COUNTRY LABEL POLISH */
+
+.story-map-country-name {
+  font-size: clamp(42px, 7vw, 78px) !important;
+  letter-spacing: 0.12em !important;
+  opacity: 0.10 !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .story-map-country-name {
+    font-size: 48px !important;
+    letter-spacing: 0.08em !important;
+    opacity: 0.09 !important;
+  }
+}
