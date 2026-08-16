@@ -782,3 +782,17 @@ button:disabled{opacity:.6;cursor:not-allowed}
     font-size: 21px;
   }
 }
+
+/* BUSINESS SEED 002.1C — REMOVE LEGACY DESTINATION MAP SILHOUETTE */
+
+.story-map-angola::before,
+.story-map-angola::after,
+.story-map-card::before,
+.story-map-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+.story-map-angola {
+  background-image: none !important;
+}
