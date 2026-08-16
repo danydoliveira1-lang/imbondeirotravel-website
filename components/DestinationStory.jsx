@@ -245,6 +245,7 @@ export default function DestinationStory({destination,onClose}){
     </main>
   </div>;
 }
+
 /* BUSINESS SEED 002.1B — CLEAN SVG ANGOLA LOCATOR */
 
 .story-map-angola-shape {
