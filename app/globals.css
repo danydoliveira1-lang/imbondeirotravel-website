@@ -723,3 +723,21 @@ button:disabled{opacity:.6;cursor:not-allowed}
     font-size: 8px;
   }
 }
+/* BUSINESS SEED 002.1A — ANGOLA MAP FULL-FRAME FIX */
+
+.story-map-angola-svg {
+  width: min(62%, 460px);
+  height: 78%;
+  left: 52%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 800px) {
+  .story-map-angola-svg {
+    width: 68%;
+    height: 74%;
+    left: 52%;
+    top: 55%;
+  }
+}
