@@ -275,7 +275,8 @@ function up(e) {
   e.currentTarget.releasePointerCapture?.(e.pointerId);
 }
   
-  function markerStyle(place){const p=project(place.mapLng ?? place.lng,place.mapLat ?? place.lat);return{left:`${p.x/MAP_W*100}%`,top:`${p.y/MAP_H*100}%`}}
+  function markerStyle(place){  const p = project( place.mapLng ?? place.lng, place.mapLat ?? place.lat ); return { left: `${p.x / MAP_W * 100}%`, top: `${p.y / MAP_H * 100}%`};
+}
 
   return <section className="explorer-section explorer-premium" id="explorer">
     <div className="section-intro centered"><p className="eyebrow">The Imbondeiro Explorer</p><h2>{t("whatCalls")}</h2><p>{t("choose")}</p></div>
