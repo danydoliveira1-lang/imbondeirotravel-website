@@ -295,7 +295,7 @@ function up(e) {
       <div className={`living-map mood-${choice.toLowerCase()}`} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
         <div className="map-chapter-label"><span>ANGOLA</span><small>{choice} collection</small></div>
         <div className="living-map-canvas" style={{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`}}>
-          <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="living-country" aria-label="Interactive map of Angola">
+          <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`}preserveAspectRatio="none"className="living-country" aria-label="Interactive map of Angola">
             <defs><linearGradient id="landLuxury" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#233d31"/><stop offset=".58" stopColor="#102a23"/><stop offset="1" stopColor="#071a16"/></linearGradient><filter id="landShadow"><feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#caa85b" floodOpacity=".24"/></filter><clipPath id="angolaClip">{ANGOLA_POLYGONS.map((polygon,i)=><path key={i} d={polygonPath(polygon)}/>)}</clipPath></defs>
             <g filter="url(#landShadow)">{ANGOLA_POLYGONS.map((polygon,i)=><path key={i} d={polygonPath(polygon)} className="living-land" fill="url(#landLuxury)"/>)}</g>
             <g clipPath="url(#angolaClip)" className="living-terrain"><path d="M90 250 C250 180 430 260 720 160"/><path d="M50 420 C250 330 490 470 810 330"/><path d="M70 610 C300 500 500 680 800 520"/><path d="M120 760 C330 650 560 790 760 700"/><path className="river" d="M275 155 C350 250 325 390 430 478 S575 660 515 830"/></g>
