@@ -49,10 +49,10 @@ export default function Header(){
     <a href="#explorer" onClick={close}><small>03</small><span>{t("explorer")}</span></a>
     <a href="#experiences" onClick={(e)=>{e.preventDefault();revealChapter("experiences")}}><small>04</small><span>{t("signature")}</span></a>
     <a href="#world" onClick={(e)=>{e.preventDefault();revealChapter("world")}}><small>05</small><span>{t("world")}</span></a>
-    <a href="#services" onClick={(e)=>{e.preventDefault();revealChapter("services")}}><small>06</small><span>{t("services")}</span></a>
+    <a href="#services" onClick={(e)=>{e.preventDefault();revealChapter("services");}}><small>06</small><span>{t("services")}</span></a>
     <a href="#journal" onClick={(e)=>{e.preventDefault();revealChapter("services","journal")}}><small>07</small><span>{t("journal")}</span></a>
     <a href="#about" onClick={(e)=>{e.preventDefault();revealChapter("about")}}><small>08</small><span>{t("story")}</span></a>
-    <a href="#partners" onClick={(e)=>{e.preventDefault();revealChapter("services","partners");}}><small>09</small><span>{t("partners")}</span></a>
+    <a href="#partners" onClick={(e)=>{e.preventDefault();revealChapter("partners");}}><small>09</small><span>{t("partners")}</span></a>
     <a href="#contact" onClick={(e)=>{e.preventDefault();revealChapter("contact")}}><small>10</small><span>Craft My Journey</span></a>
    </nav>
    <aside className="menu-utilities">
