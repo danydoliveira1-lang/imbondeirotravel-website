@@ -316,12 +316,127 @@ function up(e) {
       </div>
 
       <aside className="living-journey" id="my-journey">
-        <div className="journey-title"><span>▣</span><div><strong>{t("journey").toUpperCase()}</strong><small>{t("selectedDestinations")}</small></div><b>{journey.length}</b></div>
-        <div className="journey-list">{journey.length?journey.map((d,i)=><article key={d.id}><img src={d.image} alt=""/><span><small>{i+1}</small><strong>{d.title}</strong><em>{d.province || d.meta || d.category || "Selected experience"}</em></span><button onClick={()=>toggleJourney(d)}>×</button></article>):<div className="journey-empty"><span>⌖</span><strong>{t("empty")}</strong><p>{t("emptyHelp")}</p></div>}</div>
-        <div className="journey-smart">{summary.estimatedDays&&<span><strong>{t("duration")}:</strong> about {summary.estimatedDays} days<br/></span>}{summary.categories.length>0&&<span><strong>{t("travelStyle")}:</strong> {summary.categories.join(" · ")}</span>}</div><div className={`journey-awake ${journey.length>=3?"ready":""}`}><h3>{journey.length>=3?t("shape"):t("keep")}</h3><p>{journey.length>=3?`You’ve selected ${journey.length} inspiring destinations.`:t("shapeHelp")}</p><div className="journey-progress"><i className={journey.length>0?"on":""}/><i className={journey.length>1?"on":""}/><i className={journey.length>2?"on":""}/></div><button className="btn gold" type="button" onClick={craft}>{t("craft")} →</button></div>
-      </aside>
+  <div className="journey-title">
+    <span>✦</span>
+    <div>
+      <strong>YOUR JOURNEY</strong>
+      <small>
+        {journey.length
+          ? "Angola is beginning to take shape."
+          : "Every remarkable journey begins with one place."}
+      </small>
     </div>
+    <b>{journey.length}</b>
+  </div>
 
+  <div className="journey-list">
+    {journey.length ? (
+      journey.map((d, i) => (
+        <article key={d.id} className="journey-card">
+          <img src={d.image} alt={d.title} />
+
+          <span className="journey-card-copy">
+            <small>{String(i + 1).padStart(2, "0")}</small>
+
+            <strong>{d.title}</strong>
+
+            <em>
+              {d.province || d.meta || "Angola"}
+              {d.category ? ` · ${d.category}` : ""}
+            </em>
+
+            {d.note && <p>“{d.note}”</p>}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => toggleJourney(d)}
+            aria-label={`Remove ${d.title} from your journey`}
+          >
+            ×
+          </button>
+        </article>
+      ))
+    ) : (
+      <div className="journey-empty">
+        <span>✦</span>
+        <strong>Begin with the place that speaks to you.</strong>
+        <p>
+          Explore Angola and save the destinations that feel right for your
+          journey.
+        </p>
+      </div>
+    )}
+  </div>
+
+  {journey.length > 0 && (
+    <div className="journey-smart">
+      {summary.estimatedDays && (
+        <span>
+          <strong>{t("duration")}:</strong> about {summary.estimatedDays} days
+        </span>
+      )}
+
+      {summary.categories.length > 0 && (
+        <span>
+          <strong>{t("travelStyle")}:</strong>{" "}
+          {summary.categories.join(" · ")}
+        </span>
+      )}
+    </div>
+  )}
+
+  <div className={`journey-awake ${journey.length >= 3 ? "ready" : ""}`}>
+    {journey.length > 0 ? (
+      <>
+        <h3>YOUR JOURNEY, YOUR RHYTHM.</h3>
+
+        <p>
+          Add the places that speak to you. When you're ready, we'll turn them
+          into one seamless itinerary.
+        </p>
+
+        <div
+          className="journey-progress"
+          aria-label={`${journey.length} destinations selected`}
+        >
+          <i className={journey.length > 0 ? "on" : ""} />
+          <i className={journey.length > 1 ? "on" : ""} />
+          <i className={journey.length > 2 ? "on" : ""} />
+        </div>
+
+        <div className="journey-actions">
+          <button
+            className="btn story-link"
+            type="button"
+            onClick={() => {
+              document
+                .getElementById("imbondeiro-explorer")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          >
+            Continue Exploring
+          </button>
+
+          <button className="btn gold" type="button" onClick={craft}>
+            CRAFT MY JOURNEY →
+          </button>
+        </div>
+      </>
+    ) : (
+      <>
+        <h3>THE FIRST PLACE IS YOURS TO CHOOSE.</h3>
+
+        <p>
+          Wander through Angola, discover what draws you in, and begin shaping
+          something personal.
+        </p>
+      </>
+    )}
+  </div>
+</aside>
+</div>
+      
     <div className="living-story"><img src={selected.image} alt={selected.title}/><div><p className="eyebrow">{selected.province} · {selected.category}</p><h3>{selected.title}</h3><p>{selected.description}</p><dl><div><dt>{t("recommended")}</dt><dd>{selected.duration}</dd></div><div><dt>{t("note")}</dt><dd>“{selected.note}”</dd></div></dl><div className="living-story-actions"><button className="btn gold" onClick={()=>toggle(selected.id)}>{has(`destination:${selected.id}`)?t("remove"):t("add")}</button><button className="btn story-link" onClick={()=>setStoryId(selected.id)}>Discover the full story →</button></div></div></div>
 
     <div className="explorer-benefits" aria-label="Explorer benefits">
