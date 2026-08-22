@@ -820,3 +820,126 @@ button:disabled{opacity:.6;cursor:not-allowed}
     min-height: 70vh;
   }
 }
+
+/* =========================================================
+   IMBONDEIRO 2026 — EXPLORER BRAND REFINEMENT
+   Forest Green #0B4A32
+   Heritage Gold #C6A15B
+   Ivory #F7F4ED
+   ========================================================= */
+
+/* LEFT — destination discovery */
+.explorer-premium .living-left {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(22, 82, 61, 0.97) 0%,
+      rgba(16, 67, 51, 0.96) 55%,
+      rgba(11, 58, 45, 0.98) 100%
+    );
+  border-color: rgba(198, 161, 91, 0.38);
+  box-shadow:
+    0 24px 55px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(247, 244, 237, 0.045);
+}
+
+/* Destination cards — slightly lighter than their panel */
+.explorer-premium .living-left .living-card {
+  background:
+    linear-gradient(
+      125deg,
+      rgba(247, 244, 237, 0.085),
+      rgba(247, 244, 237, 0.025)
+    );
+  border-color: rgba(198, 161, 91, 0.20);
+}
+
+.explorer-premium .living-left .living-card:hover {
+  border-color: rgba(198, 161, 91, 0.62);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.20);
+}
+
+.explorer-premium .living-left .living-card.active {
+  background:
+    linear-gradient(
+      125deg,
+      rgba(198, 161, 91, 0.19),
+      rgba(247, 244, 237, 0.055)
+    );
+  border-color: rgba(198, 161, 91, 0.72);
+}
+
+/* CENTRE — keep the map cinematic.
+   We deliberately do NOT override .living-map here. */
+
+
+/* RIGHT — the traveller's private Journey space */
+.explorer-premium .living-journey {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(11, 74, 50, 0.98) 0%,
+      rgba(8, 57, 42, 0.98) 58%,
+      rgba(5, 42, 33, 0.99) 100%
+    );
+  border-color: rgba(198, 161, 91, 0.42);
+  box-shadow:
+    0 26px 60px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(247, 244, 237, 0.05);
+}
+
+/* Journey heading */
+.explorer-premium .journey-title strong {
+  color: #F7F4ED;
+}
+
+.explorer-premium .journey-title small {
+  color: rgba(247, 244, 237, 0.67);
+}
+
+.explorer-premium .journey-title > span,
+.explorer-premium .journey-title > b {
+  color: #C6A15B;
+}
+
+/* Selected destinations */
+.explorer-premium .journey-card {
+  border-color: rgba(198, 161, 91, 0.18);
+  background: rgba(247, 244, 237, 0.035);
+}
+
+/* Journey summary */
+.explorer-premium .journey-smart {
+  color: rgba(247, 244, 237, 0.72);
+  border-color: rgba(198, 161, 91, 0.18);
+}
+
+/* Emotional finale */
+.explorer-premium .journey-awake {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(247, 244, 237, 0.045),
+      rgba(198, 161, 91, 0.055)
+    );
+  border-color: rgba(198, 161, 91, 0.26);
+}
+
+.explorer-premium .journey-awake h3 {
+  color: #F7F4ED;
+}
+
+.explorer-premium .journey-awake p {
+  color: rgba(247, 244, 237, 0.72);
+}
+
+/* Progress dots */
+.explorer-premium .journey-progress i {
+  border-color: rgba(198, 161, 91, 0.48);
+}
+
+.explorer-premium .journey-progress i.on {
+  background: #C6A15B;
+  border-color: #C6A15B;
+  box-shadow: 0 0 12px rgba(198, 161, 91, 0.22);
+}
