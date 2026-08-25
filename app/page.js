@@ -1,3 +1,4 @@
+import PublicTours from "../components/PublicTours";
 import Header from "../components/Header";
 import HeroEngine from "../components/HeroEngine";
 import Explorer from "../components/Explorer";
@@ -9,21 +10,13 @@ import { JourneyProvider } from "../components/JourneyContext";
 import { LanguageProvider } from "../components/LanguageContext";
 import { CurrencyProvider } from "../components/CurrencyContext";
 
-const experiences=[
- {id:"signature:luanda-city",title:"Luanda City Welcome",meta:"4 hours · Culture",category:"Culture",days:.5,img:"/assets/highlight-luanda.jpg",text:"A private introduction to Angola’s capital, its history, bay, architecture and living culture."},
- {id:"signature:kissama",title:"Kissama Safari Day",meta:"Full day · Wildlife",category:"Wildlife",days:1,img:"/assets/highlight-kissama.jpg",text:"A guided escape into Angola’s natural landscapes with wildlife viewing and thoughtful local support."},
- {id:"signature:kalandula-malanje",title:"Kalandula Falls & Malanje",meta:"2 days · Nature",category:"Nature",days:2,img:"/assets/highlight-kalandula.jpg",text:"Feel the power of Kalandula and discover the striking landscapes of Pedras Negras."},
- {id:"signature:culture-dance",title:"Angolan Culture & Dance",meta:"Culture · Cuisine",category:"Culture",days:1,img:"/assets/highlight-culture.jpg",text:"Rhythm, heritage and hospitality brought together in an experience rooted in Angola."},
- {id:"signature:mussulo",title:"Mussulo Island Escape",meta:"Full day · Coast",category:"Coast",days:1,img:"/assets/mussulo-luxury-island-escape.png",text:"Calm water, fresh seafood and a slower rhythm only a short journey from Luanda."},
- {id:"signature:kwanza",title:"Kwanza River Journey",meta:"8 hours · Heritage",category:"Heritage",days:1,img:"/assets/kwanza-river-boat.png",text:"River tranquillity, cultural history and extraordinary viewpoints south of the capital."}
-];
 const world=["South Africa","Zanzibar","Morocco","Seychelles","Portugal","France","Italy","Greece","Dubai","Maldives","Bali","Thailand","Brazil","New York","Caribbean"];
 
 export default function Page(){return <LanguageProvider><CurrencyProvider><JourneyProvider><><Header/><main id="main-content">
  <HeroEngine/>
  <section id="angola" className="meet section-pad"><div className="meet-image"><img src="/assets/kalandula-falls.jfif" alt="Kalandula Falls in Angola"/></div><div className="meet-copy"><p className="eyebrow">Meet Angola</p><h2>Some places are visited.<br/><em>Others are discovered.</em></h2><p className="lead">Angola is a land of extraordinary contrasts—Atlantic coastlines, dramatic mountain passes, powerful waterfalls, wildlife and vibrant traditions.</p><p>Every region reveals another chapter of a country still wonderfully undiscovered. Imbondeiro Travel introduces it with local knowledge, careful planning and genuine hospitality.</p><a className="text-link dark" href="#explorer">Explore the living map <span>→</span></a></div></section>
  <Explorer/>
- <section id="experiences" className="section-pad experiences menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro"><p className="eyebrow">Experiences Worth Remembering</p><h2>Signature Angola journeys</h2><p>Thoughtfully curated beginnings for travellers seeking nature, culture, coast and connection. Add any journey to your personal collection and keep exploring.</p></div><div className="experience-grid">{experiences.map((x,i)=><article key={x.title}><div className="card-image"><img src={x.img} alt={x.title}/><span>{String(i+1).padStart(2,'0')}</span></div><p className="card-meta">{x.meta}</p><h3>{x.title}</h3><p>{x.text}</p><JourneyAddButton item={{...x,image:x.img,province:"Signature Angola Journey",kind:"tour"}} label="Add Tour to My Journey"/></article>)}</div></section>
+ <section id="experiences" className="section-pad experiences menu-reveal-section" aria-hidden="true"><HideChapterButton /><div className="section-intro"><p className="eyebrow">Experiences Worth Remembering</p><h2>Signature Angola journeys</h2><p>Thoughtfully curated beginnings for travellers seeking nature, culture, coast and connection. Add any journey to your personal collection and keep exploring. </p></div><PublicTours /></section>
  <SignatureDepartures/>
  <section id="world" className="world section-pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro light"><p className="eyebrow">Beyond Angola</p><h2>The World Collection</h2><p>Handpicked destinations for honeymoons, family journeys, cultural escapes and extraordinary celebrations.</p></div><div className="world-grid">{world.map((x,i)=>{const item={id:`world:${x.toLowerCase().replaceAll(' ','-')}`,title:x,category:"Worldwide",province:"The World Collection",kind:"world",days:0,image:"/assets/hero-kalandula.jpg"};return <article key={x}><span>{String(i+1).padStart(2,'0')}</span><h3>{x}</h3><p>Curated journeys, selected stays and personalised planning.</p><JourneyAddButton item={item}/></article>})}</div></section>
  <section id="services" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro light"><p className="eyebrow">Services</p><h2>Travel services shaped around every journey.</h2><p>From private travel and destination experiences to corporate support and tailored arrangements, Imbondeiro Travel coordinates every detail with care.</p></div></section>
