@@ -349,36 +349,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
   #contact button[type="submit"]{order:1}
   .contact-email-line{font-size:1rem;line-height:1.6;overflow-wrap:anywhere}
 }
-  /* =========================================================
-   LIVING BAOBAB — MOBILE HERO CINEMATIC FRAMING
-   Fill the complete mobile hero with cinematic MP4 video.
-   Desktop remains unchanged.
-   ========================================================= */
-
-@media (max-width: 640px) {
-  .hero-motion-only .hero-local-video.hero-fit-cover {
-    position: absolute;
-    inset: auto;
-    left: 50%;
-    top: 50%;
-    width: 177.78svh;
-    height: 100svh;
-    min-width: 100vw;
-    min-height: 56.25vw;
-    object-fit: cover;
-    object-position: center center;
-    transform: translate(-50%, -50%);
-    background: #061713;
-  }
-
-  .hero-motion-only .hero-local-video.hero-fit-contain {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center center;
-    background: #061713;
-  }
-}
+  
 /* =========================================================
    BUSINESS SEED 002 — DESTINATION MEDIA MOBILE OVERRIDE
    ========================================================= */
@@ -951,16 +922,16 @@ button:disabled{opacity:.6;cursor:not-allowed}
   border-color: #C6A15B;
   box-shadow: 0 0 12px rgba(198, 161, 91, 0.22);
 }
-/* MOBILE HERO FINAL FILL OVERRIDE */
+/* PROJECT BAOBAB — MOBILE HERO MASTER */
 @media (max-width: 640px) {
-  .hero-motion-only {
-    position: relative;
+
+  .hero.hero-motion-only {
     height: 100svh;
     min-height: 700px;
     overflow: hidden;
   }
 
-  .hero-motion-only .hero-media {
+  .hero.hero-motion-only .hero-media {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -968,13 +939,13 @@ button:disabled{opacity:.6;cursor:not-allowed}
     overflow: hidden;
   }
 
-  .hero-motion-only .hero-local-video.hero-fit-cover {
+  .hero.hero-motion-only .hero-local-video {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    min-width: 100%;
-    min-height: 100%;
+    min-width: 0;
+    min-height: 0;
     transform: none;
     object-fit: cover;
     object-position: center center;
