@@ -21,7 +21,7 @@ const journeyMatches = {
 const heroMedia = {
   kalandula: {
   type: "video",
-  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls.mp4"
+  src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls-iphone-test.mp4"
 },
 kissama: {
   type: "video",
