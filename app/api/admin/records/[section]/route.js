@@ -7,7 +7,7 @@ export async function POST(request, { params }) {
   try {
     const { section } = await params;
     const record = await request.json();
-    const payload = { ...record, id: record.id || crypto.randomUUID(), updated_at: new Date().toISOString() };
+    const payload = { ...record, id: record.id || crypto.randomUUID(), updated_at: new Date().toISOString() };if (section === "departures" && !payload.departure_date && payload.start_date) { payload.departure_date = payload.start_date;}
     const result = await supabaseRequest(section, { method: "POST", query: "on_conflict=id", body: payload });
     return NextResponse.json({ record: result?.[0] || payload });
   } catch (error) { return NextResponse.json({ error: error.message }, { status: 500 }); }
