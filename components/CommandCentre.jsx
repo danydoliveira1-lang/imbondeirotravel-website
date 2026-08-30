@@ -98,7 +98,7 @@ export default function CommandCentre() {
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
       {["payments","operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
     </main>
-    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} onClose={() => setModal(null)} onSave={saveRecord} />}
+    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
 }
 
@@ -126,7 +126,7 @@ function Manager({ section, meta, rows, tours, departures, query, onNew, onEdit,
   return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td><div className="cc-row-actions"><button onClick={()=>onEdit(row)}>Edit</button><button className="danger" onClick={()=>onDelete(row.id)}>Delete</button></div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
 }
 
-function RecordModal({ section, meta, initial, tours, departures, customers, onClose, onSave }) {
+function RecordModal({ section, meta, initial, tours, departures, customers, reservations, onClose, onSave }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
   const [record, setRecord] = useState({ ...blank, ...initial });
   const numeric = ["price","maximum_guests","reserved_guests","held_guests","travellers","total"];
