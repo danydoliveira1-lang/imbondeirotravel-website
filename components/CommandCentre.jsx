@@ -111,6 +111,7 @@ function Login({ onLogin }) {
 }
 
 function Dashboard({ stats, data, open, navigate }) {
+  const attentionReservations = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status));
   const cards = [["Today’s enquiries", stats.enquiries, "+18% this week"], ["Reservations on hold", stats.held, "Require follow-up"], ["Upcoming departures", stats.upcoming, "Next 90 days"], ["Available seats", stats.seats, "Across live departures"], ["Confirmed revenue", money(stats.revenue), "Current records"]];
   return <div className="cc-dashboard">
     <section className="cc-welcome"><div><span>IMBONDEIRO COMMAND CENTRE</span><h2>Elegant for the traveller.<br/>Powerful for the team.</h2><p>Your Phase 5 workspace is ready. All changes made here are saved to the live Supabase database and published to the website.</p></div><div className="cc-orbit"><span>LIVE</span><strong>{stats.upcoming}</strong><small>departures</small></div></section>
