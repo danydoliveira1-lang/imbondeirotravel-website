@@ -42,6 +42,7 @@ const moduleMeta = {
   reservations: { title: "Reservation Manager", singular: "Reservation", fields: ["customer", "departure_id", "journey", "travellers", "status", "total", "consultant"] },
   customers: { title: "Customer CRM", singular: "Customer", fields: ["name", "email", "phone", "language", "preference", "notes"] },
   media: { title: "Media Library", singular: "Media Item", fields: ["name", "type", "reference", "usage", "status"] },
+  payments: { title: "Payments", singular: "Payment", fields: ["payment_type", "amount", "currency", "payment_method", "status", "paid_at"] }, 
 };
 
 function money(value) { return new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(value || 0)); }
@@ -86,7 +87,7 @@ export default function CommandCentre() {
   return <div className="cc-shell">
     <aside className="cc-sidebar">
       <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
-      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{["payments","operations","reports"].includes(key) && <small>Soon</small>}</button>)}</nav>
+      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{["operations","reports"].includes(key) && <small>Soon</small>}</button>)}</nav> 
       <div className="cc-profile"><div className="cc-avatar">DN</div><div><strong>Daniela</strong><span>Administrator</span></div><button title="Sign out" onClick={async () => { await fetch("/api/admin/logout",{method:"POST"}); setSignedIn(false); }}>↪</button></div>
     </aside>
 
@@ -96,7 +97,7 @@ export default function CommandCentre() {
       {notice && <div className="cc-notice">✓ {notice}</div>}
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
-      {["payments","operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
+      {["operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
