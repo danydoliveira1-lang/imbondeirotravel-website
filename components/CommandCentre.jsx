@@ -94,7 +94,7 @@ export default function CommandCentre() {
       <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title="Notifications">♢<b>3</b></button></div></header>
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
-      {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section) => { setActive(section); setModal({ section, record: {} }); }} navigate={setActive} />}
+      {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
       {["payments","operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
     </main>
