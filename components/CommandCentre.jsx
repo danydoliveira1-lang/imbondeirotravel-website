@@ -87,7 +87,7 @@ export default function CommandCentre() {
   return <div className="cc-shell">
     <aside className="cc-sidebar">
       <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
-      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{["operations","reports"].includes(key) && <small>Soon</small>}</button>)}</nav> 
+      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{["reports"].includes(key) && <small>Soon</small>}</button>)}</nav> 
       <div className="cc-profile"><div className="cc-avatar">DN</div><div><strong>Daniela</strong><span>Administrator</span></div><button title="Sign out" onClick={async () => { await fetch("/api/admin/logout",{method:"POST"}); setSignedIn(false); }}>↪</button></div>
     </aside>
 
