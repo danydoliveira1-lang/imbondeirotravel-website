@@ -138,6 +138,7 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const submit = e => { e.preventDefault(); const { _source, ...payload } = record; if (section === "payments") payload.paid_at = payload.paid_at ? new Date(payload.paid_at).toISOString() : null; onSave(section, payload); };
   const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
   const customerPayments = section === "customers" && initial.id ? (payments || []).filter(p => p.customer_id === initial.id) : [];
+  const customerPaymentHistory = customerPayments.map(p => ({ payment: p, reservation: (reservations || []).find(r => r.id === p.reservation_id) }));
   const customerTravellers = customerBookings.reduce((sum, r) => sum + Number(r.travellers || 0), 0);
   const customerValue = customerBookings.reduce((sum, r) => sum + Number(r.total || 0), 0);
   const upcomingJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") >= new Date()).sort((a, b) => new Date(a.departure.start_date) -new Date(b.departure.start_date));
