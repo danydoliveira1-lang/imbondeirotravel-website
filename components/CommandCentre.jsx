@@ -140,7 +140,7 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const customerPayments = section === "customers" && initial.id ? (payments || []).filter(p => p.customer_id === initial.id) : [];
   const customerPaymentHistory = customerPayments.map(p => ({ payment: p, reservation: (reservations || []).find(r => r.id === p.reservation_id) }));
   const customerTravellers = customerBookings.reduce((sum, r) => sum + Number(r.travellers || 0), 0);
-  const customerValue = customerBookings.reduce((sum, r) => sum + Number(r.total || 0), 0);
+  const customerValue = customerPayments.filter(p => p.status === "Paid").reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const upcomingJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") >= new Date()).sort((a, b) => new Date(a.departure.start_date) -new Date(b.departure.start_date));
   const nextJourney = upcomingJourneys[0] || null;
   const laterJourneys = upcomingJourneys.slice(1);
