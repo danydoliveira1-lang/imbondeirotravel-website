@@ -206,6 +206,40 @@ return <div className="cc-dashboard">
       <small>Committed value not yet received</small>
     </article>
   </section>
+  <section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Sales pipeline</span>
+      <h3>Reservation Pipeline</h3>
+    </div>
+    <span>{pipelineBookings} active booking{pipelineBookings === 1 ? "" : "s"}</span>
+  </div>
+
+  <div className="cc-activity">
+    {reservationPipeline.map(stage => (
+      <div key={stage.status}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{stage.status}</strong>
+          <span>
+            {stage.bookings} booking{stage.bookings === 1 ? "" : "s"} ·{" "}
+            {stage.travellers} traveller{stage.travellers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <b>{stage.bookings}</b>
+      </div>
+    ))}
+  </div>
+
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Pipeline total</span>
+      <h3>{pipelineTravellers} traveller{pipelineTravellers === 1 ? "" : "s"}</h3>
+    </div>
+  </div>
+</section>
 </div>;
 }
 
