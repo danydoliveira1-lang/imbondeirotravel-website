@@ -170,8 +170,42 @@ const grossCashReceived = paidTransactions .filter(p => p.payment_type !== "Refu
 const netCashReceived = grossCashReceived - refunds;
 const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
 
-return <div className="cc-dashboard"><section className="cc-welcome"><div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2> <p>Live performance reporting across bookings, customers, departures and payments.</p></div>  
-  <div className="cc-orbit"> <span>LIVE</span> <strong>{data.reservations.length}</strong> <small>reservations</small> </div> </section> </div>;
+return <div className="cc-dashboard">
+  <section className="cc-welcome">
+    <div>
+      <span>EXECUTIVE REPORTING</span>
+      <h2>From activity.<br/>To management insight.</h2>
+      <p>Live performance reporting across bookings, customers, departures and payments.</p>
+    </div>
+    <div className="cc-orbit">
+      <span>LIVE</span>
+      <strong>{data.reservations.length}</strong>
+      <small>reservations</small>
+    </div>
+  </section>
+  <section className="cc-stat-grid">
+    <article>
+      <span>Booked Revenue</span>
+      <strong>{money(bookedRevenue)}</strong>
+      <small>Committed reservation value</small>
+    </article>
+    <article>
+      <span>Net Cash Received</span>
+      <strong>{money(netCashReceived)}</strong>
+      <small>Paid transactions less refunds</small>
+    </article>
+    <article>
+      <span>Refunds</span>
+      <strong>{money(refunds)}</strong>
+      <small>Completed refund transactions</small>
+    </article>
+    <article>
+      <span>Outstanding Value</span>
+      <strong>{money(outstandingValue)}</strong>
+      <small>Committed value not yet received</small>
+    </article>
+  </section>
+</div>;
 }
 
 function Manager({ section, meta, rows, tours, departures, reservations, query, onNew, onEdit, onDelete }) {
