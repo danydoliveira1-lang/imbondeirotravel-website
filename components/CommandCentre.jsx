@@ -184,12 +184,40 @@ return journeys;  }, {})).sort((a, b) =>
   b.travellers - a.travellers ||
   b.bookedValue - a.bookedValue
 );  
+const customerPerformance = data.customers.map(customer => {
+const reservations = data.reservations.filter( r => r.customer_id === customer.id
+  );
 
+  const reservationIds = new Set( reservations.map(r => r.id)
+  );
+
+  const payments = data.payments.filter(
+    p => p.customer_id === customer.id || reservationIds.has(p.reservation_id)
+  );
+
+  const lifetimeValue = payments
+    .filter(p => p.status === "Paid")
+    .reduce( (sum, p) =>  sum + (p.payment_type === "Refund" ? -Number(p.amount || 0)
+    : Number(p.amount || 0)),  0  );
+
+  return {
+    id: customer.id,
+    name: customer.name,
+    bookings: reservations.length,
+    travellers: reservations.reduce(
+      (sum, r) => sum + Number(r.travellers || 0),  0 ),
+    
+    lifetimeValue
+  };
+}).sort((a, b) =>
+  b.lifetimeValue - a.lifetimeValue ||
+  b.bookings - a.bookings ||
+  b.travellers - a.travellers
+);
+  
   return <div className="cc-dashboard">
   <section className="cc-welcome">
-    <div>
-      <span>EXECUTIVE REPORTING</span>
-      <h2>From activity.<br/>To management insight.</h2>
+    <div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2>
       <p>Live performance reporting across bookings, customers, departures and payments.</p>
     </div>
     <div className="cc-orbit">
