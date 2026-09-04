@@ -143,82 +143,22 @@ today.setHours(0, 0, 0, 0);
   const departureReadiness = upcomingDepartures.map(departure => {
   const reservations = data.reservations.filter( r => r.departure_id === departure.id  );
 
-  const reservationIds = new Set(reservations.map(r => r.id));
-  const payments = data.payments.filter( p => reservationIds.has(p.reservation_id) );
+const reservationIds = new Set(reservations.map(r => r.id));
+const payments = data.payments.filter( p => reservationIds.has(p.reservation_id) );
+const activeReservations = reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
 
-  return { departure, reservations, payments };
-});
+const guestReady = activeReservations.length > 0;
+const paidAmount = payments .filter(p => p.status === "Paid") .reduce( (sum, p) => sum + (p.payment_type === "Refund" ? -Number(p.amount || 0) : Number(p.amount || 0)), 0 );
+
+const paymentReady = paidAmount > 0;
+const guideReady = Boolean(  departure.guide && departure.guide.trim());
+const ready = guestReady && paymentReady && guideReady;
+
+return { departure, reservations, payments, activeReservations, paidAmount, guestReady, paymentReady, guideReady, ready};});
   
-  return <div className="cc-dashboard">
-    <section className="cc-welcome">
-      <div>
-        <span>OPERATIONS CONTROL</span>
-        <h2>Every journey.<br/>One operational view.</h2>
-        <p>Live readiness across departures, travellers, capacity and outstanding actions.</p>
-      </div>
-      <div className="cc-orbit">
-        <span>LIVE</span>
-        <strong>{upcomingDepartures.length}</strong>
-        <small>upcoming departures</small>
-      </div>
-    </section>
-
-    <section className="cc-stat-grid">
-      <article>
-        <span>Upcoming departures</span>
-        <strong>{upcomingDepartures.length}</strong>
-        <small>Future active journeys</small>
-      </article>
-      <article>
-        <span>Travellers expected</span>
-        <strong>{travellersExpected}</strong>
-        <small>Reserved guests</small>
-      </article>
-      <article>
-        <span>Seats available</span>
-        <strong>{seatsAvailable}</strong>
-        <small>Across upcoming departures</small>
-      </article>
-      <article>
-        <span>Needs attention</span>
-        <strong>{attentionItems}</strong>
-        <small>Open reservation actions</small>
-      </article>
-    </section>
-
-    <section className="cc-panel">
-      <div className="cc-panel-head">
-        <div>
-          <span className="cc-eyebrow">Journey control</span>
-          <h3>Upcoming Journey Operations</h3>
-        </div>
-        <span>{upcomingDepartures.length} departure{upcomingDepartures.length === 1 ? "" : "s"}</span>
-      </div>
-
-      <div className="cc-activity">
-        {upcomingDepartures.map(d => {
-          const available = Math.max(
-            0,
-            Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)
-          );
-
-          return <div key={d.id}>
-            <span className="cc-dot"></span>
-            <div>
-              <strong>{d.title}</strong>
-              <span>{d.start_date} · {d.guide || "Guide not assigned"}</span>
-            </div>
-            <em className={`cc-status ${String(d.status || "").toLowerCase().replaceAll(" ","-")}`}>
-              {d.status}
-            </em>
-            <b>{d.reserved_guests || 0} booked · {d.held_guests || 0} held · {available} available</b>
-          </div>;
-        })}
-
-        {upcomingDepartures.length === 0 && <p>No upcoming departures found.</p>}
-      </div>
-    </section>
-  </div>;
+  return <div className="cc-dashboard"> <section className="cc-welcome"><div> <span>OPERATIONS CONTROL</span><h2>Every journey.<br/>One operational view.</h2><p>Live readiness across departures, travellers, capacity and outstanding actions.</p></div><div className="cc-orbit"><span>LIVE</span> <strong>{upcomingDepartures.length}</strong> <small>upcoming departures</small> </div></section><section className="cc-stat-grid"><article> <span>Upcoming departures</span> <strong>{upcomingDepartures.length}</strong> <small>Future active journeys</small> </article><article> <span>Travellers expected</span> <strong>{travellersExpected}</strong> <small>Reserved guests</small> </article><article> <span>Seats available</span> <strong>{seatsAvailable}</strong><small>Across upcoming departures</small> </article><article><span>Needs attention</span> <strong>{attentionItems}</strong><small>Open reservation actions</small></article> </section> <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Journey control</span><h3>Upcoming Journey Operations</h3> </div><span>{upcomingDepartures.length} departure{upcomingDepartures.length === 1 ? "" : "s"}</span> </div> <div className="cc-activity"> {upcomingDepartures.map(d => {
+  const available = Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0) );
+  return <div key={d.id}><span className="cc-dot"></span><div><strong>{d.title}</strong> <span>{d.start_date} · {d.guide || "Guide not assigned"}</span></div><em className={`cc-status ${String(d.status || "").toLowerCase().replaceAll(" ","-")}`}>{d.status}</em><b>{d.reserved_guests || 0} booked · {d.held_guests || 0} held · {available} available</b></div>;})} {upcomingDepartures.length === 0 && <p>No upcoming departures found.</p>}</div></section> </div>;
 }
 
 function Manager({ section, meta, rows, tours, departures, reservations, query, onNew, onEdit, onDelete }) {
