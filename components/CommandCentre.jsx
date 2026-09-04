@@ -215,6 +215,48 @@ const reservations = data.reservations.filter( r => r.customer_id === customer.i
   b.travellers - a.travellers
 );
   
+const capacityPerformance = data.departures
+  .filter(departure => departure.status !== "cancelled")
+  .map(departure => {
+    const capacity = Number(departure.maximum_guests || 0);
+    const booked = Number(departure.reserved_guests || 0);
+    const held = Number(departure.held_guests || 0);
+    const available = Math.max(0, capacity - booked - held);
+
+    const occupancy =
+      capacity > 0
+        ? Math.round((booked / capacity) * 100)
+        : 0;
+
+    return {
+      id: departure.id,
+      title: departure.title,
+      startDate: departure.start_date,
+      capacity,
+      booked,
+      held,
+      available,
+      occupancy
+    };
+  })
+  .sort((a, b) =>
+    b.occupancy - a.occupancy ||
+    new Date(a.startDate || 0) - new Date(b.startDate || 0)
+  );
+
+const totalCapacity = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.capacity, 0 );
+const totalBookedSeats = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.booked,  0 );
+const totalHeldSeats = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.held,  0 );
+const totalAvailableSeats = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.available, 0 );
+const overallOccupancy =
+  totalCapacity > 0
+    ? Math.round((totalBookedSeats / totalCapacity) * 100)
+    : 0;
+  
   return <div className="cc-dashboard">
   <section className="cc-welcome">
     <div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2>
