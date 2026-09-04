@@ -310,6 +310,34 @@ const reservations = data.reservations.filter( r => r.customer_id === customer.i
     ))}
   </div>
 </section>
+
+<section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Customer performance</span>
+      <h3>Customer Value & Activity</h3>
+    </div>
+    <span>{customerPerformance.length} customer{customerPerformance.length === 1 ? "" : "s"}</span>
+  </div>
+
+  <div className="cc-activity">
+    {customerPerformance.map(customer => (
+      <div key={customer.id}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{customer.name}</strong>
+          <span>
+            {customer.bookings} booking{customer.bookings === 1 ? "" : "s"} ·{" "}
+            {customer.travellers} traveller{customer.travellers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <b>{money(customer.lifetimeValue)}</b>
+      </div>
+    ))}
+  </div>
+</section>    
   </div>;
 }
 
