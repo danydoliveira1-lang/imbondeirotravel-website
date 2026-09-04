@@ -254,7 +254,35 @@ return journeys;  }, {})).sort((a, b) =>
     </div>
   </div>
 </section>
-</div>;
+
+<section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Journey performance</span>
+      <h3>Performance by Journey</h3>
+    </div>
+    <span>{journeyPerformance.length} journey{journeyPerformance.length === 1 ? "" : "s"}</span>
+  </div>
+
+  <div className="cc-activity">
+    {journeyPerformance.map(item => (
+      <div key={item.journey}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{item.journey}</strong>
+          <span>
+            {item.bookings} booking{item.bookings === 1 ? "" : "s"} ·{" "}
+            {item.travellers} traveller{item.travellers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <b>{money(item.bookedValue)}</b>
+      </div>
+    ))}
+  </div>
+</section>
+  </div>;
 }
 
 function Manager({ section, meta, rows, tours, departures, reservations, query, onNew, onEdit, onDelete }) {
