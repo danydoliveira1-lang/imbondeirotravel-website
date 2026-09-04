@@ -96,8 +96,9 @@ export default function CommandCentre() {
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
+      {active === "operations" && <Operations data={data} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
-      {["operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
+      {["reports","settings"].includes(active) && <ComingSoon type={active} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} payments={data.payments} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
@@ -122,6 +123,97 @@ function Dashboard({ stats, data, open, navigate }) {
     <section className="cc-grid-two"><div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Fast workflows</span><h3>Quick actions</h3></div></div><div className="cc-quick">{[["tours","＋","New tour"],["departures","□","New departure"],["reservations","◇","New reservation"],["customers","◎","New customer"],["media","▣","Add media"]].map(([s,i,l])=><button key={s} onClick={()=>open(s)}><i>{i}</i><span>{l}</span><b>→</b></button>)}</div></div>
     <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Seat control</span><h3>Upcoming departures</h3></div><button onClick={()=>navigate("departures")}>View all</button></div><div className="cc-departure-list">{data.departures.slice(0,4).map(d=>{const available=Math.max(0,d.maximum_guests-d.reserved_guests-d.held_guests);return <div key={d.id}><div className="cc-date"><strong>{new Date(d.start_date+"T12:00:00").getDate()}</strong><span>{new Date(d.start_date+"T12:00:00").toLocaleString("en",{month:"short"})}</span></div><div><strong>{d.title}</strong><span>{d.reserved_guests} booked · {d.held_guests} held</span></div><div className="cc-seat"><strong>{available}</strong><span>available</span></div><em className={`cc-status ${d.status.toLowerCase().replaceAll(" ","-")}`}>{d.status}</em></div>})}</div></div></section>
     <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Reservation desk</span><h3>Latest activity</h3></div><button onClick={()=>navigate("reservations")}>Open reservations</button></div><div className="cc-activity">{data.reservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{r.travellers!==1?"s":""}</span></div><em className={`cc-status ${r.status.toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"Awaiting quote"}</b></div>)}</div></section>
+  </div>;
+}
+
+function Operations({ data }) {
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+  const upcomingDepartures = [...data.departures]
+    .filter(d => d.start_date && new Date(d.start_date + "T12:00:00") >= today && d.status !== "cancelled")
+    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+
+  const travellersExpected = upcomingDepartures.reduce((sum, d) => sum + Number(d.reserved_guests || 0), 0);
+
+  const seatsAvailable = upcomingDepartures.reduce(
+    (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)),
+    0
+  );
+
+  const attentionItems = data.reservations.filter(r =>
+    ["Enquiry", "On Hold", "Quoted"].includes(r.status)
+  ).length;
+
+  return <div className="cc-dashboard">
+    <section className="cc-welcome">
+      <div>
+        <span>OPERATIONS CONTROL</span>
+        <h2>Every journey.<br/>One operational view.</h2>
+        <p>Live readiness across departures, travellers, capacity and outstanding actions.</p>
+      </div>
+      <div className="cc-orbit">
+        <span>LIVE</span>
+        <strong>{upcomingDepartures.length}</strong>
+        <small>upcoming departures</small>
+      </div>
+    </section>
+
+    <section className="cc-stat-grid">
+      <article>
+        <span>Upcoming departures</span>
+        <strong>{upcomingDepartures.length}</strong>
+        <small>Future active journeys</small>
+      </article>
+      <article>
+        <span>Travellers expected</span>
+        <strong>{travellersExpected}</strong>
+        <small>Reserved guests</small>
+      </article>
+      <article>
+        <span>Seats available</span>
+        <strong>{seatsAvailable}</strong>
+        <small>Across upcoming departures</small>
+      </article>
+      <article>
+        <span>Needs attention</span>
+        <strong>{attentionItems}</strong>
+        <small>Open reservation actions</small>
+      </article>
+    </section>
+
+    <section className="cc-panel">
+      <div className="cc-panel-head">
+        <div>
+          <span className="cc-eyebrow">Journey control</span>
+          <h3>Upcoming Journey Operations</h3>
+        </div>
+        <span>{upcomingDepartures.length} departure{upcomingDepartures.length === 1 ? "" : "s"}</span>
+      </div>
+
+      <div className="cc-activity">
+        {upcomingDepartures.map(d => {
+          const available = Math.max(
+            0,
+            Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)
+          );
+
+          return <div key={d.id}>
+            <span className="cc-dot"></span>
+            <div>
+              <strong>{d.title}</strong>
+              <span>{d.start_date} · {d.guide || "Guide not assigned"}</span>
+            </div>
+            <em className={`cc-status ${String(d.status || "").toLowerCase().replaceAll(" ","-")}`}>
+              {d.status}
+            </em>
+            <b>{d.reserved_guests || 0} booked · {d.held_guests || 0} held · {available} available</b>
+          </div>;
+        })}
+
+        {upcomingDepartures.length === 0 && <p>No upcoming departures found.</p>}
+      </div>
+    </section>
   </div>;
 }
 
