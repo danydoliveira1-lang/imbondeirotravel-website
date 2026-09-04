@@ -161,7 +161,16 @@ return <div className="cc-dashboard"> <section className="cc-welcome"> <div> <sp
 <section className="cc-panel"> <div className="cc-panel-head"><div> <span className="cc-eyebrow">Journey control</span> <h3>Upcoming Journey Operations</h3></div> <span> {upcomingDepartures.length} departure{upcomingDepartures.length === 1 ? "" : "s"} </span> </div><div className="cc-activity">{upcomingDepartures.map(d => {const available = Math.max( 0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)); return <div key={d.id}> <span className="cc-dot"></span><div><strong>{d.title}</strong> <span>{d.start_date} · {d.guide || "Guide not assigned"}</span></div><em className={`cc-status ${String(d.status || "").toLowerCase().replaceAll(" ","-")}`}> {d.status} </em><b> {d.reserved_guests || 0} booked · {d.held_guests || 0} held · {available} available</b> </div>; })} {upcomingDepartures.length === 0 && <p>No upcoming departures found.</p>} </div> </section> <section className="cc-panel"> <div className="cc-panel-head"><div><span className="cc-eyebrow">Operational readiness</span><h3>Departure Readiness</h3></div><span> {departureReadiness.length} journey{departureReadiness.length === 1 ? "" : "s"} </span></div> <div className="cc-activity"> {departureReadiness.map(item => ( <div key={item.departure.id}><span className="cc-dot"></span> <div><strong>{item.departure.title}</strong> <span>Guests {item.guestReady ? "✓" : "—"} ·{" "} Payment {item.paymentReady ? `✓ ${money(item.paidAmount)}` : "attention"} ·{" "} Guide {item.guideReady ? "✓" : "attention"} </span> </div> <em className={`cc-status ${item.ready ? "confirmed" : "on-hold"}`}>{item.ready ? "READY" : "ACTION REQUIRED"}</em><b> {item.ready? "Operational checks passed" : [ !item.guestReady && "Guests", !item.paymentReady && "Payment",!item.guideReady && "Guide" ].filter(Boolean).join(" · ") + " requires attention"} </b></div> ))} </div></section></div>;
 }
 
-function Reports({ data }) { return <div className="cc-dashboard"><section className="cc-welcome"><div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2> <p>Live performance reporting across bookings, customers, departures and payments.</p></div>  
+function Reports({ data }) { 
+const committedReservations = data.reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
+const bookedRevenue = committedReservations.reduce((sum, r) => sum + Number(r.total || 0), 0 );
+const paidTransactions = data.payments.filter(  p => p.status === "Paid");
+const refunds = paidTransactions .filter(p => p.payment_type === "Refund") .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+const grossCashReceived = paidTransactions .filter(p => p.payment_type !== "Refund") .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+const netCashReceived = grossCashReceived - refunds;
+const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
+
+return <div className="cc-dashboard"><section className="cc-welcome"><div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2> <p>Live performance reporting across bookings, customers, departures and payments.</p></div>  
   <div className="cc-orbit"> <span>LIVE</span> <strong>{data.reservations.length}</strong> <small>reservations</small> </div> </section> </div>;
 }
 
