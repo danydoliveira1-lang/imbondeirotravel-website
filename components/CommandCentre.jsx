@@ -136,15 +136,19 @@ today.setHours(0, 0, 0, 0);
 
   const travellersExpected = upcomingDepartures.reduce((sum, d) => sum + Number(d.reserved_guests || 0), 0);
 
-  const seatsAvailable = upcomingDepartures.reduce(
-    (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)),
-    0
-  );
+  const seatsAvailable = upcomingDepartures.reduce( (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)), 0 );
 
-  const attentionItems = data.reservations.filter(r =>
-    ["Enquiry", "On Hold", "Quoted"].includes(r.status)
-  ).length;
+  const attentionItems = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status) ).length;
 
+  const departureReadiness = upcomingDepartures.map(departure => {
+  const reservations = data.reservations.filter( r => r.departure_id === departure.id  );
+
+  const reservationIds = new Set(reservations.map(r => r.id));
+  const payments = data.payments.filter( p => reservationIds.has(p.reservation_id) );
+
+  return { departure, reservations, payments };
+});
+  
   return <div className="cc-dashboard">
     <section className="cc-welcome">
       <div>
