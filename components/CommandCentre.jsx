@@ -170,8 +170,22 @@ return { status, bookings: reservations.length, travellers: reservations.reduce(
 
 const pipelineBookings = reservationPipeline.reduce( (sum, stage) => sum + stage.bookings, 0);
 const pipelineTravellers = reservationPipeline.reduce( (sum, stage) => sum + stage.travellers, 0);
-  
-return <div className="cc-dashboard">
+const journeyPerformance = Object.values( data.reservations.reduce((journeys, reservation) => {
+const journey = reservation.journey || "Unassigned Journey";
+
+if (!journeys[journey]) { journeys[journey] = { journey, bookings: 0, travellers: 0, bookedValue: 0  };  }
+journeys[journey].bookings += 1;
+journeys[journey].travellers += Number(reservation.travellers || 0);
+if ( ["Deposit Paid", "Confirmed", "Travelled"].includes( reservation.status  ) ) {
+    journeys[journey].bookedValue += Number(reservation.total || 0);
+    }
+return journeys;  }, {})).sort((a, b) =>
+  b.bookings - a.bookings ||
+  b.travellers - a.travellers ||
+  b.bookedValue - a.bookedValue
+);  
+
+  return <div className="cc-dashboard">
   <section className="cc-welcome">
     <div>
       <span>EXECUTIVE REPORTING</span>
