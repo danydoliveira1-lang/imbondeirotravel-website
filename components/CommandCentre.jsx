@@ -130,27 +130,20 @@ function Dashboard({ stats, data, open, navigate }) {
 function Operations({ data }) {
 const today = new Date();
 today.setHours(0, 0, 0, 0);
-
-  const upcomingDepartures = [...data.departures]
+const upcomingDepartures = [...data.departures]
     .filter(d => d.start_date && new Date(d.start_date + "T12:00:00") >= today && d.status !== "cancelled")
     .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
 
-  const travellersExpected = upcomingDepartures.reduce((sum, d) => sum + Number(d.reserved_guests || 0), 0);
-
-  const seatsAvailable = upcomingDepartures.reduce( (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)), 0 );
-
-  const attentionItems = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status) ).length;
-
-  const departureReadiness = upcomingDepartures.map(departure => {
-  const reservations = data.reservations.filter( r => r.departure_id === departure.id  );
-
+const travellersExpected = upcomingDepartures.reduce((sum, d) => sum + Number(d.reserved_guests || 0), 0);
+const seatsAvailable = upcomingDepartures.reduce( (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)), 0 );
+const attentionItems = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status) ).length;
+const departureReadiness = upcomingDepartures.map(departure => {
+const reservations = data.reservations.filter( r => r.departure_id === departure.id  );
 const reservationIds = new Set(reservations.map(r => r.id));
 const payments = data.payments.filter( p => reservationIds.has(p.reservation_id) );
 const activeReservations = reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
-
 const guestReady = activeReservations.length > 0;
 const paidAmount = payments .filter(p => p.status === "Paid") .reduce( (sum, p) => sum + (p.payment_type === "Refund" ? -Number(p.amount || 0) : Number(p.amount || 0)), 0 );
-
 const paymentReady = paidAmount > 0;
 const guideReady = Boolean(  departure.guide && departure.guide.trim());
 const ready = guestReady && paymentReady && guideReady;
@@ -169,7 +162,15 @@ const refunds = paidTransactions .filter(p => p.payment_type === "Refund") .redu
 const grossCashReceived = paidTransactions .filter(p => p.payment_type !== "Refund") .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 const netCashReceived = grossCashReceived - refunds;
 const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
+const pipelineStatuses = [  "Enquiry", "On Hold", "Quoted", "Deposit Paid", "Confirmed", "Travelled"];
+const reservationPipeline = pipelineStatuses.map(status => {
+const reservations = data.reservations.filter( r => r.status === status  );
 
+return { status, bookings: reservations.length, travellers: reservations.reduce( (sum, r) => sum + Number(r.travellers || 0), 0  ) };});
+
+const pipelineBookings = reservationPipeline.reduce( (sum, stage) => sum + stage.bookings, 0);
+const pipelineTravellers = reservationPipeline.reduce( (sum, stage) => sum + stage.travellers, 0);
+  
 return <div className="cc-dashboard">
   <section className="cc-welcome">
     <div>
