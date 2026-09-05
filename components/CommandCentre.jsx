@@ -99,7 +99,7 @@ export default function CommandCentre() {
       {active === "operations" && <Operations data={data} />}
       {active === "reports" && <Reports data={data} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
-      {["settings"].includes(active) && <ComingSoon type={active} />}
+      {active === "settings" && <Settings data={data} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} payments={data.payments} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
@@ -494,8 +494,9 @@ const executiveSnapshot = {
       <span className="cc-eyebrow">Capacity & occupancy</span>
       <h3>Departure Capacity Performance</h3>
     </div>
-    <span>
-  {overallOccupancy}% overall occupancy
+    <span> 
+     
+      {overallOccupancy}% overall occupancy
   {" · "}
   <a href="#reports-top">↑ Back to Reports</a>
 </span>
@@ -547,6 +548,62 @@ const executiveSnapshot = {
     ))}
   </div>
 </section> 
+  </div>;
+}
+function Settings({ data }) {
+  return <div className="cc-dashboard">
+    <section className="cc-welcome">
+      <div>
+        <span>COMMAND CENTRE SETTINGS</span>
+        <h2>Control the details.<br/>Protect the experience.</h2>
+        <p>
+          Manage Imbondeiro Travel's operational preferences, website defaults
+          and administrative configuration from one controlled workspace.
+        </p>
+      </div>
+
+      <div className="cc-orbit">
+        <span>PHASE 5</span>
+        <strong>⚙</strong>
+        <small>settings</small>
+      </div>
+    </section>
+
+    <section className="cc-panel">
+      <div className="cc-panel-head">
+        <div>
+          <span className="cc-eyebrow">Configuration centre</span>
+          <h3>Settings Overview</h3>
+        </div>
+        <span>Controlled administration</span>
+      </div>
+
+      <div className="cc-stat-grid">
+        <article>
+          <span>Company Profile</span>
+          <strong>Imbondeiro Travel</strong>
+          <small>Company identity & contact details</small>
+        </article>
+
+        <article>
+          <span>Brand & Website</span>
+          <strong>Website</strong>
+          <small>Public experience & defaults</small>
+        </article>
+
+        <article>
+          <span>Booking Defaults</span>
+          <strong>EUR</strong>
+          <small>Currency & operational defaults</small>
+        </article>
+
+        <article>
+          <span>Users & Access</span>
+          <strong>Admin</strong>
+          <small>Command Centre permissions</small>
+        </article>
+      </div>
+    </section>
   </div>;
 }
 
