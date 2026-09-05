@@ -265,7 +265,7 @@ const executiveSnapshot = {
   availableSeats: totalAvailableSeats
 };
   
-  return <div className="cc-dashboard">
+  return <div id="reports-top" className="cc-dashboard">
   <section className="cc-welcome">
     <div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2>
       <p>Live performance reporting across bookings, customers, departures and payments.</p>
