@@ -338,7 +338,7 @@ const executiveSnapshot = {
     </span>
   </div>
 </nav>
-    <section className="cc-stat-grid">
+   <section id="report-financial" className="cc-stat-grid">
     <article>
       <span>Booked Revenue</span>
       <strong>{money(bookedRevenue)}</strong>
@@ -360,7 +360,7 @@ const executiveSnapshot = {
       <small>Committed value not yet received</small>
     </article>
   </section>
-  <section className="cc-panel">
+  <section id="report-pipeline" className="cc-panel">
   <div className="cc-panel-head">
     <div>
       <span className="cc-eyebrow">Sales pipeline</span>
@@ -395,7 +395,7 @@ const executiveSnapshot = {
   </div>
 </section>
 
-<section className="cc-panel">
+<section id="report-journeys" className="cc-panel">
   <div className="cc-panel-head">
     <div>
       <span className="cc-eyebrow">Journey performance</span>
@@ -423,7 +423,7 @@ const executiveSnapshot = {
   </div>
 </section>
 
-<section className="cc-panel">
+<section id="report-customers" className="cc-panel">
   <div className="cc-panel-head">
     <div>
       <span className="cc-eyebrow">Customer performance</span>
@@ -451,7 +451,7 @@ const executiveSnapshot = {
   </div>
 </section>  
   
-  <section className="cc-panel">
+  <section id="report-capacity" className="cc-panel">
   <div className="cc-panel-head">
     <div>
       <span className="cc-eyebrow">Capacity & occupancy</span>
