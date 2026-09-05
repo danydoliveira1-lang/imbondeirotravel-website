@@ -317,6 +317,27 @@ const executiveSnapshot = {
     </article>
   </div>
 </section>
+    
+  <nav className="cc-panel" aria-label="Report sections">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Report navigator</span>
+      <h3>Explore Performance</h3>
+    </div>
+
+    <span>
+      <a href="#report-financial">Financial</a>
+      {" · "}
+      <a href="#report-pipeline">Pipeline</a>
+      {" · "}
+      <a href="#report-journeys">Journeys</a>
+      {" · "}
+      <a href="#report-customers">Customers</a>
+      {" · "}
+      <a href="#report-capacity">Capacity</a>
+    </span>
+  </div>
+</nav>
     <section className="cc-stat-grid">
     <article>
       <span>Booked Revenue</span>
