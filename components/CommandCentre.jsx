@@ -430,7 +430,11 @@ const executiveSnapshot = {
       <span className="cc-eyebrow">Journey performance</span>
       <h3>Performance by Journey</h3>
     </div>
-    <span>{journeyPerformance.length} journey{journeyPerformance.length === 1 ? "" : "s"}</span>
+    <span>
+  {journeyPerformance.length} journey{journeyPerformance.length === 1 ? "" : "s"}
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
   </div>
 
   <div className="cc-activity">
@@ -458,7 +462,11 @@ const executiveSnapshot = {
       <span className="cc-eyebrow">Customer performance</span>
       <h3>Customer Value & Activity</h3>
     </div>
-    <span>{customerPerformance.length} customer{customerPerformance.length === 1 ? "" : "s"}</span>
+    <span>
+  {customerPerformance.length} customer{customerPerformance.length === 1 ? "" : "s"}
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
   </div>
 
   <div className="cc-activity">
@@ -486,7 +494,11 @@ const executiveSnapshot = {
       <span className="cc-eyebrow">Capacity & occupancy</span>
       <h3>Departure Capacity Performance</h3>
     </div>
-    <span>{overallOccupancy}% overall occupancy</span>
+    <span>
+  {overallOccupancy}% overall occupancy
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
   </div>
 
   <div className="cc-stat-grid">
