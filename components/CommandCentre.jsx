@@ -551,6 +551,7 @@ const executiveSnapshot = {
   </div>;
 }
 function Settings({ data }) {
+  const company = data.company_settings?.[0] || {};
   return <div className="cc-dashboard">
     <section className="cc-welcome">
       <div>
@@ -581,7 +582,7 @@ function Settings({ data }) {
       <div className="cc-stat-grid">
         <article>
           <span>Company Profile</span>
-          <strong>Imbondeiro Travel</strong>
+          <strong>{company.company_name || "Company"}</strong>
           <small>Company identity & contact details</small>
         </article>
 
