@@ -379,7 +379,63 @@ const overallOccupancy =
       </div>
     ))}
   </div>
-</section>    
+</section>  
+  
+  <section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Capacity & occupancy</span>
+      <h3>Departure Capacity Performance</h3>
+    </div>
+    <span>{overallOccupancy}% overall occupancy</span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Total Capacity</span>
+      <strong>{totalCapacity}</strong>
+      <small>Seats across active departures</small>
+    </article>
+
+    <article>
+      <span>Booked Seats</span>
+      <strong>{totalBookedSeats}</strong>
+      <small>Confirmed inventory</small>
+    </article>
+
+    <article>
+      <span>Held Seats</span>
+      <strong>{totalHeldSeats}</strong>
+      <small>Temporarily reserved inventory</small>
+    </article>
+
+    <article>
+      <span>Available Seats</span>
+      <strong>{totalAvailableSeats}</strong>
+      <small>Remaining sellable capacity</small>
+    </article>
+  </div>
+
+  <div className="cc-activity">
+    {capacityPerformance.map(departure => (
+      <div key={departure.id}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{departure.title}</strong>
+          <span>
+            {departure.booked} booked ·{" "}
+            {departure.held} held ·{" "}
+            {departure.available} available ·{" "}
+            {departure.capacity} capacity
+          </span>
+        </div>
+
+        <b>{departure.occupancy}%</b>
+      </div>
+    ))}
+  </div>
+</section> 
   </div>;
 }
 
