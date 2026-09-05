@@ -324,18 +324,43 @@ const executiveSnapshot = {
       <span className="cc-eyebrow">Report navigator</span>
       <h3>Explore Performance</h3>
     </div>
+  </div>
 
-    <span>
-      <a href="#report-financial">Financial</a>
-      {" · "}
-      <a href="#report-pipeline">Pipeline</a>
-      {" · "}
-      <a href="#report-journeys">Journeys</a>
-      {" · "}
-      <a href="#report-customers">Customers</a>
-      {" · "}
-      <a href="#report-capacity">Capacity</a>
-    </span>
+  <div className="cc-stat-grid">
+    <article>
+      <a href="#report-financial">
+        <strong>Financial</strong>
+        <small>Revenue, cash & refunds</small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-pipeline">
+        <strong>Pipeline</strong>
+        <small>Reservations & travellers</small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-journeys">
+        <strong>Journeys</strong>
+        <small>Journey performance</small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-customers">
+        <strong>Customers</strong>
+        <small>Value & booking activity</small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-capacity">
+        <strong>Capacity</strong>
+        <small>Seats & occupancy</small>
+      </a>
+    </article>
   </div>
 </nav>
    <section id="report-financial" className="cc-stat-grid">
