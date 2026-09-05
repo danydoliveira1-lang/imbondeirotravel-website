@@ -391,7 +391,11 @@ const executiveSnapshot = {
       <span className="cc-eyebrow">Sales pipeline</span>
       <h3>Reservation Pipeline</h3>
     </div>
-    <span>{pipelineBookings} active booking{pipelineBookings === 1 ? "" : "s"}</span>
+   <span>
+  {pipelineBookings} active booking{pipelineBookings === 1 ? "" : "s"}
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
   </div>
 
   <div className="cc-activity">
