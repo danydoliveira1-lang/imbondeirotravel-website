@@ -276,7 +276,48 @@ const executiveSnapshot = {
       <small>reservations</small>
     </div>
   </section>
-  <section className="cc-stat-grid">
+  <section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Executive snapshot</span>
+      <h3>Business at a Glance</h3>
+    </div>
+    <span>Live operational overview</span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Active Reservations</span>
+      <strong>{executiveSnapshot.reservations}</strong>
+      <small>Current booking pipeline</small>
+    </article>
+
+    <article>
+      <span>Travellers</span>
+      <strong>{executiveSnapshot.travellers}</strong>
+      <small>Across active reservations</small>
+    </article>
+
+    <article>
+      <span>Net Cash</span>
+      <strong>{money(executiveSnapshot.netCash)}</strong>
+      <small>Received less refunds</small>
+    </article>
+
+    <article>
+      <span>Occupancy</span>
+      <strong>{executiveSnapshot.occupancy}%</strong>
+      <small>Confirmed seats across departures</small>
+    </article>
+
+    <article>
+      <span>Available Seats</span>
+      <strong>{executiveSnapshot.availableSeats}</strong>
+      <small>Remaining sellable capacity</small>
+    </article>
+  </div>
+</section>
+    <section className="cc-stat-grid">
     <article>
       <span>Booked Revenue</span>
       <strong>{money(bookedRevenue)}</strong>
