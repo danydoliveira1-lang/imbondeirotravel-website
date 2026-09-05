@@ -252,10 +252,18 @@ const totalHeldSeats = capacityPerformance.reduce(
   (sum, departure) => sum + departure.held,  0 );
 const totalAvailableSeats = capacityPerformance.reduce(
   (sum, departure) => sum + departure.available, 0 );
+  
 const overallOccupancy =
   totalCapacity > 0
     ? Math.round((totalBookedSeats / totalCapacity) * 100)
     : 0;
+const executiveSnapshot = {
+  reservations: pipelineBookings,
+  travellers: pipelineTravellers,
+  netCash: netCashReceived,
+  occupancy: overallOccupancy,
+  availableSeats: totalAvailableSeats
+};
   
   return <div className="cc-dashboard">
   <section className="cc-welcome">
