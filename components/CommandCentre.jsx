@@ -605,6 +605,75 @@ function Settings({ data }) {
         </article>
       </div>
     </section>
+      <section className="cc-panel">
+      <div className="cc-panel-head">
+        <div>
+          <span className="cc-eyebrow">Company profile</span>
+          <h3>Imbondeiro Travel Details</h3>
+        </div>
+        <span>Live company configuration</span>
+      </div>
+
+      <div className="cc-stat-grid">
+        <article>
+          <span>Company Name</span>
+          <strong>{company.company_name || "Not configured"}</strong>
+          <small>Official company identity</small>
+        </article>
+
+        <article>
+          <span>Tagline</span>
+          <strong>{company.tagline || "Not configured"}</strong>
+          <small>Primary brand statement</small>
+        </article>
+
+        <article>
+          <span>Website</span>
+          <strong>{company.website || "Not configured"}</strong>
+          <small>Official public website</small>
+        </article>
+
+        <article>
+          <span>General Email</span>
+          <strong>{company.general_email || "Not configured"}</strong>
+          <small>Primary company email</small>
+        </article>
+      </div>
+
+      <div className="cc-stat-grid">
+        <article>
+          <span>Angola</span>
+          <strong>{company.phone_angola || "Not configured"}</strong>
+          <small>Angola contact number</small>
+        </article>
+
+        <article>
+          <span>Portugal</span>
+          <strong>{company.phone_portugal || "Not configured"}</strong>
+          <small>Portugal contact number</small>
+        </article>
+
+        <article>
+          <span>South Africa</span>
+          <strong>{company.phone_south_africa || "Not configured"}</strong>
+          <small>South Africa contact number</small>
+        </article>
+      </div>
+
+      <div className="cc-stat-grid">
+        <article>
+          <span>Default Currency</span>
+          <strong>{company.default_currency || "Not configured"}</strong>
+          <small>Booking currency</small>
+        </article>
+
+        <article>
+          <span>Default Language</span>
+          <strong>{company.default_language || "Not configured"}</strong>
+          <small>Primary operating language</small>
+        </article>
+      </div>
+    </section>
   </div>;
 }
 
