@@ -99,7 +99,7 @@ export default function CommandCentre() {
       {active === "operations" && <Operations data={data} />}
       {active === "reports" && <Reports data={data} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
-      {active === "settings" && <Settings data={data} />}
+      {active === "settings" && <Settings data={data} reload={loadData} flash={flash} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} payments={data.payments} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
@@ -550,8 +550,44 @@ const executiveSnapshot = {
 </section> 
   </div>;
 }
-function Settings({ data }) {
-  const company = data.company_settings?.[0] || {};
+function Settings({ data, reload, flash }) {
+const company = data.company_settings?.[0] || {};
+const [editing, setEditing] = useState(false);
+const [saving, setSaving] = useState(false);
+const [form, setForm] = useState(company);
+useEffect(() => {
+  if (!editing) setForm(company);
+}, [data.company_settings, editing]);
+
+ const saveSettings = async e => {
+  e.preventDefault();
+  setSaving(true);
+
+  try {
+    const response = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(form)
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      flash(payload.error || "Settings save failed.");
+      return;
+    }
+
+    await reload();
+    setEditing(false);
+    flash("Company settings updated.");
+  } catch {
+    flash("Settings save failed.");
+  } finally {
+    setSaving(false);
+  }
+}; 
   return <div className="cc-dashboard">
     <section className="cc-welcome">
       <div>
@@ -607,74 +643,180 @@ function Settings({ data }) {
     </section>
       <section className="cc-panel">
       <div className="cc-panel-head">
-        <div>
-          <span className="cc-eyebrow">Company profile</span>
-          <h3>Imbondeiro Travel Details</h3>
-        </div>
-        <span>Live company configuration</span>
-      </div>
+  <div>
+    <span className="cc-eyebrow">Company profile</span>
+    <h3>Imbondeiro Travel Details</h3>
+  </div>
 
-      <div className="cc-stat-grid">
-        <article>
-          <span>Company Name</span>
-          <strong>{company.company_name || "Not configured"}</strong>
-          <small>Official company identity</small>
-        </article>
+  <div className="cc-row-actions">
+    {!editing ? (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+      >
+        Edit Company Profile
+      </button>
+    ) : (
+      <button
+        type="button"
+        onClick={() => {
+          setForm(company);
+          setEditing(false);
+        }}
+      >
+        Cancel
+      </button>
+    )}
+  </div>
+</div>
 
-        <article>
-          <span>Tagline</span>
-          <strong>{company.tagline || "Not configured"}</strong>
-          <small>Primary brand statement</small>
-        </article>
+   <div className="cc-stat-grid">
+  <article>
+    <span>Company Name</span>
+    {editing ? (
+      <input
+        value={form.company_name || ""}
+        onChange={e => setForm({ ...form, company_name: e.target.value })}
+      />
+    ) : (
+      <strong>{company.company_name || "Not configured"}</strong>
+    )}
+    <small>Official company identity</small>
+  </article>
 
-        <article>
-          <span>Website</span>
-          <strong>{company.website || "Not configured"}</strong>
-          <small>Official public website</small>
-        </article>
+  <article>
+    <span>Tagline</span>
+    {editing ? (
+      <input
+        value={form.tagline || ""}
+        onChange={e => setForm({ ...form, tagline: e.target.value })}
+      />
+    ) : (
+      <strong>{company.tagline || "Not configured"}</strong>
+    )}
+    <small>Primary brand statement</small>
+  </article>
 
-        <article>
-          <span>General Email</span>
-          <strong>{company.general_email || "Not configured"}</strong>
-          <small>Primary company email</small>
-        </article>
-      </div>
+  <article>
+    <span>Website</span>
+    {editing ? (
+      <input
+        value={form.website || ""}
+        onChange={e => setForm({ ...form, website: e.target.value })}
+      />
+    ) : (
+      <strong>{company.website || "Not configured"}</strong>
+    )}
+    <small>Official public website</small>
+  </article>
 
-      <div className="cc-stat-grid">
-        <article>
-          <span>Angola</span>
-          <strong>{company.phone_angola || "Not configured"}</strong>
-          <small>Angola contact number</small>
-        </article>
+  <article>
+    <span>General Email</span>
+    {editing ? (
+      <input
+        type="email"
+        value={form.general_email || ""}
+        onChange={e => setForm({ ...form, general_email: e.target.value })}
+      />
+    ) : (
+      <strong>{company.general_email || "Not configured"}</strong>
+    )}
+    <small>Primary company email</small>
+  </article>
+</div>   
 
-        <article>
-          <span>Portugal</span>
-          <strong>{company.phone_portugal || "Not configured"}</strong>
-          <small>Portugal contact number</small>
-        </article>
+   <div className="cc-stat-grid">
+  <article>
+    <span>Angola</span>
+    {editing ? (
+      <input
+        value={form.phone_angola || ""}
+        onChange={e => setForm({ ...form, phone_angola: e.target.value })}
+        placeholder="Optional"
+      />
+    ) : (
+      <strong>{company.phone_angola || "Not configured"}</strong>
+    )}
+    <small>Angola contact number</small>
+  </article>
 
-        <article>
-          <span>South Africa</span>
-          <strong>{company.phone_south_africa || "Not configured"}</strong>
-          <small>South Africa contact number</small>
-        </article>
-      </div>
+  <article>
+    <span>Portugal</span>
+    {editing ? (
+      <input
+        value={form.phone_portugal || ""}
+        onChange={e => setForm({ ...form, phone_portugal: e.target.value })}
+      />
+    ) : (
+      <strong>{company.phone_portugal || "Not configured"}</strong>
+    )}
+    <small>Portugal contact number</small>
+  </article>
 
-      <div className="cc-stat-grid">
-        <article>
-          <span>Default Currency</span>
-          <strong>{company.default_currency || "Not configured"}</strong>
-          <small>Booking currency</small>
-        </article>
+  <article>
+    <span>South Africa</span>
+    {editing ? (
+      <input
+        value={form.phone_south_africa || ""}
+        onChange={e => setForm({ ...form, phone_south_africa: e.target.value })}
+      />
+    ) : (
+      <strong>{company.phone_south_africa || "Not configured"}</strong>
+    )}
+    <small>South Africa contact number</small>
+  </article>
+</div> 
 
-        <article>
-          <span>Default Language</span>
-          <strong>{company.default_language || "Not configured"}</strong>
-          <small>Primary operating language</small>
-        </article>
-      </div>
-    </section>
-  </div>;
+     <div className="cc-stat-grid">
+  <article>
+    <span>Default Currency</span>
+    {editing ? (
+      <select
+        value={form.default_currency || ""}
+        onChange={e => setForm({ ...form, default_currency: e.target.value })}
+      >
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+        <option value="AOA">AOA</option>
+        <option value="ZAR">ZAR</option>
+      </select>
+    ) : (
+      <strong>{company.default_currency || "Not configured"}</strong>
+    )}
+    <small>Booking currency</small>
+  </article>
+
+  <article>
+    <span>Default Language</span>
+    {editing ? (
+      <select
+        value={form.default_language || ""}
+        onChange={e => setForm({ ...form, default_language: e.target.value })}
+      >
+        <option value="English">English</option>
+        <option value="Portuguese">Portuguese</option>
+      </select>
+    ) : (
+      <strong>{company.default_language || "Not configured"}</strong>
+    )}
+    <small>Primary operating language</small>
+  </article>
+</div>
+
+  {editing && (
+  <div className="cc-row-actions">
+    <button
+      type="button"
+      className="cc-primary"
+      onClick={saveSettings}
+      disabled={saving}
+    >
+      {saving ? "Saving..." : "Save Changes"}
+    </button>
+  </div>
+)}
+</section>
+</div>;
 }
 
 function Manager({ section, meta, rows, tours, departures, reservations, query, onNew, onEdit, onDelete }) {
