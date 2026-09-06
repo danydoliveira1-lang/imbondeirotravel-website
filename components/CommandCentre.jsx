@@ -588,13 +588,13 @@ function Settings({ data }) {
 
         <article>
           <span>Brand & Website</span>
-          <strong>Website</strong>
+          <strong>{company.website || "Not configured"}</strong>
           <small>Public experience & defaults</small>
         </article>
 
         <article>
           <span>Booking Defaults</span>
-          <strong>EUR</strong>
+          <strong>{company.default_currency || "Not configured"}</strong>
           <small>Currency & operational defaults</small>
         </article>
 
