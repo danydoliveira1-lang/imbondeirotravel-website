@@ -842,6 +842,39 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
   if (section === "payments") blank.currency = "EUR";
   const [record, setRecord] = useState({ ...blank, ...initial });
+  const [mediaAssets, setMediaAssets] = useState([]);
+  const [mediaAssetsLoading, setMediaAssetsLoading] = useState(false);
+  useEffect(() => {
+  if (section !== "media") return;
+
+  const controller = new AbortController();
+
+  async function loadMediaAssets() {
+    setMediaAssetsLoading(true);
+
+    try {
+      const response = await fetch("/api/admin/media-assets", {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      setMediaAssets(payload.assets || []);
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Media assets could not be loaded.", error);
+      }
+    } finally {
+      setMediaAssetsLoading(false);
+    }
+  }
+
+  loadMediaAssets();
+
+  return () => controller.abort();
+}, [section]);
   const numeric = ["price","maximum_guests","reserved_guests","held_guests","travellers","total","amount"];
   const submit = e => { e.preventDefault(); const { _source, ...payload } = record; if (section === "payments") payload.paid_at = payload.paid_at ? new Date(payload.paid_at).toISOString() : null; onSave(section, payload); };
   const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
@@ -853,7 +886,49 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const nextJourney = upcomingJourneys[0] || null;
   const laterJourneys = upcomingJourneys.slice(1);
   const pastJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") < new Date()).sort((a, b) => new Date(b.departure.start_date) - new Date(a.departure.start_date));
-  return <div className="cc-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><form className="cc-modal" onSubmit={submit}><div className="cc-modal-head"><div><span className="cc-eyebrow">No-code editor</span><h2>{initial.id?"Edit":"Add"} {meta.singular}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="cc-form-grid">{meta.fields.map(field=><label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["Draft","Published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
+  return <div className="cc-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><form className="cc-modal" onSubmit={submit}><div className="cc-modal-head"><div><span className="cc-eyebrow">No-code editor</span><h2>{initial.id?"Edit":"Add"} {meta.singular}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="cc-form-grid">
+  {section === "media" && (
+    <label className="full">
+      Choose Existing Media
+      <select
+       value={record.reference ? mediaAssets.find(a => a.reference === record.reference)?.path || "" : ""}
+        disabled={mediaAssetsLoading}
+        onChange={e => {
+          const asset = mediaAssets.find(
+            item => item.path === e.target.value
+          );
+
+          if (!asset) return;
+
+          setRecord(current => ({
+            ...current,
+            name: asset.name
+              .replace(/\.[^/.]+$/, "")
+              .replaceAll("-", " ")
+              .replace(/\b\w/g, letter => letter.toUpperCase()),
+            reference: asset.reference,
+            type: asset.metadata?.mimetype?.startsWith("video/")
+              ? "Video"
+              : current.type,
+          }));
+        }}
+      >
+        <option value="">
+          {mediaAssetsLoading
+            ? "Loading media..."
+            : "Select an existing file"}
+        </option>
+
+        {mediaAssets.map(asset => (
+          <option key={asset.path} value={asset.path}>
+            {asset.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )}
+
+  {meta.fields.map(field=><label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["Draft","Published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
 ?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}>
   <option value="">Choose usage</option>
   {["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
