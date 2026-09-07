@@ -41,7 +41,7 @@ const moduleMeta = {
   departures: { title: "Departure Manager", singular: "Departure", fields: ["tour_id", "title", "location", "start_date", "end_date", "maximum_guests", "reserved_guests", "held_guests", "status", "featured", "image", "duration", "travel_style", "guide"] },
   reservations: { title: "Reservation Manager", singular: "Reservation", fields: ["customer", "departure_id", "journey", "travellers", "status", "total", "consultant"] },
   customers: { title: "Customer CRM", singular: "Customer", fields: ["name", "email", "phone", "language", "preference", "notes"] },
-  media: { title: "Media Library", singular: "Media Item", fields: ["name", "type", "reference", "usage", "status"] },
+  media: { title: "Media Library", singular: "Media Item", fields: ["name", "type", "reference", "usage", "content_key", "status"] },
   payments: { title: "Payments", singular: "Payment", fields: ["reservation_id", "payment_type", "amount", "currency", "payment_method", "status", "paid_at", "reference", "notes"] },
 };
 
