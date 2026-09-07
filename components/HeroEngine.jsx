@@ -83,7 +83,7 @@ export default function HeroEngine() {
   const timerRef = useRef(null);
   const transitionRef = useRef(null);
   const signatureRef = useRef(null);
-  const [mediaScene, setMediaScene] = useState(null);
+  const [mediaScenes, setMediaScenes] = useState([]);
   
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -104,41 +104,48 @@ useEffect(() => {
 
       if (!response.ok) return;
 
-      const data = await response.json();
-      const item = data?.media?.[0];
+    const data = await response.json();
+const items = Array.isArray(data?.media) ? data.media : [];
 
-    if (!item || !item.reference) return;
+const loadedScenes = items
+  .map((item) => {
+    if (!item?.reference) return null;
 
-if (item.type === "Video") {
-  setMediaScene({
-    id: `media-${item.id}`,
-    type: "video",
-    word: "WONDER",
-    place: item.name || "Angola",
-    src: item.reference,
-    title: item.name || "Angola",
-    fit: "cover",
-  });
+    if (item.type === "Video") {
+      return {
+        id: `media-${item.id}`,
+        type: "video",
+        word: "WONDER",
+        place: item.name || "Angola",
+        src: item.reference,
+        title: item.name || "Angola",
+        fit: "cover",
+      };
+    }
 
-  return;
-}
+    if (item.type === "YouTube") {
+      const youtubeId = extractYouTubeId(item.reference);
 
-if (item.type === "YouTube") {
-  const youtubeId = extractYouTubeId(item.reference);
+      if (!youtubeId) return null;
 
-  if (!youtubeId) return;
+      return {
+        id: `media-${item.id}`,
+        type: "youtube",
+        word: "CULTURE",
+        place: item.name || "Angola",
+        youtubeId,
+        start: 25,
+        title: item.name || "Angola",
+        fit: "contain",
+      };
+    }
 
-  setMediaScene({
-    id: `media-${item.id}`,
-    type: "youtube",
-    word: "CULTURE",
-    place: "Traditional Angolan Dance",
-    youtubeId,
-    start: 25,
-    title: item.name || "Traditional Angolan Dance",
-    fit: "contain",
-  });
-}
+    return null;
+  })
+  .filter(Boolean);
+
+setMediaScenes(loadedScenes);  
+  
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Homepage hero media could not be loaded.", error);
@@ -150,8 +157,9 @@ if (item.type === "YouTube") {
 
   return () => controller.abort();
 }, []);
-  const scenes = mediaScene
-  ? [...fallbackScenes, mediaScene]
+  
+ const scenes = mediaScenes.length > 0
+  ? mediaScenes
   : fallbackScenes;
   
   useEffect(() => {
