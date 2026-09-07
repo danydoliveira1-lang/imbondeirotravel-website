@@ -107,22 +107,38 @@ useEffect(() => {
       const data = await response.json();
       const item = data?.media?.[0];
 
-      if (!item || item.type !== "YouTube" || !item.reference) return;
+    if (!item || !item.reference) return;
 
-      const youtubeId = extractYouTubeId(item.reference);
+if (item.type === "Video") {
+  setMediaScene({
+    id: `media-${item.id}`,
+    type: "video",
+    word: "WONDER",
+    place: item.name || "Angola",
+    src: item.reference,
+    title: item.name || "Angola",
+    fit: "cover",
+  });
 
-      if (!youtubeId) return;
+  return;
+}
 
-      setMediaScene({
-        id: `media-${item.id}`,
-        type: "youtube",
-        word: "CULTURE",
-        place: "Traditional Angolan Dance",
-        youtubeId,
-        start: 25,
-        title: item.name || "Traditional Angolan Dance",
-        fit: "contain",
-      });
+if (item.type === "YouTube") {
+  const youtubeId = extractYouTubeId(item.reference);
+
+  if (!youtubeId) return;
+
+  setMediaScene({
+    id: `media-${item.id}`,
+    type: "youtube",
+    word: "CULTURE",
+    place: "Traditional Angolan Dance",
+    youtubeId,
+    start: 25,
+    title: item.name || "Traditional Angolan Dance",
+    fit: "contain",
+  });
+}
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Homepage hero media could not be loaded.", error);
