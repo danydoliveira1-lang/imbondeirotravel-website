@@ -7,7 +7,7 @@ const SCENE_MS = 17000;
 const FADE_MS = 700;
 const SIGNATURE_MS = 1200;
 
-const scenes = [
+const fallbackScenes = [
   {
     id: "wonder",
     type: "video",
@@ -36,6 +36,23 @@ const scenes = [
   fit: "cover",
 },
 ];
+function extractYouTubeId(reference = "") {
+  try {
+    const url = new URL(reference);
+
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (url.pathname.includes("/embed/")) {
+      return url.pathname.split("/embed/")[1]?.split("/")[0] || "";
+    }
+
+    return url.searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+}
 
 function youtubeBackgroundUrl(id, start = 0, end = 0) {
   const params = new URLSearchParams({
@@ -66,7 +83,8 @@ export default function HeroEngine() {
   const timerRef = useRef(null);
   const transitionRef = useRef(null);
   const signatureRef = useRef(null);
-
+  const [mediaScene, setMediaScene] = useState(null);
+  
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => setReduced(mq.matches);
@@ -74,7 +92,52 @@ export default function HeroEngine() {
     mq.addEventListener?.("change", sync);
     return () => mq.removeEventListener?.("change", sync);
   }, []);
+useEffect(() => {
+  const controller = new AbortController();
 
+  async function loadHomepageHeroMedia() {
+    try {
+      const response = await fetch("/api/public/media", {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const item = data?.media?.[0];
+
+      if (!item || item.type !== "YouTube" || !item.reference) return;
+
+      const youtubeId = extractYouTubeId(item.reference);
+
+      if (!youtubeId) return;
+
+      setMediaScene({
+        id: `media-${item.id}`,
+        type: "youtube",
+        word: "CULTURE",
+        place: "Traditional Angolan Dance",
+        youtubeId,
+        start: 25,
+        title: item.name || "Traditional Angolan Dance",
+        fit: "contain",
+      });
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Homepage hero media could not be loaded.", error);
+      }
+    }
+  }
+
+  loadHomepageHeroMedia();
+
+  return () => controller.abort();
+}, []);
+  const scenes = mediaScene
+  ? [...fallbackScenes, mediaScene]
+  : fallbackScenes;
+  
   useEffect(() => {
     clearTimeout(timerRef.current);
     clearTimeout(signatureRef.current);
