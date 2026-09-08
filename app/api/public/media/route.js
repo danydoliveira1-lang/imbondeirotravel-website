@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const rows = await supabaseRequest("media", {
     query:
-      "select=id,name,type,reference,usage,content_key,sort_order,status,updated_at&status=eq.Active&usage=eq.Hero&content_key=eq.homepage.hero&order=sort_order.asc.nullslast,updated_at.desc",  
+      "select=id,name,type,reference,usage,content_key,sort_order,hero_word,hero_place,status,updated_at&status=eq.Active&usage=eq.Hero&content_key=eq.homepage.hero&order=sort_order.asc.nullslast,updated_at.desc",
     });
 
     return NextResponse.json(
