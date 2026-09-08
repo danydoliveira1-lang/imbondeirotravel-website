@@ -6,7 +6,8 @@ import JourneyAddButton from "./JourneyAddButton";
 export default function PublicTours() {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [tourMedia, setTourMedia] = useState([]);
+  
   useEffect(() => {
     async function loadTours() {
       try {
@@ -19,6 +20,16 @@ export default function PublicTours() {
         if (Array.isArray(data.tours)) {
           setTours(data.tours);
         }
+         const mediaResponse = await fetch("/api/public/tour-media", {
+         cache: "no-store",
+     });
+
+      const mediaData = await mediaResponse.json();
+
+      if (Array.isArray(mediaData.media)) {
+       setTourMedia(mediaData.media);
+     }
+        
       } catch (error) {
         console.error("Unable to load public tours:", error);
       } finally {
@@ -35,7 +46,7 @@ export default function PublicTours() {
         <p>Loading journeys...</p>
       </div>
     );
-  }
+   }
 
   if (!tours.length) {
     return (
