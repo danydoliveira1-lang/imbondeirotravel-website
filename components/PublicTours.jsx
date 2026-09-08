@@ -59,7 +59,14 @@ export default function PublicTours() {
   return (
     <div className="experience-grid">
       {tours.map((tour, index) => {
-        const image = tour.image || "/assets/hero-kalandula.jpg";
+      const managedMedia = tourMedia.find(
+  media => media.content_key === `tour.${tour.slug}` && media.type === "Image"
+);
+
+const image =
+  managedMedia?.reference ||
+  tour.image ||
+  "/assets/hero-kalandula.jpg";
 
         const meta = [
           tour.duration,
