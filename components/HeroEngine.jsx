@@ -115,8 +115,8 @@ const loadedScenes = items
       return {
         id: `media-${item.id}`,
         type: "video",
-        word: "WONDER",
-        place: item.name || "Angola",
+        word: item.hero_word || "WONDER",
+        place: item.hero_place || item.name || "Angola",
         src: item.reference,
         title: item.name || "Angola",
         fit: "cover",
@@ -131,8 +131,8 @@ const loadedScenes = items
       return {
         id: `media-${item.id}`,
         type: "youtube",
-        word: "CULTURE",
-        place: item.name || "Angola",
+        word: item.hero_word || "CULTURE",
+        place: item.hero_place || item.name || "Angola",
         youtubeId,
         start: 25,
         title: item.name || "Angola",
