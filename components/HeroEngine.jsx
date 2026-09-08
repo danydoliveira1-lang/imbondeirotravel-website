@@ -210,7 +210,7 @@ setMediaScenes(loadedScenes);
       <div className={`hero-media ${fading ? "is-fading" : ""}`} aria-hidden="true">
         <div className="hero-video-fallback" />
         {!reduced && scene.type === "video" && (
-          <video key={scene.src} className={`hero-local-video hero-fit-${scene.fit || "cover"}`} autoPlay muted loop playsInline preload="metadata">
+        <video key={scene.src} className={`hero-local-video hero-fit-${scene.fit || "cover"}`} autoPlay muted loop playsInline preload="auto">
             <source src={scene.src} type="video/mp4" />
           </video>
         )}
