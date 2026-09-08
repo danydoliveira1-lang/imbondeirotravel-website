@@ -909,6 +909,8 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
             reference: asset.reference,
             type: asset.metadata?.mimetype?.startsWith("video/")
               ? "Video"
+              : asset.metadata?.mimetype?.startsWith("image/")
+              ? "Image"
               : current.type,
           }));
         }}
