@@ -985,10 +985,8 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
         </option>
 
         {mediaAssets
-          .filter(asset =>
-            asset.metadata?.mimetype?.startsWith("image/")
-          )
-          .map(asset => (
+          .filter(asset => asset.type === "image")
+           .map(asset => (
             <option key={asset.path} value={asset.path}>
               {asset.name}
             </option>
@@ -997,7 +995,7 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
     </label>
 
     <label className="full">
-      Choose Hero Video
+     Optional Hero Video
       <select
         value={
           record.hero_video_url
@@ -1021,14 +1019,12 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
         <option value="">
           {mediaAssetsLoading
             ? "Loading videos..."
-            : "Select an existing video"}
+            : "None — use tour image"}
         </option>
 
         {mediaAssets
-          .filter(asset =>
-            asset.metadata?.mimetype?.startsWith("video/")
-          )
-          .map(asset => (
+          .filter(asset => asset.type === "video")
+            .map(asset => (
             <option key={asset.path} value={asset.path}>
               {asset.name}
             </option>
