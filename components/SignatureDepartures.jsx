@@ -36,7 +36,17 @@ export default function SignatureDepartures() {
       })));
     }).catch(() => {});
   }, []);
-  const departures = useMemo(() => showAll ? liveDepartures : liveDepartures.filter(x => x.featured), [showAll, liveDepartures]);
+ const departures = useMemo(() => {
+  if (showAll) return liveDepartures;
+
+  const featuredDepartures = liveDepartures.filter(
+    departure => departure.featured
+  );
+
+  return featuredDepartures.length
+    ? featuredDepartures
+    : liveDepartures.slice(0, 3);
+}, [showAll, liveDepartures]);
 
   function choosePrivateDates() {
     const contact = document.getElementById("contact");
