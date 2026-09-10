@@ -954,7 +954,27 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   "total",
   "amount"
 ];
-  const submit = e => { e.preventDefault(); const { _source, ...payload } = record; if (section === "payments") payload.paid_at = payload.paid_at ? new Date(payload.paid_at).toISOString() : null; onSave(section, payload); };
+  const submit = e => {
+  e.preventDefault();
+
+  const { _source, ...payload } = record;
+
+  numeric.forEach(field => {
+    if (payload[field] === "" || payload[field] === null) {
+      delete payload[field];
+    } else if (payload[field] !== undefined) {
+      payload[field] = Number(payload[field]);
+    }
+  });
+
+  if (section === "payments") {
+    payload.paid_at = payload.paid_at
+      ? new Date(payload.paid_at).toISOString()
+      : null;
+  }
+
+  onSave(section, payload);
+};
   const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
   const customerPayments = section === "customers" && initial.id ? (payments || []).filter(p => p.customer_id === initial.id) : [];
   const customerPaymentHistory = customerPayments.map(p => ({ payment: p, reservation: (reservations || []).find(r => r.id === p.reservation_id) }));
