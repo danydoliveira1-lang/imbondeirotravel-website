@@ -27,9 +27,11 @@ export default function SignatureDepartures() {
   const [showAll, setShowAll] = useState(false);
   const [liveDepartures, setLiveDepartures] = useState(signatureDepartures);
   useEffect(() => {
-    fetch("/api/public/departures", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()).then(({ departures }) => {
-      if (departures?.length) setLiveDepartures(departures.map(d => ({
-        id:d.id, journeyId:d.journey_id, title:d.title, location:d.location, image:d.image,
+  fetch("/api/public/departures", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(({ departures }) => {
+      if (Array.isArray(departures)) setLiveDepartures(departures.map(d => ({
+        id:d.id, journeyId:d.tour_id, title:d.title, location:d.location, image:d.image,
         startDate:d.start_date, endDate:d.end_date, duration:d.duration,
         maximumGuests:d.maximum_guests, reservedGuests:Number(d.reserved_guests||0)+Number(d.held_guests||0),
         travelStyle:d.travel_style, status:d.status, featured:d.featured
