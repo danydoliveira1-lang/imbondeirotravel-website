@@ -860,6 +860,9 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const [record, setRecord] = useState({ ...blank, ...initial });
   const [mediaAssets, setMediaAssets] = useState([]);
   const [mediaAssetsLoading, setMediaAssetsLoading] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaUploadError, setMediaUploadError] = useState("");
+  
   useEffect(() => {
   if (!["media", "tours"].includes(section)) return;
 
@@ -891,6 +894,55 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
 
   return () => controller.abort();
 }, [section]);
+ async function uploadMediaFile(event) {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  setMediaUploading(true);
+  setMediaUploadError("");
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/admin/media-assets", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || "Upload failed.");
+    }
+
+    const asset = payload.asset;
+
+    setMediaAssets(current => [
+      asset,
+      ...current.filter(item => item.reference !== asset.reference),
+    ]);
+
+    const displayName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replaceAll("-", " ")
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, letter => letter.toUpperCase());
+
+    setRecord(current => ({
+      ...current,
+      name: current.name || displayName,
+      reference: asset.reference,
+      type: asset.type === "video" ? "Video" : "Image",
+    }));
+  } catch (error) {
+    setMediaUploadError(error.message || "Upload failed.");
+  } finally {
+    setMediaUploading(false);
+    event.target.value = "";
+  }
+}
   const numeric = [
   "price",
   "days",
@@ -913,12 +965,38 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const laterJourneys = upcomingJourneys.slice(1);
   const pastJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") < new Date()).sort((a, b) => new Date(b.departure.start_date) - new Date(a.departure.start_date));
   return <div className="cc-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><form className="cc-modal" onSubmit={submit}><div className="cc-modal-head"><div><span className="cc-eyebrow">No-code editor</span><h2>{initial.id?"Edit":"Add"} {meta.singular}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="cc-form-grid">
-  {section === "media" && (
+ 
+    {section === "media" && (
+     <>
+    <label className="full">
+      Upload New Media
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+        disabled={mediaUploading}
+        onChange={uploadMediaFile}
+      />
+
+      {mediaUploading && (
+        <span>Uploading media…</span>
+      )}
+
+      {mediaUploadError && (
+        <span role="alert">{mediaUploadError}</span>
+      )}
+    </label>
+
     <label className="full">
       Choose Existing Media
       <select
-       value={record.reference ? mediaAssets.find(a => a.reference === record.reference)?.path || "" : ""}
-        disabled={mediaAssetsLoading}
+        value={
+          record.reference
+            ? mediaAssets.find(
+                asset => asset.reference === record.reference
+              )?.path || ""
+            : ""
+        }
+        disabled={mediaAssetsLoading || mediaUploading}
         onChange={e => {
           const asset = mediaAssets.find(
             item => item.path === e.target.value
@@ -931,13 +1009,15 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
             name: asset.name
               .replace(/\.[^/.]+$/, "")
               .replaceAll("-", " ")
+              .replaceAll("_", " ")
               .replace(/\b\w/g, letter => letter.toUpperCase()),
             reference: asset.reference,
-            type: asset.metadata?.mimetype?.startsWith("video/")
-              ? "Video"
-              : asset.metadata?.mimetype?.startsWith("image/")
-              ? "Image"
-              : current.type,
+            type:
+              asset.type === "video"
+                ? "Video"
+                : asset.type === "image"
+                ? "Image"
+                : current.type,
           }));
         }}
       >
@@ -954,7 +1034,8 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
         ))}
       </select>
     </label>
-  )}
+  </>
+)}
 
  {section === "tours" && (
   <>
