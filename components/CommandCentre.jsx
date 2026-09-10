@@ -996,6 +996,40 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
   const customerPayments = section === "customers" && initial.id ? (payments || []).filter(p => p.customer_id === initial.id) : [];
   const customerPaymentHistory = customerPayments.map(p => ({ payment: p, reservation: (reservations || []).find(r => r.id === p.reservation_id) }));
+  const reservationPayments =
+  section === "reservations" && initial.id
+    ? (payments || []).filter(
+        payment => payment.reservation_id === initial.id
+      )
+    : [];
+
+const paidReservationPayments = reservationPayments.filter(
+  payment => payment.status === "Paid"
+);
+
+const reservationGrossPaid = paidReservationPayments
+  .filter(payment => payment.payment_type !== "Refund")
+  .reduce(
+    (sum, payment) => sum + Number(payment.amount || 0),
+    0
+  );
+
+const reservationRefunded = paidReservationPayments
+  .filter(payment => payment.payment_type === "Refund")
+  .reduce(
+    (sum, payment) => sum + Number(payment.amount || 0),
+    0
+  );
+
+const reservationNetPaid =
+  reservationGrossPaid - reservationRefunded;
+
+const reservationTotal = Number(record.total || 0);
+
+const reservationOutstanding = Math.max(
+  0,
+  reservationTotal - reservationNetPaid
+);
   const customerTravellers = customerBookings.reduce((sum, r) => sum + Number(r.travellers || 0), 0);
  const customerValue = customerPayments.filter(p => p.status === "Paid").reduce((sum, p) => sum + (p.payment_type === "Refund" ? -Number(p.amount || 0) : Number(p.amount || 0)), 0);
   const upcomingJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") >= new Date()).sort((a, b) => new Date(a.departure.start_date) -new Date(b.departure.start_date));
@@ -1184,7 +1218,90 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
 </select>
 
 :["notes", "summary", "description"].includes(field)?
-<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input required={["title","tour","customer","name"].includes(field)} type={field==="paid_at" && section==="payments"?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"} value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section==="reservations" && initial.id && ["Enquiry","On Hold","Quoted"].includes(record.status) && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Recommended next action</span><h3>{record.status==="Enquiry"?"Respond to enquiry":record.status==="On Hold"?"Confirm or release hold":record.status==="Quoted"?"Follow up on quote":"Follow-up"}</h3></div></div><p>{record.status==="Enquiry"?"Contact the customer and prepare their proposal. Once the proposal has been sent, change the reservation status to Quoted.":record.status==="On Hold"?"Confirm the booking or release the hold so the reserved seats can return to availability.":record.status==="Quoted"?"Follow up with the customer. Once the deposit is received, change the reservation status to Deposit Paid.":"Review this reservation and update its status when the follow-up is complete."}</p></div>}{section==="customers" && initial.id && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Customer journey history</span><h3>Booking history</h3></div><span>{customerBookings.length} booking{customerBookings.length===1?"":"s"}</span></div>{customerPaymentHistory.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Financial history</span><h3>Payment history</h3></div><span>{customerPaymentHistory.length} payment{customerPaymentHistory.length===1?"":"s"}</span></div><div className="cc-activity">{customerPaymentHistory.map(item=><div key={item.payment.id}><span className="cc-dot"></span><div><strong>{item.reservation?.journey||"Journey not specified"} · {item.payment.payment_type}</strong><span>{item.payment.payment_method||"Payment method not specified"}{item.payment.reference?` · ${item.payment.reference}`:""}</span></div><em className={`cc-status ${String(item.payment.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.payment.status}</em><b>{money(item.payment.amount)}</b></div>)}</div></div>}<div className="cc-stat-grid"><article><span>Total bookings</span><strong>{customerBookings.length}</strong></article><article><span>Total travellers</span><strong>{customerTravellers}</strong></article><article><span>Lifetime value</span><strong>{money(customerValue)}</strong></article></div>{nextJourney && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Next journey</span><h3>{nextJourney.departure.title}</h3></div><span>{new Date(nextJourney.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})}</span></div><div className="cc-activity"><div><span className="cc-dot"></span><div><strong>{nextJourney.reservation.journey||nextJourney.departure.title}</strong><span>{nextJourney.reservation.travellers||0} traveller{Number(nextJourney.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(nextJourney.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{nextJourney.reservation.status}</em><b>{nextJourney.reservation.total?money(nextJourney.reservation.total):"€0"}</b></div></div></div>}{laterJourneys.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Upcoming travel</span><h3>Later journeys</h3></div><span>{laterJourneys.length} journey{laterJourneys.length===1?"":"s"}</span></div><div className="cc-activity">{laterJourneys.map(item=><div key={item.reservation.id}><span className="cc-dot"></span><div><strong>{item.departure.title}</strong><span>{new Date(item.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})} · {item.reservation.travellers||0} traveller{Number(item.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(item.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.reservation.status}</em><b>{item.reservation.total?money(item.reservation.total):"€0"}</b></div>)}</div></div>}<div className="cc-activity">{customerBookings.length?customerBookings.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.journey||"Journey not specified"}</strong><span>{r.travellers||0} traveller{Number(r.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(r.status||"").toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"€0"}</b></div>):<div>No bookings linked to this customer yet.</div>}</div>{pastJourneys.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Travel history</span><h3>Past journeys</h3></div><span>{pastJourneys.length} journey{pastJourneys.length===1?"":"s"}</span></div><div className="cc-activity">{pastJourneys.map(item=><div key={item.reservation.id}><span className="cc-dot"></span><div><strong>{item.departure.title}</strong><span>{new Date(item.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})} · {item.reservation.travellers||0} traveller{Number(item.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(item.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.reservation.status}</em><b>{item.reservation.total?money(item.reservation.total):"€0"}</b></div>)}</div></div>}</div>}<div className="cc-modal-actions"><button type="button" onClick={onClose}>Cancel</button><button className="cc-primary" type="submit">Save {meta.singular}</button></div></form></div>;
+<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input required={["title","tour","customer","name"].includes(field)} type={field==="paid_at" && section==="payments"?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"} value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
+  <div className="cc-panel">
+    <div className="cc-panel-head">
+      <div>
+        <span className="cc-eyebrow">
+          Payment summary
+        </span>
+        <h3>Reservation balance</h3>
+      </div>
+
+      <span>
+        {reservationPayments.length} payment
+        {reservationPayments.length === 1 ? "" : "s"}
+      </span>
+    </div>
+
+    <div className="cc-stat-grid">
+      <article>
+        <span>Booking total</span>
+        <strong>{money(reservationTotal)}</strong>
+      </article>
+
+      <article>
+        <span>Gross paid</span>
+        <strong>{money(reservationGrossPaid)}</strong>
+      </article>
+
+      <article>
+        <span>Refunded</span>
+        <strong>{money(reservationRefunded)}</strong>
+      </article>
+
+      <article>
+        <span>Net paid</span>
+        <strong>{money(reservationNetPaid)}</strong>
+      </article>
+
+      <article>
+        <span>Outstanding</span>
+        <strong>{money(reservationOutstanding)}</strong>
+      </article>
+    </div>
+
+    <div className="cc-activity">
+      {reservationPayments.length ? (
+        reservationPayments.map(payment => (
+          <div key={payment.id}>
+            <span className="cc-dot"></span>
+
+            <div>
+              <strong>
+                {payment.payment_type}
+              </strong>
+              <span>
+                {payment.payment_method || "Method not recorded"}
+                {payment.reference
+                  ? ` · ${payment.reference}`
+                  : ""}
+              </span>
+            </div>
+
+            <em
+              className={`cc-status ${String(
+                payment.status || ""
+              )
+                .toLowerCase()
+                .replaceAll(" ", "-")}`}
+            >
+              {payment.status}
+            </em>
+
+            <b>
+              {payment.payment_type === "Refund"
+                ? `−${money(payment.amount)}`
+                : money(payment.amount)}
+            </b>
+          </div>
+        ))
+      ) : (
+        <div>No payments recorded for this reservation.</div>
+      )}
+    </div>
+  </div>
+)}{section==="reservations" && initial.id && ["Enquiry","On Hold","Quoted"].includes(record.status) && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Recommended next action</span><h3>{record.status==="Enquiry"?"Respond to enquiry":record.status==="On Hold"?"Confirm or release hold":record.status==="Quoted"?"Follow up on quote":"Follow-up"}</h3></div></div><p>{record.status==="Enquiry"?"Contact the customer and prepare their proposal. Once the proposal has been sent, change the reservation status to Quoted.":record.status==="On Hold"?"Confirm the booking or release the hold so the reserved seats can return to availability.":record.status==="Quoted"?"Follow up with the customer. Once the deposit is received, change the reservation status to Deposit Paid.":"Review this reservation and update its status when the follow-up is complete."}</p></div>}{section==="customers" && initial.id && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Customer journey history</span><h3>Booking history</h3></div><span>{customerBookings.length} booking{customerBookings.length===1?"":"s"}</span></div>{customerPaymentHistory.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Financial history</span><h3>Payment history</h3></div><span>{customerPaymentHistory.length} payment{customerPaymentHistory.length===1?"":"s"}</span></div><div className="cc-activity">{customerPaymentHistory.map(item=><div key={item.payment.id}><span className="cc-dot"></span><div><strong>{item.reservation?.journey||"Journey not specified"} · {item.payment.payment_type}</strong><span>{item.payment.payment_method||"Payment method not specified"}{item.payment.reference?` · ${item.payment.reference}`:""}</span></div><em className={`cc-status ${String(item.payment.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.payment.status}</em><b>{money(item.payment.amount)}</b></div>)}</div></div>}<div className="cc-stat-grid"><article><span>Total bookings</span><strong>{customerBookings.length}</strong></article><article><span>Total travellers</span><strong>{customerTravellers}</strong></article><article><span>Lifetime value</span><strong>{money(customerValue)}</strong></article></div>{nextJourney && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Next journey</span><h3>{nextJourney.departure.title}</h3></div><span>{new Date(nextJourney.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})}</span></div><div className="cc-activity"><div><span className="cc-dot"></span><div><strong>{nextJourney.reservation.journey||nextJourney.departure.title}</strong><span>{nextJourney.reservation.travellers||0} traveller{Number(nextJourney.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(nextJourney.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{nextJourney.reservation.status}</em><b>{nextJourney.reservation.total?money(nextJourney.reservation.total):"€0"}</b></div></div></div>}{laterJourneys.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Upcoming travel</span><h3>Later journeys</h3></div><span>{laterJourneys.length} journey{laterJourneys.length===1?"":"s"}</span></div><div className="cc-activity">{laterJourneys.map(item=><div key={item.reservation.id}><span className="cc-dot"></span><div><strong>{item.departure.title}</strong><span>{new Date(item.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})} · {item.reservation.travellers||0} traveller{Number(item.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(item.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.reservation.status}</em><b>{item.reservation.total?money(item.reservation.total):"€0"}</b></div>)}</div></div>}<div className="cc-activity">{customerBookings.length?customerBookings.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.journey||"Journey not specified"}</strong><span>{r.travellers||0} traveller{Number(r.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(r.status||"").toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"€0"}</b></div>):<div>No bookings linked to this customer yet.</div>}</div>{pastJourneys.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Travel history</span><h3>Past journeys</h3></div><span>{pastJourneys.length} journey{pastJourneys.length===1?"":"s"}</span></div><div className="cc-activity">{pastJourneys.map(item=><div key={item.reservation.id}><span className="cc-dot"></span><div><strong>{item.departure.title}</strong><span>{new Date(item.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})} · {item.reservation.travellers||0} traveller{Number(item.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(item.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.reservation.status}</em><b>{item.reservation.total?money(item.reservation.total):"€0"}</b></div>)}</div></div>}</div>}<div className="cc-modal-actions"><button type="button" onClick={onClose}>Cancel</button><button className="cc-primary" type="submit">Save {meta.singular}</button></div></form></div>;
 }
 
 function ComingSoon({ type }) {
