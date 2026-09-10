@@ -857,7 +857,25 @@ return <section className="cc-manager"><div className="cc-manager-head"><div><p>
 function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, onClose, onSave }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
   if (section === "payments") blank.currency = "EUR";
-  const [record, setRecord] = useState({ ...blank, ...initial });
+  const [record, setRecord] = useState(() => {
+  const nextRecord = { ...blank, ...initial };
+
+  if (section === "payments" && nextRecord.paid_at) {
+    const paidAt = new Date(nextRecord.paid_at);
+
+    if (!Number.isNaN(paidAt.getTime())) {
+      const localPaidAt = new Date(
+        paidAt.getTime() - paidAt.getTimezoneOffset() * 60000
+      );
+
+      nextRecord.paid_at = localPaidAt
+        .toISOString()
+        .slice(0, 16);
+    }
+  }
+
+  return nextRecord;
+});
   const [mediaAssets, setMediaAssets] = useState([]);
   const [mediaAssetsLoading, setMediaAssetsLoading] = useState(false);
   const [mediaUploading, setMediaUploading] = useState(false);
