@@ -202,3 +202,108 @@ export async function GET() {
     );
   }
 }
+export async function POST(request) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json(
+      { error: "Unauthorised" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !key) {
+      throw new Error("Supabase is not configured.");
+    }
+
+    const formData = await request.formData();
+    const file = formData.get("file");
+
+    if (!file || typeof file.arrayBuffer !== "function") {
+      return NextResponse.json(
+        { error: "Please choose a file to upload." },
+        { status: 400 }
+      );
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Unsupported file type." },
+        { status: 400 }
+      );
+    }
+
+    const maximumSize = 10 * 1024 * 1024;
+
+    if (file.size > maximumSize) {
+      return NextResponse.json(
+        { error: "The file must be smaller than 10 MB." },
+        { status: 400 }
+      );
+    }
+
+    const safeName = file.name
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const fileName = `${Date.now()}-${safeName}`;
+    const objectPath = `launch-v1/${fileName}`;
+    const encodedPath = objectPath
+      .split("/")
+      .map(encodeURIComponent)
+      .join("/");
+
+    const uploadResponse = await fetch(
+      `${url}/storage/v1/object/journey-media/${encodedPath}`,
+      {
+        method: "POST",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Content-Type": file.type,
+          "x-upsert": "false",
+        },
+        body: await file.arrayBuffer(),
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      throw new Error(await uploadResponse.text());
+    }
+
+    const reference =
+      `${url}/storage/v1/object/public/journey-media/${objectPath}`;
+
+    return NextResponse.json({
+      asset: {
+        name: file.name,
+        path: objectPath,
+        reference,
+        type: file.type.startsWith("video/") ? "video" : "image",
+        source: "storage",
+        metadata: {
+          mimetype: file.type,
+          size: file.size,
+        },
+      },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message || "Upload failed." },
+      { status: 500 }
+    );
+  }
+}
