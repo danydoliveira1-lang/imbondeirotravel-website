@@ -30,6 +30,7 @@ const seed = {
     { id: "media-2", name: "Traditional Dance", type: "YouTube", reference: "U9ILT0S2GYA", usage: "Homepage hero", status: "Active" },
     { id: "media-3", name: "Imbondeiro Brand Mark", type: "Image", reference: "/assets/logo.png", usage: "Global", status: "Active" },
   ],
+  invoices: [],
 };
 
 const nav = [
