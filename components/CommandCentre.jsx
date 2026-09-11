@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { printProFormaInvoice } from "./printProFormaInvoice";
+import BillingSettings from "./BillingSettings";
 
 const seed = {
   tours: [
@@ -847,7 +848,12 @@ useEffect(() => {
   </div>
 )}
 </section>
-</div>;
+<BillingSettings
+  company={company}
+  reload={reload}
+  flash={flash}
+/>
+  </div>;
 }
 
 function Manager({ section, meta, rows, tours, departures, reservations, payments = [], query, onNew, onEdit, onDelete }) {
