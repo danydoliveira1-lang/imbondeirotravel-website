@@ -851,7 +851,375 @@ useEffect(() => {
 
 function Manager({ section, meta, rows, tours, departures, reservations, query, onNew, onEdit, onDelete }) {
 const filtered = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
-return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : section === "payments" ? "Track deposits, balances, payment status and transaction history." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })(): field === "reservation_id" ? (() => { const reservation = reservations.find(r => r.id===row[field]); return reservation ? `${reservation.customer} — ${reservation.journey}` : "—"; })() : section === "media" && field === "reference" && row.type === "Image" ? <div style={{display:"flex",alignItems:"center",gap:"10px"}}><a href={row[field]} target="_blank" rel="noreferrer"><img src={row[field]} alt={row.name||"Media preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a><span>{row[field]||"—"}</span></div> : section === "media" && field === "reference" && row.type === "YouTube" ? (()=>{const videoId=getYouTubeId(row[field]);return <div style={{display:"flex",alignItems:"center",gap:"10px"}}>{videoId&&<a href={row[field]} target="_blank" rel="noreferrer"><img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={row.name||"YouTube preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a>}<span>{row[field]||"—"}</span></div>;})() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td><div className="cc-row-actions"><button onClick={()=>onEdit(row)}>Edit</button><button className="danger" onClick={()=>onDelete(row.id)}>Delete</button></div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
+const printPaymentReceipt = payment => {
+  const reservation = reservations.find(
+    item => item.id === payment.reservation_id
+  );
+
+  const escapeHtml = value =>
+    String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  const formatDate = value => {
+    if (!value) return "Not recorded";
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? String(value)
+      : date.toLocaleString("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+  };
+
+  const receiptNumber =
+    payment.reference ||
+    `PAY-${String(payment.id || "").slice(0, 8).toUpperCase()}`;
+
+  const receiptWindow = window.open(
+    "",
+    "_blank",
+    "width=900,height=850"
+  );
+
+  if (!receiptWindow) {
+    window.alert(
+      "The receipt window was blocked. Please allow pop-ups for this website and try again."
+    );
+    return;
+  }
+
+  receiptWindow.document.write(`
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>Payment Receipt ${escapeHtml(receiptNumber)}</title>
+
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            margin: 0;
+            background: #ece9e1;
+            color: #132a23;
+            font-family: Arial, sans-serif;
+          }
+
+          .receipt {
+            width: min(794px, calc(100% - 32px));
+            min-height: 1050px;
+            margin: 24px auto;
+            background: #fffdf8;
+            border-top: 10px solid #0b3027;
+            padding: 56px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, .12);
+          }
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            padding-bottom: 34px;
+            border-bottom: 1px solid #d9cfb8;
+          }
+
+          .brand {
+            color: #0b3027;
+            font-family: Georgia, serif;
+            font-size: 31px;
+            letter-spacing: .08em;
+          }
+
+          .tagline {
+            margin-top: 7px;
+            color: #a67f2d;
+            font-family: Georgia, serif;
+            font-style: italic;
+          }
+
+          .document-title {
+            text-align: right;
+          }
+
+          .document-title h1 {
+            margin: 0 0 8px;
+            font-family: Georgia, serif;
+            font-size: 34px;
+            font-weight: 500;
+          }
+
+          .document-title span,
+          .label {
+            color: #746c5d;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+          }
+
+          .status {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #dce9df;
+            color: #1c593b;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+          }
+
+          .customer {
+            margin: 36px 0;
+            padding: 25px;
+            background: #f3efe5;
+            border-left: 4px solid #bd963f;
+          }
+
+          .customer strong {
+            display: block;
+            margin-top: 8px;
+            font-family: Georgia, serif;
+            font-size: 25px;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+
+          th,
+          td {
+            padding: 16px 10px;
+            border-bottom: 1px solid #ded8ca;
+            text-align: left;
+            vertical-align: top;
+          }
+
+          th {
+            width: 38%;
+            color: #746c5d;
+            font-size: 11px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+          }
+
+          .amount {
+            margin-top: 38px;
+            padding: 24px;
+            background: #0b3027;
+            color: white;
+            text-align: right;
+          }
+
+          .amount span {
+            display: block;
+            color: #dfc98f;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+          }
+
+          .amount strong {
+            display: block;
+            margin-top: 8px;
+            font-family: Georgia, serif;
+            font-size: 38px;
+          }
+
+          .notes {
+            margin-top: 32px;
+            line-height: 1.6;
+          }
+
+          .footer {
+            margin-top: 70px;
+            padding-top: 24px;
+            border-top: 1px solid #d9cfb8;
+            color: #746c5d;
+            font-size: 11px;
+            line-height: 1.7;
+          }
+
+          .actions {
+            width: min(794px, calc(100% - 32px));
+            margin: 0 auto 30px;
+            text-align: right;
+          }
+
+          button {
+            border: 0;
+            border-radius: 7px;
+            padding: 13px 20px;
+            background: #0b3027;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+          }
+
+          @media print {
+            body {
+              background: white;
+            }
+
+            .receipt {
+              width: 100%;
+              min-height: auto;
+              margin: 0;
+              box-shadow: none;
+            }
+
+            .actions {
+              display: none;
+            }
+
+            @page {
+              size: A4;
+              margin: 0;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <main class="receipt">
+          <header class="header">
+            <div>
+              <div class="brand">IMBONDEIRO TRAVEL</div>
+              <div class="tagline">Your Lifetime Experience</div>
+            </div>
+
+            <div class="document-title">
+              <h1>Payment Receipt</h1>
+              <span>${escapeHtml(receiptNumber)}</span>
+            </div>
+          </header>
+
+          <div class="status">
+            ${escapeHtml(payment.status || "Recorded")}
+          </div>
+
+          <section class="customer">
+            <span class="label">Received from</span>
+            <strong>
+              ${escapeHtml(reservation?.customer || "Customer not specified")}
+            </strong>
+            <div>
+              ${escapeHtml(reservation?.journey || "Journey not specified")}
+            </div>
+          </section>
+
+          <table>
+            <tbody>
+              <tr>
+                <th>Payment type</th>
+                <td>${escapeHtml(payment.payment_type || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Payment method</th>
+                <td>${escapeHtml(payment.payment_method || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Payment date</th>
+                <td>${escapeHtml(formatDate(payment.paid_at))}</td>
+              </tr>
+
+              <tr>
+                <th>Reference</th>
+                <td>${escapeHtml(payment.reference || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Journey</th>
+                <td>${escapeHtml(reservation?.journey || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Reservation status</th>
+                <td>${escapeHtml(reservation?.status || "—")}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <section class="amount">
+            <span>Amount received</span>
+            <strong>
+              ${escapeHtml(payment.currency || "EUR")}
+              ${escapeHtml(Number(payment.amount || 0).toFixed(2))}
+            </strong>
+          </section>
+
+          ${
+            payment.notes
+              ? `
+                <section class="notes">
+                  <span class="label">Notes</span>
+                  <p>${escapeHtml(payment.notes)}</p>
+                </section>
+              `
+              : ""
+          }
+
+          <footer class="footer">
+            <strong>Imbondeiro Travel</strong><br>
+            www.imbondeirotravel.com · imbondeirotravel@gmail.com<br>
+            Portugal: +351 936 347 702 · South Africa: +27 79 446 7370<br><br>
+            This document confirms that the payment shown above was
+            recorded by Imbondeiro Travel. It is a payment receipt and
+            not a tax invoice.
+          </footer>
+        </main>
+
+        <div class="actions">
+          <button onclick="window.print()">
+            Print / Save as PDF
+          </button>
+        </div>
+      </body>
+    </html>
+  `);
+
+  receiptWindow.document.close();
+};
+  return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : section === "payments" ? "Track deposits, balances, payment status and transaction history." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })(): field === "reservation_id" ? (() => { const reservation = reservations.find(r => r.id===row[field]); return reservation ? `${reservation.customer} — ${reservation.journey}` : "—"; })() : section === "media" && field === "reference" && row.type === "Image" ? <div style={{display:"flex",alignItems:"center",gap:"10px"}}><a href={row[field]} target="_blank" rel="noreferrer"><img src={row[field]} alt={row.name||"Media preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a><span>{row[field]||"—"}</span></div> : section === "media" && field === "reference" && row.type === "YouTube" ? (()=>{const videoId=getYouTubeId(row[field]);return <div style={{display:"flex",alignItems:"center",gap:"10px"}}>{videoId&&<a href={row[field]} target="_blank" rel="noreferrer"><img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={row.name||"YouTube preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a>}<span>{row[field]||"—"}</span></div>;})() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td><div className="cc-row-actions">
+  {section === "payments" &&
+    String(row.status || "").toLowerCase() === "paid" && (
+      <button
+        type="button"
+        onClick={() => printPaymentReceipt(row)}
+      >
+        Receipt
+      </button>
+    )}
+
+  <button
+    type="button"
+    onClick={() => onEdit(row)}
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    className="danger"
+    onClick={() => onDelete(row.id)}
+  >
+    Delete
+  </button>
+</div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
 }
 
 function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, onClose, onSave }) {
