@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { printProFormaInvoice } from "./printProFormaInvoice";
+import { printTaxInvoice } from "./printTaxInvoice";
 import BillingSettings from "./BillingSettings";
 
 const seed = {
@@ -1336,19 +1337,16 @@ const issueTaxInvoice = async reservation => {
   const existingInvoice = findIssuedInvoice(reservation.id);
 
   if (existingInvoice) {
-    window.alert(
-      `Tax Invoice ${existingInvoice.invoice_number} has already been issued for this reservation.`
-    );
-    return;
-  }
-
+  printTaxInvoice(existingInvoice);
+  return;
+}
+     
   if (!taxInvoicesEnabled) {
     window.alert(
       "Tax Invoice issuance is locked. Complete and activate Billing & Tax Identity in Settings first."
     );
     return;
   }
-
   const confirmed = window.confirm(
     "Issue an official Tax Invoice for this reservation?\n\nOnce issued, its number and financial details cannot be edited or deleted."
   );
@@ -1424,18 +1422,22 @@ const issueTaxInvoice = async reservation => {
   return (
     <button
       type="button"
-      disabled={Boolean(issuedInvoice) || invoiceLocked}
+      disabled={invoiceLocked}
       title={
         issuedInvoice
-          ? `Tax Invoice ${issuedInvoice.invoice_number} has already been issued`
+          ? `Open Tax Invoice ${issuedInvoice.invoice_number}`
           : invoiceLocked
             ? "Complete and activate Billing & Tax Identity in Settings"
             : "Issue an official Tax Invoice"
       }
-      onClick={() => issueTaxInvoice(row)}
+      onClick={() =>
+        issuedInvoice
+          ? printTaxInvoice(issuedInvoice)
+          : issueTaxInvoice(row)
+      }
     >
       {issuedInvoice
-        ? `Issued · ${issuedInvoice.invoice_number}`
+        ? "Tax Invoice"
         : invoiceLocked
           ? "Tax Invoice Locked"
           : "Issue Tax Invoice"}
