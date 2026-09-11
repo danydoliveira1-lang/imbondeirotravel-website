@@ -50,7 +50,7 @@ export function printTaxInvoice(invoice) {
 
   const isVoid =
     String(invoice.status || "").toLowerCase() === "void";
-
+  const isTest = invoice.is_test === true;
   invoiceWindow.document.write(`
     <!doctype html>
     <html lang="en">
@@ -146,7 +146,18 @@ export function printTaxInvoice(invoice) {
             color: #842f25;
             font-weight: bold;
           }
-
+.test-warning {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border: 2px solid #9b2c23;
+  background: #fff0ed;
+  color: #842f25;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+}
           .identity-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -396,6 +407,15 @@ export function printTaxInvoice(invoice) {
               <div>${formatDate(invoice.issued_at)}</div>
             </div>
           </header>
+${
+  isTest
+    ? `
+      <div class="test-warning">
+        Test document — not valid for tax purposes
+      </div>
+    `
+    : ""
+}
 
           <div class="status">
             ${escapeHtml(invoice.status || "Issued")}
@@ -551,4 +571,63 @@ export function printTaxInvoice(invoice) {
   `);
 
   invoiceWindow.document.close();
+}
+export function previewTaxInvoice({
+  reservation,
+  departures = [],
+  company = {},
+}) {
+  if (!reservation) {
+    window.alert("Reservation data is unavailable.");
+    return;
+  }
+
+  const departure = departures.find(
+    item => item.id === reservation.departure_id
+  );
+
+  const subtotal = Number(reservation.total || 0);
+  const taxRate = Number(company.default_tax_rate || 0);
+  const taxAmount = subtotal * (taxRate / 100);
+  const total = subtotal + taxAmount;
+
+  printTaxInvoice({
+    is_test: true,
+    invoice_number: "TEST-PREVIEW-NOT-FISCAL",
+    status: "Test Preview",
+    issued_at: new Date().toISOString(),
+    currency: company.default_currency || "EUR",
+    subtotal,
+    tax_rate: taxRate,
+    tax_amount: taxAmount,
+    total,
+    customer_name:
+      reservation.customer || "Test Customer",
+    journey:
+      reservation.journey ||
+      departure?.title ||
+      "Test Journey",
+    travellers: Number(reservation.travellers || 0),
+    departure_title:
+      departure?.title ||
+      reservation.journey ||
+      "Test Departure",
+    departure_date:
+      departure?.start_date || null,
+    legal_company_name:
+      company.legal_company_name ||
+      "IMBONDEIRO TRAVEL — TEST",
+    company_registration_number:
+      "TEST-NOT-VALID",
+    issuing_country:
+      company.issuing_country ||
+      "TEST ENVIRONMENT",
+    registered_address:
+      company.registered_address ||
+      "TEST ADDRESS — NOT VALID",
+    tax_registration_number:
+      "TEST-NOT-VALID-0001",
+    payment_instructions:
+      "TEST PREVIEW ONLY — NO PAYMENT REQUIRED",
+  });
 }
