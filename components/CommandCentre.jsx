@@ -855,7 +855,25 @@ const printPaymentReceipt = payment => {
   const reservation = reservations.find(
     item => item.id === payment.reservation_id
   );
+const isRefund =
+  String(payment.payment_type || "").toLowerCase() === "refund";
 
+const documentTitle = isRefund
+  ? "Refund Receipt"
+  : "Payment Receipt";
+
+const partyLabel = isRefund
+  ? "Refunded to"
+  : "Received from";
+
+const amountLabel = isRefund
+  ? "Amount refunded"
+  : "Amount received";
+
+const documentStatus = isRefund
+  ? "Refunded"
+  : payment.status || "Recorded";
+  
   const escapeHtml = value =>
     String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -902,7 +920,7 @@ const printPaymentReceipt = payment => {
     <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>Payment Receipt ${escapeHtml(receiptNumber)}</title>
+        <title>${escapeHtml(documentTitle)} ${escapeHtml(receiptNumber)}</title>
 
         <style>
           * {
@@ -1101,17 +1119,17 @@ const printPaymentReceipt = payment => {
             </div>
 
             <div class="document-title">
-              <h1>Payment Receipt</h1>
+              <h1>${escapeHtml(documentTitle)}</h1>
               <span>${escapeHtml(receiptNumber)}</span>
             </div>
           </header>
 
           <div class="status">
-            ${escapeHtml(payment.status || "Recorded")}
+            ${escapeHtml(documentStatus)}
           </div>
 
           <section class="customer">
-            <span class="label">Received from</span>
+            <span class="label">${escapeHtml(partyLabel)}</span>
             <strong>
               ${escapeHtml(reservation?.customer || "Customer not specified")}
             </strong>
@@ -1155,7 +1173,7 @@ const printPaymentReceipt = payment => {
           </table>
 
           <section class="amount">
-            <span>Amount received</span>
+            <span>${escapeHtml(amountLabel)}</span>
             <strong>
               ${escapeHtml(payment.currency || "EUR")}
               ${escapeHtml(Number(payment.amount || 0).toFixed(2))}
