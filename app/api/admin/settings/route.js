@@ -74,8 +74,7 @@ if (
 }
 
 const result = await supabaseRequest(
-
-  "/company_settings",
+  "company_settings",
   {
     method: "PATCH",
     query: `id=eq.${encodeURIComponent(SETTINGS_ID)}`,
