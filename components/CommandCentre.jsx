@@ -1107,6 +1107,99 @@ const documentStatus = isRefund
               margin: 0;
             }
           }
+        @media print {
+  html,
+  body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    background: white;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .receipt {
+    width: 210mm;
+    height: 297mm;
+    min-height: 0;
+    margin: 0;
+    padding: 12mm 14mm 10mm;
+    border-top-width: 3mm;
+    box-shadow: none;
+    overflow: hidden;
+    page-break-after: avoid;
+    break-after: avoid-page;
+  }
+
+  .header {
+    padding-bottom: 18px;
+  }
+
+  .brand {
+    font-size: 26px;
+  }
+
+  .document-title h1 {
+    font-size: 29px;
+  }
+
+  .status {
+    margin-top: 18px;
+    padding: 6px 12px;
+  }
+
+  .customer {
+    margin: 18px 0;
+    padding: 17px 20px;
+  }
+
+  .customer strong {
+    font-size: 22px;
+  }
+
+  table {
+    margin-top: 10px;
+  }
+
+  th,
+  td {
+    padding: 9px 8px;
+  }
+
+  .amount {
+    margin-top: 18px;
+    padding: 15px 20px;
+  }
+
+  .amount strong {
+    font-size: 31px;
+  }
+
+  .notes {
+    margin-top: 16px;
+  }
+
+  .notes p {
+    margin: 7px 0;
+  }
+
+  .footer {
+    margin-top: 25px;
+    padding-top: 16px;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
         </style>
       </head>
 
