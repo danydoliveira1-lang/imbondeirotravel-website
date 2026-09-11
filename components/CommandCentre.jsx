@@ -131,7 +131,7 @@ export default function CommandCentre() {
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
       {active === "operations" && <Operations data={data} />}
       {active === "reports" && <Reports data={data} />}
-      {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
+      {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} invoices={data.invoices} company={data.company_settings?.[0]} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
       {active === "settings" && <Settings data={data} reload={loadData} flash={flash} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} payments={data.payments} onClose={() => setModal(null)} onSave={saveRecord} />}
@@ -857,7 +857,7 @@ useEffect(() => {
   </div>;
 }
 
-function Manager({ section, meta, rows, tours, departures, reservations, payments = [], query, onNew, onEdit, onDelete }) {
+function Manager({ section, meta, rows, tours, departures, reservations, payments = [], invoices = [], company = {}, query, onNew, onEdit, onDelete }) {
 const filtered = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
 const printPaymentReceipt = payment => {
   const reservation = reservations.find(
