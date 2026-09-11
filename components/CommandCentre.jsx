@@ -1313,6 +1313,83 @@ const documentStatus = isRefund
 
   receiptWindow.document.close();
 };
+const billingDetailsComplete = [
+  company.legal_company_name,
+  company.issuing_country,
+  company.registered_address,
+  company.tax_registration_number,
+  company.invoice_prefix,
+].every(value => String(value || "").trim());
+
+const taxInvoicesEnabled =
+  billingDetailsComplete &&
+  company.tax_invoice_enabled === true;
+
+const findIssuedInvoice = reservationId =>
+  invoices.find(
+    invoice =>
+      invoice.reservation_id === reservationId &&
+      String(invoice.status || "").toLowerCase() === "issued"
+  );
+
+const issueTaxInvoice = async reservation => {
+  const existingInvoice = findIssuedInvoice(reservation.id);
+
+  if (existingInvoice) {
+    window.alert(
+      `Tax Invoice ${existingInvoice.invoice_number} has already been issued for this reservation.`
+    );
+    return;
+  }
+
+  if (!taxInvoicesEnabled) {
+    window.alert(
+      "Tax Invoice issuance is locked. Complete and activate Billing & Tax Identity in Settings first."
+    );
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Issue an official Tax Invoice for this reservation?\n\nOnce issued, its number and financial details cannot be edited or deleted."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch("/api/admin/invoices", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reservation_id: reservation.id,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "The Tax Invoice could not be issued."
+      );
+    }
+
+    if (reload) {
+      await reload();
+    }
+
+    window.alert(
+      result.existing
+        ? `Tax Invoice ${result.record?.invoice_number || ""} already exists.`
+        : `Tax Invoice ${result.record?.invoice_number || ""} was issued successfully.`
+    );
+  } catch (error) {
+    window.alert(
+      error.message || "The Tax Invoice could not be issued."
+    );
+  }
+};
+  
   return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : section === "payments" ? "Track deposits, balances, payment status and transaction history." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })(): field === "reservation_id" ? (() => { const reservation = reservations.find(r => r.id===row[field]); return reservation ? `${reservation.customer} — ${reservation.journey}` : "—"; })() : section === "media" && field === "reference" && row.type === "Image" ? <div style={{display:"flex",alignItems:"center",gap:"10px"}}><a href={row[field]} target="_blank" rel="noreferrer"><img src={row[field]} alt={row.name||"Media preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a><span>{row[field]||"—"}</span></div> : section === "media" && field === "reference" && row.type === "YouTube" ? (()=>{const videoId=getYouTubeId(row[field]);return <div style={{display:"flex",alignItems:"center",gap:"10px"}}>{videoId&&<a href={row[field]} target="_blank" rel="noreferrer"><img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={row.name||"YouTube preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a>}<span>{row[field]||"—"}</span></div>;})() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td>
   <div className="cc-row-actions">
   {section === "payments" &&
@@ -1339,6 +1416,32 @@ const documentStatus = isRefund
     Pro Forma
   </button>
 )}
+{section === "reservations" && (() => {
+  const issuedInvoice = findIssuedInvoice(row.id);
+  const invoiceLocked =
+    !issuedInvoice && !taxInvoicesEnabled;
+
+  return (
+    <button
+      type="button"
+      disabled={Boolean(issuedInvoice) || invoiceLocked}
+      title={
+        issuedInvoice
+          ? `Tax Invoice ${issuedInvoice.invoice_number} has already been issued`
+          : invoiceLocked
+            ? "Complete and activate Billing & Tax Identity in Settings"
+            : "Issue an official Tax Invoice"
+      }
+      onClick={() => issueTaxInvoice(row)}
+    >
+      {issuedInvoice
+        ? `Issued · ${issuedInvoice.invoice_number}`
+        : invoiceLocked
+          ? "Tax Invoice Locked"
+          : "Issue Tax Invoice"}
+    </button>
+  );
+})()}
     
   <button
     type="button"
