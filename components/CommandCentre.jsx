@@ -1506,12 +1506,17 @@ const issueTaxInvoice = async reservation => {
   );
 })()}
     
+ {!(
+  section === "payments" &&
+  String(row.status || "").toLowerCase() === "paid"
+) && (
   <button
     type="button"
     onClick={() => onEdit(row)}
   >
     Edit
   </button>
+)}
 
  {section === "payments" &&
 String(row.status || "").toLowerCase() === "paid" ? (
