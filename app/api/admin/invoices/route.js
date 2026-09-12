@@ -176,3 +176,81 @@ export async function POST(request) {
     );
   }
 }
+export async function PATCH(request) {
+  if (!(await requireAuthentication())) {
+    return NextResponse.json(
+      { error: "Unauthorised" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const invoiceId = String(body.invoice_id || "").trim();
+    const voidReason = String(body.void_reason || "").trim();
+
+    if (!invoiceId) {
+      return NextResponse.json(
+        { error: "An invoice is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!voidReason) {
+      return NextResponse.json(
+        { error: "A reason is required to void an invoice." },
+        { status: 400 }
+      );
+    }
+
+    const records = await supabaseRequest("invoices", {
+      query:
+        `select=*&id=eq.${encodeURIComponent(
+          invoiceId
+        )}&limit=1`,
+    });
+
+    const invoice = records?.[0];
+
+    if (!invoice) {
+      return NextResponse.json(
+        { error: "Invoice not found." },
+        { status: 404 }
+      );
+    }
+
+    if (
+      String(invoice.status || "").toLowerCase() === "void"
+    ) {
+      return NextResponse.json({
+        record: invoice,
+        existing: true,
+      });
+    }
+
+    const updated = await supabaseRequest("invoices", {
+      method: "PATCH",
+      query: `id=eq.${encodeURIComponent(invoiceId)}`,
+      body: {
+        status: "Void",
+        void_reason: voidReason,
+        voided_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    });
+
+    return NextResponse.json({
+      record: updated?.[0] || null,
+      existing: false,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error:
+          error?.message ||
+          "The Tax Invoice could not be voided.",
+      },
+      { status: 500 }
+    );
+  }
+}
