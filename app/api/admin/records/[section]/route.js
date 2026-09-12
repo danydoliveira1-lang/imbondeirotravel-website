@@ -76,7 +76,52 @@ export async function POST(request, { params }) {
       { status: 400 }
     );
   }
+const paymentStatus = String(
+  record.status || ""
+).toLowerCase();
 
+const paymentReference = String(
+  record.reference || ""
+).trim();
+
+if (paymentStatus === "paid") {
+  if (!record.paid_at) {
+    return NextResponse.json(
+      {
+        error:
+          "A payment date is required when the transaction status is Paid.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const paidAt = new Date(record.paid_at);
+
+  if (Number.isNaN(paidAt.getTime())) {
+    return NextResponse.json(
+      {
+        error:
+          "Enter a valid payment date before marking the transaction as Paid.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!paymentReference) {
+    return NextResponse.json(
+      {
+        error:
+          "A transaction reference is required when the status is Paid.",
+      },
+      { status: 400 }
+    );
+  }
+
+  record.paid_at = paidAt.toISOString();
+}
+
+record.reference = paymentReference;
+     
   if (record.id) {
     const existingRecords = await supabaseRequest(
       "payments",
