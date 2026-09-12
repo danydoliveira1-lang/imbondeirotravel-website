@@ -1432,10 +1432,15 @@ const issueTaxInvoice = async reservation => {
     Tax Preview
   </button>
 )} 
+    
 {section === "reservations" && (() => {
   const issuedInvoice = findIssuedInvoice(row.id);
+  const hasValidTotal =
+    Number(row.total || 0) > 0;
+
   const invoiceLocked =
-    !issuedInvoice && !taxInvoicesEnabled;
+    !issuedInvoice &&
+    (!taxInvoicesEnabled || !hasValidTotal);
 
   return (
     <button
@@ -1444,9 +1449,11 @@ const issueTaxInvoice = async reservation => {
       title={
         issuedInvoice
           ? `Open Tax Invoice ${issuedInvoice.invoice_number}`
-          : invoiceLocked
-            ? "Complete and activate Billing & Tax Identity in Settings"
-            : "Issue an official Tax Invoice"
+          : !hasValidTotal
+            ? "Enter a reservation total greater than zero before issuing a Tax Invoice"
+            : !taxInvoicesEnabled
+              ? "Complete and activate Billing & Tax Identity in Settings"
+              : "Issue an official Tax Invoice"
       }
       onClick={() =>
         issuedInvoice
@@ -1456,9 +1463,11 @@ const issueTaxInvoice = async reservation => {
     >
       {issuedInvoice
         ? "Tax Invoice"
-        : invoiceLocked
-          ? "Tax Invoice Locked"
-          : "Issue Tax Invoice"}
+        : !hasValidTotal
+          ? "Set Total First"
+          : !taxInvoicesEnabled
+            ? "Tax Invoice Locked"
+            : "Issue Tax Invoice"}
     </button>
   );
 })()}
