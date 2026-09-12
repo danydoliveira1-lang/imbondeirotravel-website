@@ -188,6 +188,42 @@ if (
     }
   }
 
+const linkedReservations = await supabaseRequest(
+  "reservations",
+  {
+    query:
+      `select=id,total&id=eq.${encodeURIComponent(
+        reservationId
+      )}&limit=1`,
+  }
+);
+
+const linkedReservation = linkedReservations?.[0];
+
+if (!linkedReservation) {
+  return NextResponse.json(
+    { error: "Linked reservation not found." },
+    { status: 404 }
+  );
+}
+
+const reservationTotal = Number(
+  linkedReservation.total || 0
+);
+
+if (
+  !Number.isFinite(reservationTotal) ||
+  reservationTotal <= 0
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Payments cannot be recorded until the reservation has a valid total greater than zero.",
+    },
+    { status: 400 }
+  );
+}
+     
   const linkedPayments = await supabaseRequest(
     "payments",
     {
@@ -254,6 +290,22 @@ if (projectedRefunded > projectedGrossPaid) {
     { status: 400 }
   );
 }
+ const projectedNetPaid =
+  projectedGrossPaid - projectedRefunded;
+
+if (projectedNetPaid > reservationTotal) {
+  return NextResponse.json(
+    {
+      error:
+        `Paid transactions cannot exceed the reservation total. Booking total: ${reservationTotal.toFixed(
+          2
+        )}; projected net paid: ${projectedNetPaid.toFixed(
+          2
+        )}.`,
+    },
+    { status: 400 }
+  );
+} 
   record.amount = amount;
   record.reservation_id = reservationId;
 }
