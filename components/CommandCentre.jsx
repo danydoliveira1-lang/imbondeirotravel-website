@@ -111,11 +111,45 @@ export default function CommandCentre() {
   if (!signedIn) return <Login onLogin={async () => { setSignedIn(true); await loadData(); }} />;
 
   const saveRecord = async (section, record) => {
-    const response = await fetch(`/api/admin/records/${section}`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(record) });
-    const payload = await response.json(); if(!response.ok) return flash(payload.error || "Save failed.");
-    setData(prev => ({...prev,[section]:prev[section].some(x=>x.id===payload.record.id)?prev[section].map(x=>x.id===payload.record.id?payload.record:x):[payload.record,...prev[section]]}));
-    setModal(null); flash(`${moduleMeta[section].singular} saved to the live website.`);
-  };
+  const response = await fetch(
+    `/api/admin/records/${section}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(record),
+    }
+  );
+
+  const payload = await response.json();
+
+  if (!response.ok) {
+    const message = payload.error || "Save failed.";
+    flash(message);
+    throw new Error(message);
+  }
+
+  setData(prev => ({
+    ...prev,
+    [section]: prev[section].some(
+      item => item.id === payload.record.id
+    )
+      ? prev[section].map(item =>
+          item.id === payload.record.id
+            ? payload.record
+            : item
+        )
+      : [payload.record, ...prev[section]],
+  }));
+
+  setModal(null);
+  flash(
+    `${moduleMeta[section].singular} saved to the live website.`
+  );
+
+  return payload.record;
+};
   const deleteRecord = async (section, id) => { if(confirm("Delete this record?")){ const r=await fetch(`/api/admin/records/${section}?id=${encodeURIComponent(id)}`,{method:"DELETE"}); if(r.ok){setData(prev=>({...prev,[section]:prev[section].filter(x=>x.id!==id)}));flash("Record deleted.");}else flash("Delete failed."); } };
   const flash = message => { setNotice(message); setTimeout(() => setNotice(""), 2600); };
 
@@ -1492,6 +1526,8 @@ const issueTaxInvoice = async reservation => {
 function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, onClose, onSave }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
   if (section === "payments") blank.currency = "EUR";
+  const [saveError, setSaveError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [record, setRecord] = useState(() => {
   const nextRecord = { ...blank, ...initial };
 
@@ -1607,28 +1643,42 @@ function RecordModal({ section, meta, initial, tours, departures, customers, res
   "total",
   "amount"
 ];
-  const submit = e => {
+ const submit = async e => {
   e.preventDefault();
+  setSaveError("");
+  setSaving(true);
 
-  const { _source, ...payload } = record;
+  try {
+    const { _source, ...payload } = record;
 
-  numeric.forEach(field => {
-    if (payload[field] === "" || payload[field] === null) {
-      delete payload[field];
-    } else if (payload[field] !== undefined) {
-      payload[field] = Number(payload[field]);
+    numeric.forEach(field => {
+      if (
+        payload[field] === "" ||
+        payload[field] === null
+      ) {
+        delete payload[field];
+      } else if (payload[field] !== undefined) {
+        payload[field] = Number(payload[field]);
+      }
+    });
+
+    if (section === "payments") {
+      payload.paid_at = payload.paid_at
+        ? new Date(payload.paid_at).toISOString()
+        : null;
     }
-  });
 
-  if (section === "payments") {
-    payload.paid_at = payload.paid_at
-      ? new Date(payload.paid_at).toISOString()
-      : null;
+    await onSave(section, payload);
+  } catch (error) {
+    setSaveError(
+      error.message || "The record could not be saved."
+    );
+  } finally {
+    setSaving(false);
   }
-
-  onSave(section, payload);
 };
-  const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
+
+ const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
   const customerPayments = section === "customers" && initial.id ? (payments || []).filter(p => p.customer_id === initial.id) : [];
   const customerPaymentHistory = customerPayments.map(p => ({ payment: p, reservation: (reservations || []).find(r => r.id === p.reservation_id) }));
   const reservationPayments =
