@@ -116,7 +116,34 @@ if (paymentStatus === "paid") {
       { status: 400 }
     );
   }
+const referencedPayments = await supabaseRequest(
+  "payments",
+  {
+    query:
+      "select=id,reference&reference=not.is.null",
+  }
+);
 
+const duplicateReference = (
+  referencedPayments || []
+).some(
+  payment =>
+    payment.id !== record.id &&
+    String(payment.reference || "")
+      .trim()
+      .toLowerCase() ===
+      paymentReference.toLowerCase()
+);
+
+if (duplicateReference) {
+  return NextResponse.json(
+    {
+      error:
+        `Transaction reference "${paymentReference}" has already been recorded.`,
+    },
+    { status: 409 }
+  );
+}
   record.paid_at = paidAt.toISOString();
 }
 
