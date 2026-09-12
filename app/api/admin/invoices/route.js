@@ -86,7 +86,20 @@ export async function POST(request) {
         { status: 404 }
       );
     }
+const reservationTotal = Number(reservation.total || 0);
 
+if (
+  !Number.isFinite(reservationTotal) ||
+  reservationTotal <= 0
+) {
+  return NextResponse.json(
+    {
+      error:
+        "A Tax Invoice cannot be issued until the reservation has a valid total greater than zero.",
+    },
+    { status: 400 }
+  );
+}
     let departure = null;
 
     if (reservation.departure_id) {
@@ -126,7 +139,7 @@ export async function POST(request) {
     const invoicePayload = {
       reservation_id: reservation.id,
       currency: company.default_currency || "EUR",
-      subtotal: Number(reservation.total || 0),
+     subtotal: reservationTotal,
       customer_name:
         reservation.customer || "Customer not specified",
       journey:
