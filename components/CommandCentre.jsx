@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { printProFormaInvoice } from "./printProFormaInvoice";
 import { printTaxInvoice, previewTaxInvoice, } from "./printTaxInvoice";
 import BillingSettings from "./BillingSettings";
+import InvoiceRegister from "./InvoiceRegister";
 
 const seed = {
   tours: [
@@ -133,6 +134,7 @@ export default function CommandCentre() {
       {active === "operations" && <Operations data={data} />}
       {active === "reports" && <Reports data={data} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} invoices={data.invoices} company={data.company_settings?.[0]} reload={loadData} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
+      {active === "payments" && ( <InvoiceRegister invoices={data.invoices} reload={loadData} flash={flash}/>)}
       {active === "settings" && <Settings data={data} reload={loadData} flash={flash} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} payments={data.payments} onClose={() => setModal(null)} onSave={saveRecord} />}
