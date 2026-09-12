@@ -81,15 +81,27 @@ export async function POST(request, { params }) {
     const existingRecords = await supabaseRequest(
       "payments",
       {
-        query:
-          `select=id,reservation_id&id=eq.${encodeURIComponent(
-            record.id
-          )}&limit=1`,
+       query:
+  `select=id,reservation_id,status&id=eq.${encodeURIComponent(
+    record.id
+  )}&limit=1`,
       }
     );
 
     const existingRecord = existingRecords?.[0];
-
+if (
+  String(
+    existingRecord?.status || ""
+  ).toLowerCase() === "paid"
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Paid payments and refunds cannot be edited. Record a correcting transaction to preserve the financial audit trail.",
+    },
+    { status: 409 }
+  );
+}
     if (
       existingRecord &&
       existingRecord.reservation_id !== reservationId
