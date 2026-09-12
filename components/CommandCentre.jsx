@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { printProFormaInvoice } from "./printProFormaInvoice";
-import { printTaxInvoice } from "./printTaxInvoice";
+import { printTaxInvoice, previewTaxInvoice, } from "./printTaxInvoice";
 import BillingSettings from "./BillingSettings";
 
 const seed = {
@@ -1347,6 +1347,7 @@ const issueTaxInvoice = async reservation => {
     );
     return;
   }
+ 
   const confirmed = window.confirm(
     "Issue an official Tax Invoice for this reservation?\n\nOnce issued, its number and financial details cannot be edited or deleted."
   );
@@ -1414,6 +1415,21 @@ const issueTaxInvoice = async reservation => {
     Pro Forma
   </button>
 )}
+   {section === "reservations" && (
+  <button
+    type="button"
+    title="Preview a non-fiscal test Tax Invoice"
+    onClick={() =>
+      previewTaxInvoice({
+        reservation: row,
+        departures,
+        company,
+      })
+    }
+  >
+    Tax Preview
+  </button>
+)} 
 {section === "reservations" && (() => {
   const issuedInvoice = findIssuedInvoice(row.id);
   const invoiceLocked =
