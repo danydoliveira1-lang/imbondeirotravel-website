@@ -1513,6 +1513,16 @@ const issueTaxInvoice = async reservation => {
     Edit
   </button>
 
+ {section === "payments" &&
+String(row.status || "").toLowerCase() === "paid" ? (
+  <button
+    type="button"
+    disabled
+    title="Paid financial records are protected from deletion"
+  >
+    Protected
+  </button>
+) : (
   <button
     type="button"
     className="danger"
@@ -1520,6 +1530,7 @@ const issueTaxInvoice = async reservation => {
   >
     Delete
   </button>
+)}
 </div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
 }
 
