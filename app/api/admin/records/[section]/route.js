@@ -245,7 +245,40 @@ export async function DELETE(request, { params }) {
         { status: 400 }
       );
     }
+    
+if (section === "payments") {
+  const existingPayments = await supabaseRequest(
+    "payments",
+    {
+      query:
+        `select=id,status,payment_type,reference&id=eq.${encodeURIComponent(
+          id
+        )}&limit=1`,
+    }
+  );
 
+  const payment = existingPayments?.[0];
+
+  if (!payment) {
+    return NextResponse.json(
+      { error: "Payment record not found." },
+      { status: 404 }
+    );
+  }
+
+  if (
+    String(payment.status || "").toLowerCase() ===
+    "paid"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Paid payments and refunds cannot be deleted. Record a correcting transaction to preserve the financial audit trail.",
+      },
+      { status: 409 }
+    );
+  }
+}
     let departureId = null;
 
     if (section === "reservations") {
