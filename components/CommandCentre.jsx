@@ -1397,7 +1397,23 @@ const findIssuedInvoice = reservationId =>
       invoice.reservation_id === reservationId &&
       String(invoice.status || "").toLowerCase() === "issued"
   );
+const isReservationFinanciallyProtected =
+  reservationId => {
+    const hasPaidTransaction = payments.some(
+      payment =>
+        payment.reservation_id === reservationId &&
+        String(payment.status || "").toLowerCase() ===
+          "paid"
+    );
 
+    const hasTaxInvoice = invoices.some(
+      invoice =>
+        invoice.reservation_id === reservationId
+    );
+
+    return hasPaidTransaction || hasTaxInvoice;
+  };
+  
 const issueTaxInvoice = async reservation => {
   const existingInvoice = findIssuedInvoice(reservation.id);
 
@@ -1547,12 +1563,22 @@ const issueTaxInvoice = async reservation => {
   </button>
 )}
 
- {section === "payments" &&
-String(row.status || "").toLowerCase() === "paid" ? (
+ {(
+  section === "payments" &&
+  String(row.status || "").toLowerCase() === "paid"
+) ||
+(
+  section === "reservations" &&
+  isReservationFinanciallyProtected(row.id)
+) ? (
   <button
     type="button"
     disabled
-    title="Paid financial records are protected from deletion"
+    title={
+      section === "reservations"
+        ? "Reservations with Paid transactions or Tax Invoices are protected from deletion"
+        : "Paid financial records are protected from deletion"
+    }
   >
     Protected
   </button>
