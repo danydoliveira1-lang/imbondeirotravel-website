@@ -491,7 +491,45 @@ export async function DELETE(request, { params }) {
         { status: 400 }
       );
     }
-  if (section === "reservations") {
+  if (section === "customers") {
+  const linkedReservations =
+    await supabaseRequest("reservations", {
+      query:
+        `select=id&customer_id=eq.${encodeURIComponent(
+          id
+        )}&limit=1`,
+    });
+
+  if (linkedReservations?.length) {
+    return NextResponse.json(
+      {
+        error:
+          "This customer cannot be deleted because reservation history is linked to their profile. Preserve the customer record as part of the permanent booking history.",
+      },
+      { status: 409 }
+    );
+  }
+}
+   if (section === "departures") {
+  const linkedReservations =
+    await supabaseRequest("reservations", {
+      query:
+        `select=id&departure_id=eq.${encodeURIComponent(
+          id
+        )}&limit=1`,
+    });
+
+  if (linkedReservations?.length) {
+    return NextResponse.json(
+      {
+        error:
+          "This departure cannot be deleted because reservations are linked to it. Preserve the departure as part of the permanent operational history.",
+      },
+      { status: 409 }
+    );
+  }
+}
+    if (section === "reservations") {
   const [linkedPayments, linkedInvoices] =
     await Promise.all([
       supabaseRequest("payments", {
