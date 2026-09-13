@@ -1584,13 +1584,17 @@ const issueTaxInvoice = async reservation => {
   </button>
 )}
 
- {(
+{(
   section === "payments" &&
   String(row.status || "").toLowerCase() === "paid"
 ) ||
 (
   section === "reservations" &&
   isReservationFinanciallyProtected(row.id)
+) ||
+(
+  ["customers", "departures"].includes(section) &&
+  isRelationshipProtected(section, row.id)
 ) ? (
   <button
     type="button"
@@ -1598,7 +1602,11 @@ const issueTaxInvoice = async reservation => {
     title={
       section === "reservations"
         ? "Reservations with Paid transactions or Tax Invoices are protected from deletion"
-        : "Paid financial records are protected from deletion"
+        : section === "customers"
+          ? "Customers with reservation history are protected from deletion"
+          : section === "departures"
+            ? "Departures with linked reservations are protected from deletion"
+            : "Paid financial records are protected from deletion"
     }
   >
     Protected
@@ -1611,7 +1619,7 @@ const issueTaxInvoice = async reservation => {
   >
     Delete
   </button>
-)}
+)} 
 </div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
 }
 
