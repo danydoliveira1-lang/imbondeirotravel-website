@@ -1414,6 +1414,26 @@ const isReservationFinanciallyProtected =
 
     return hasPaidTransaction || hasTaxInvoice;
   };
+const isRelationshipProtected = (
+  currentSection,
+  recordId
+) => {
+  if (currentSection === "customers") {
+    return reservations.some(
+      reservation =>
+        reservation.customer_id === recordId
+    );
+  }
+
+  if (currentSection === "departures") {
+    return reservations.some(
+      reservation =>
+        reservation.departure_id === recordId
+    );
+  }
+
+  return false;
+};
   
 const issueTaxInvoice = async reservation => {
   const existingInvoice = findIssuedInvoice(reservation.id);
