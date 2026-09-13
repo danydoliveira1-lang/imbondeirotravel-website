@@ -357,10 +357,24 @@ if (projectedNetPaid > reservationTotal) {
     }
 
     return NextResponse.json({ record: savedRecord });
-  } catch (error) {
+    } catch (error) {
+    const message =
+      error?.message || "The record could not be saved.";
+
+    const duplicatePaymentReference =
+      message.includes(
+        "payments_paid_reference_unique"
+      );
+
     return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
+      {
+        error: duplicatePaymentReference
+          ? "This transaction reference has already been recorded."
+          : message,
+      },
+      {
+        status: duplicatePaymentReference ? 409 : 500,
+      }
     );
   }
 }
