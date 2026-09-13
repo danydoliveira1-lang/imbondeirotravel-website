@@ -309,16 +309,112 @@ if (projectedNetPaid > reservationTotal) {
   record.amount = amount;
   record.reservation_id = reservationId;
 }
-    let previousDepartureId = null;
+    
+let previousDepartureId = null;
+let existingReservation = null;
 
-    if (section === "reservations" && record.id) {
-      const existing = await supabaseRequest("reservations", {
-        query: `select=departure_id&id=eq.${encodeURIComponent(record.id)}`,
+if (section === "reservations" && record.id) {
+  const existing = await supabaseRequest(
+    "reservations",
+    {
+      query:
+        `select=*&id=eq.${encodeURIComponent(
+          record.id
+        )}&limit=1`,
+    }
+  );
+
+  existingReservation = existing?.[0] || null;
+  previousDepartureId =
+    existingReservation?.departure_id || null;
+
+  if (!existingReservation) {
+    return NextResponse.json(
+      { error: "Reservation not found." },
+      { status: 404 }
+    );
+  }
+}
+if (existingReservation) {
+  const [linkedPayments, linkedInvoices] =
+    await Promise.all([
+      supabaseRequest("payments", {
+        query:
+          `select=id,status&reservation_id=eq.${encodeURIComponent(
+            record.id
+          )}`,
+      }),
+      supabaseRequest("invoices", {
+        query:
+          `select=id&reservation_id=eq.${encodeURIComponent(
+            record.id
+          )}&limit=1`,
+      }),
+    ]);
+
+  const hasPaidTransaction = (
+    linkedPayments || []
+  ).some(
+    payment =>
+      String(payment.status || "").toLowerCase() ===
+      "paid"
+  );
+
+  const hasTaxInvoice =
+    Boolean(linkedInvoices?.length);
+
+  if (hasPaidTransaction || hasTaxInvoice) {
+    const protectedFields = [
+      "customer",
+      "customer_id",
+      "departure_id",
+      "journey",
+      "travellers",
+      "total",
+    ];
+
+    const numericFields = new Set([
+      "travellers",
+      "total",
+    ]);
+
+    const changedProtectedField =
+      protectedFields.find(field => {
+        if (
+          !Object.prototype.hasOwnProperty.call(
+            record,
+            field
+          )
+        ) {
+          return false;
+        }
+
+        if (numericFields.has(field)) {
+          return (
+            Number(record[field] || 0) !==
+            Number(existingReservation[field] || 0)
+          );
+        }
+
+        return (
+          String(record[field] || "").trim() !==
+          String(
+            existingReservation[field] || ""
+          ).trim()
+        );
       });
 
-      previousDepartureId = existing?.[0]?.departure_id || null;
+    if (changedProtectedField) {
+      return NextResponse.json(
+        {
+          error:
+            "Customer, departure, journey, travellers and total cannot be changed after a Paid transaction or Tax Invoice exists. Status and consultant details may still be updated.",
+        },
+        { status: 409 }
+      );
     }
-
+  }
+}
     const payload = {
       ...record,
       id: record.id || crypto.randomUUID(),
