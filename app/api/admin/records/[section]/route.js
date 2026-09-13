@@ -510,7 +510,26 @@ export async function DELETE(request, { params }) {
     );
   }
 }
-   if (section === "departures") {
+if (section === "tours") {
+  const linkedDepartures =
+    await supabaseRequest("departures", {
+      query:
+        `select=id&tour_id=eq.${encodeURIComponent(
+          id
+        )}&limit=1`,
+    });
+
+  if (linkedDepartures?.length) {
+    return NextResponse.json(
+      {
+        error:
+          "This tour cannot be deleted because departures are linked to it. Preserve the tour as part of the permanent journey and departure history.",
+      },
+      { status: 409 }
+    );
+  }
+}
+    if (section === "departures") {
   const linkedReservations =
     await supabaseRequest("reservations", {
       query:
