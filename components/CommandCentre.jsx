@@ -200,7 +200,8 @@ export default function CommandCentre() {
       {active === "payments" && ( <InvoiceRegister invoices={data.invoices} reload={loadData} flash={flash}/>)}
       {active === "settings" && <Settings data={data} reload={loadData} flash={flash} />}
     </main>
-    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} customers={data.customers} reservations={data.reservations} payments={data.payments} onClose={() => setModal(null)} onSave={saveRecord} />}
+    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} 
+            customers={data.customers} reservations={data.reservations} payments={data.payments} invoices={data.invoices} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
 }
 
@@ -1594,9 +1595,33 @@ const issueTaxInvoice = async reservation => {
 </div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
 }
 
-function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, onClose, onSave }) {
+function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, invoices = [], onClose, onSave, }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
   if (section === "payments") blank.currency = "EUR";
+  const reservationIsFinanciallyProtected =
+  section === "reservations" &&
+  Boolean(initial.id) &&
+  (
+    (payments || []).some(
+      payment =>
+        payment.reservation_id === initial.id &&
+        String(payment.status || "").toLowerCase() ===
+          "paid"
+    ) ||
+    invoices.some(
+      invoice =>
+        invoice.reservation_id === initial.id
+    )
+  );
+
+const protectedReservationFields = new Set([
+  "customer",
+  "customer_id",
+  "departure_id",
+  "journey",
+  "travellers",
+  "total",
+]);
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
   const [record, setRecord] = useState(() => {
