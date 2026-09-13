@@ -395,6 +395,44 @@ export async function DELETE(request, { params }) {
         { status: 400 }
       );
     }
+  if (section === "reservations") {
+  const [linkedPayments, linkedInvoices] =
+    await Promise.all([
+      supabaseRequest("payments", {
+        query:
+          `select=id,status&reservation_id=eq.${encodeURIComponent(
+            id
+          )}`,
+      }),
+      supabaseRequest("invoices", {
+        query:
+          `select=id,status&reservation_id=eq.${encodeURIComponent(
+            id
+          )}&limit=1`,
+      }),
+    ]);
+
+  const hasPaidTransaction = (
+    linkedPayments || []
+  ).some(
+    payment =>
+      String(payment.status || "").toLowerCase() ===
+      "paid"
+  );
+
+  const hasTaxInvoice =
+    Boolean(linkedInvoices?.length);
+
+  if (hasPaidTransaction || hasTaxInvoice) {
+    return NextResponse.json(
+      {
+        error:
+          "This reservation cannot be deleted because it has a Paid transaction or Tax Invoice. Preserve it as part of the permanent financial audit trail.",
+      },
+      { status: 409 }
+    );
+  }
+}
     
 if (section === "payments") {
   const existingPayments = await supabaseRequest(
