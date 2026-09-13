@@ -150,7 +150,36 @@ export default function CommandCentre() {
 
   return payload.record;
 };
-  const deleteRecord = async (section, id) => { if(confirm("Delete this record?")){ const r=await fetch(`/api/admin/records/${section}?id=${encodeURIComponent(id)}`,{method:"DELETE"}); if(r.ok){setData(prev=>({...prev,[section]:prev[section].filter(x=>x.id!==id)}));flash("Record deleted.");}else flash("Delete failed."); } };
+  const deleteRecord = async (section, id) => {
+  if (!window.confirm("Delete this record?")) return;
+
+  try {
+    const response = await fetch(
+      `/api/admin/records/${section}?id=${encodeURIComponent(
+        id
+      )}`,
+      { method: "DELETE" }
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      flash(payload.error || "Delete failed.");
+      return;
+    }
+
+    setData(prev => ({
+      ...prev,
+      [section]: prev[section].filter(
+        record => record.id !== id
+      ),
+    }));
+
+    flash("Record deleted.");
+  } catch {
+    flash("Delete failed.");
+  }
+};
   const flash = message => { setNotice(message); setTimeout(() => setNotice(""), 2600); };
 
   return <div className="cc-shell">
