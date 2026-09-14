@@ -2083,7 +2083,9 @@ const reservationOutstanding = Math.max(
 </select>
 
 :["notes", "summary", "description"].includes(field)?
-<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} required={["title","tour","customer","name"].includes(field)} type={field==="paid_at" && section==="payments"?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"} value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
+<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} required={["title","tour","customer","name"].includes(field)} 
+    type={["paid_at","assigned_from","assigned_until"].includes(field)?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"}
+    value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
   <div className="cc-panel">
     <div className="cc-panel-head">
       <div>
