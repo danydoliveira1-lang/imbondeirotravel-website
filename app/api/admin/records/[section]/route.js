@@ -185,11 +185,11 @@ export async function POST(request, { params }) {
           )}&limit=1`,
       }),
       supabaseRequest("operations_resources", {
-        query:
-          `select=id&id=eq.${encodeURIComponent(
-            resourceId
-          )}&limit=1`,
-      }),
+  query:
+    `select=id,status&id=eq.${encodeURIComponent(
+      resourceId
+    )}&limit=1`,
+}),
     ]);
 
   if (!linkedDepartures?.length) {
@@ -208,6 +208,21 @@ export async function POST(request, { params }) {
       { status: 404 }
     );
   }
+      const linkedResource = linkedResources[0];
+
+if (
+  String(
+    linkedResource.status || ""
+  ).toLowerCase() === "inactive"
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Inactive Operations resources cannot be assigned to departures. Reactivate the resource or choose another one.",
+    },
+    { status: 409 }
+  );
+}
  const assignmentStatus = String(
   record.status || ""
 ).toLowerCase();
