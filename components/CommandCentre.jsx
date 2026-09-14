@@ -1617,7 +1617,7 @@ const issueTaxInvoice = async reservation => {
   isReservationFinanciallyProtected(row.id)
 ) ||
 (
-  ["customers", "departures"].includes(section) &&
+ ["customers", "departures", "tours"].includes(section) &&
   isRelationshipProtected(section, row.id)
 ) ? (
   <button
@@ -1629,8 +1629,10 @@ const issueTaxInvoice = async reservation => {
         : section === "customers"
           ? "Customers with reservation history are protected from deletion"
           : section === "departures"
-            ? "Departures with linked reservations are protected from deletion"
-            : "Paid financial records are protected from deletion"
+  ? "Departures with linked reservations are protected from deletion"
+  : section === "tours"
+    ? "Tours with linked departures are protected from deletion"
+    : "Paid financial records are protected from deletion"
     }
   >
     Protected
