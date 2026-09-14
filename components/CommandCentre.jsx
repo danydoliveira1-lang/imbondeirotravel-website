@@ -1671,7 +1671,7 @@ const issueTaxInvoice = async reservation => {
 
 function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, invoices = [], onClose, onSave, }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
-  if (section === "payments") blank.currency = "EUR";
+  if ( ["payments", "departure_assignments"].includes( section )) { blank.currency = "EUR";}
   const reservationIsFinanciallyProtected =
   section === "reservations" &&
   Boolean(initial.id) &&
@@ -1811,7 +1811,9 @@ const protectedReservationFields = new Set([
   "held_guests",
   "travellers",
   "total",
-  "amount"
+  "amount",
+ "capacity",
+ "cost"
 ];
  const submit = async e => {
   e.preventDefault();
