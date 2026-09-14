@@ -237,7 +237,7 @@ export default function CommandCentre() {
       {active === "settings" && <Settings data={data} reload={loadData} flash={flash} />}
     </main>
     {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} 
-            customers={data.customers} reservations={data.reservations} payments={data.payments} invoices={data.invoices} onClose={() => setModal(null)} onSave={saveRecord} />}
+            customers={data.customers} reservations={data.reservations} payments={data.payments} invoices={data.invoices} operationsResources={data.operations_resources} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
 }
 
