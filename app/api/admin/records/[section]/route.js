@@ -51,7 +51,48 @@ export async function POST(request, { params }) {
   try {
     const { section } = await params;
     const record = await request.json();
-   if (section === "departure_assignments") {
+   if (section === "operations_resources") {
+  const resourceType = String(
+    record.resource_type || ""
+  ).trim();
+
+  const resourceName = String(
+    record.name || ""
+  ).trim();
+
+  const capacity =
+    record.capacity === "" || record.capacity == null
+      ? null
+      : Number(record.capacity);
+
+  if (!resourceType || !resourceName) {
+    return NextResponse.json(
+      {
+        error:
+          "Resource type and name are required.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (
+    capacity !== null &&
+    (!Number.isFinite(capacity) || capacity < 0)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Resource capacity must be a valid number greater than or equal to zero.",
+      },
+      { status: 400 }
+    );
+  }
+
+  record.resource_type = resourceType;
+  record.name = resourceName;
+  record.capacity = capacity;
+}
+    if (section === "departure_assignments") {
   const departureId = String(
     record.departure_id || ""
   ).trim();
