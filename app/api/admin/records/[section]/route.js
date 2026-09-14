@@ -651,7 +651,29 @@ export async function DELETE(request, { params }) {
         { status: 400 }
       );
     }
-  if (section === "customers") {
+  if (section === "operations_resources") {
+  const linkedAssignments =
+    await supabaseRequest(
+      "departure_assignments",
+      {
+        query:
+          `select=id&resource_id=eq.${encodeURIComponent(
+            id
+          )}&limit=1`,
+      }
+    );
+
+  if (linkedAssignments?.length) {
+    return NextResponse.json(
+      {
+        error:
+          "This Operations resource cannot be deleted because it is assigned to a departure. Delete the assignment first to preserve operational history.",
+      },
+      { status: 409 }
+    );
+  }
+}
+    if (section === "customers") {
   const linkedReservations =
     await supabaseRequest("reservations", {
       query:
