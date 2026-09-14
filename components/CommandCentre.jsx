@@ -1701,20 +1701,28 @@ const protectedReservationFields = new Set([
   const [record, setRecord] = useState(() => {
   const nextRecord = { ...blank, ...initial };
 
-  if (section === "payments" && nextRecord.paid_at) {
-    const paidAt = new Date(nextRecord.paid_at);
+  const dateTimeFields = section === "payments"? ["paid_at"]
+    : section === "departure_assignments"
+      ? ["assigned_from", "assigned_until"]
+      : [];
 
-    if (!Number.isNaN(paidAt.getTime())) {
-      const localPaidAt = new Date(
-        paidAt.getTime() - paidAt.getTimezoneOffset() * 60000
-      );
+dateTimeFields.forEach(field => {
+  if (!nextRecord[field]) return;
 
-      nextRecord.paid_at = localPaidAt
-        .toISOString()
-        .slice(0, 16);
-    }
+  const dateValue = new Date(nextRecord[field]);
+
+  if (!Number.isNaN(dateValue.getTime())) {
+    const localDateValue = new Date(
+      dateValue.getTime() -
+        dateValue.getTimezoneOffset() * 60000
+    );
+
+    nextRecord[field] = localDateValue
+      .toISOString()
+      .slice(0, 16);
   }
-
+});
+    
   return nextRecord;
 });
   const [mediaAssets, setMediaAssets] = useState([]);
