@@ -624,21 +624,32 @@ export default function OperationsDesk({
                   />
                 </label>
 
-                <label>
-                  Capacity
-                  <input
-                    type="number"
-                    min="0"
-                    value={editor.record.capacity}
-                    onChange={event =>
-                      updateRecord(
-                        "capacity",
-                        event.target.value
-                      )
-                    }
-                  />
-                </label>
+               <label>
+  Capacity
+  <input
+    type="number"
+    min="0"
+    value={editor.record.capacity}
+    onInvalid={event => {
+      const input = event.currentTarget;
 
+      input.setCustomValidity(
+        input.validity.rangeUnderflow
+          ? "Capacity must be greater than or equal to zero."
+          : "Enter a valid capacity."
+      );
+    }}
+    onInput={event =>
+      event.currentTarget.setCustomValidity("")
+    }
+    onChange={event =>
+      updateRecord(
+        "capacity",
+        event.target.value
+      )
+    }
+  />
+</label>
                 <label>
                   Registration Number
                   <input
@@ -817,20 +828,32 @@ export default function OperationsDesk({
                 </label>
 
                 <label>
-                  Cost
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={editor.record.cost}
-                    onChange={event =>
-                      updateRecord(
-                        "cost",
-                        event.target.value
-                      )
-                    }
-                  />
-                </label>
+  Cost
+  <input
+    type="number"
+    min="0"
+    step="0.01"
+    value={editor.record.cost}
+    onInvalid={event => {
+      const input = event.currentTarget;
+
+      input.setCustomValidity(
+        input.validity.rangeUnderflow
+          ? "Cost must be greater than or equal to zero."
+          : "Enter a valid cost."
+      );
+    }}
+    onInput={event =>
+      event.currentTarget.setCustomValidity("")
+    }
+    onChange={event =>
+      updateRecord(
+        "cost",
+        event.target.value
+      )
+    }
+  />
+</label>
 
                 <label>
                   Currency
