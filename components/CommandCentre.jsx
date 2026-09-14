@@ -1669,7 +1669,7 @@ const issueTaxInvoice = async reservation => {
 </div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
 }
 
-function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, invoices = [], onClose, onSave, }) {
+function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, invoices = [], operationsResources = [], onClose, onSave, }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
   if ( ["payments", "departure_assignments"].includes( section )) { blank.currency = "EUR";}
   const reservationIsFinanciallyProtected =
