@@ -1431,6 +1431,30 @@ const isRelationshipProtected = (
         reservation.departure_id === recordId
     );
   }
+const isRelationshipProtected = (
+  currentSection,
+  recordId
+) => {
+  if (currentSection === "customers") {
+    return reservations.some(
+      reservation =>
+        reservation.customer_id === recordId
+    );
+  }
+
+  if (currentSection === "departures") {
+    return reservations.some(
+      reservation =>
+        reservation.departure_id === recordId
+    );
+  }
+
+  if (currentSection === "tours") {
+    return departures.some(
+      departure =>
+        departure.tour_id === recordId
+    );
+  }
 
   return false;
 };
