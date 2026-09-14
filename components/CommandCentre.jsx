@@ -65,6 +65,41 @@ const moduleMeta = {
   customers: { title: "Customer CRM", singular: "Customer", fields: ["name", "email", "phone", "language", "preference", "notes"] },
   media: { title: "Media Library", singular: "Media Item", fields: [ "name", "type", "reference", "usage", "content_key", "sort_order", "hero_word", "hero_place", "status" ] },
   payments: { title: "Payments", singular: "Payment", fields: ["reservation_id", "payment_type", "amount", "currency", "payment_method", "status", "paid_at", "reference", "notes"] },
+  operations_resources: {
+    title: "Operations Directory",
+    singular: "Operations Resource",
+    fields: [
+      "resource_type",
+      "name",
+      "company",
+      "phone",
+      "email",
+      "location",
+      "languages",
+      "capacity",
+      "registration_number",
+      "status",
+      "notes",
+    ],
+  },
+
+  departure_assignments: {
+    title: "Departure Assignments",
+    singular: "Departure Assignment",
+    fields: [
+      "departure_id",
+      "resource_id",
+      "service_type",
+      "role_or_service",
+      "assigned_from",
+      "assigned_until",
+      "cost",
+      "currency",
+      "confirmation_reference",
+      "status",
+      "notes",
+    ],
+  },
 };
 
 function money(value) { return new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(value || 0)); }
