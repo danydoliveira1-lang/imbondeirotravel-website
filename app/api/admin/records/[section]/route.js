@@ -51,7 +51,126 @@ export async function POST(request, { params }) {
   try {
     const { section } = await params;
     const record = await request.json();
-   if (section === "payments") {
+   if (section === "departure_assignments") {
+  const departureId = String(
+    record.departure_id || ""
+  ).trim();
+
+  const resourceId = String(
+    record.resource_id || ""
+  ).trim();
+
+  const serviceType = String(
+    record.service_type || ""
+  ).trim();
+
+  const cost =
+    record.cost === "" || record.cost == null
+      ? 0
+      : Number(record.cost);
+
+  if (!departureId || !resourceId || !serviceType) {
+    return NextResponse.json(
+      {
+        error:
+          "Departure, resource and service type are required for every assignment.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!Number.isFinite(cost) || cost < 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Assignment cost must be a valid number greater than or equal to zero.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const assignedFrom = record.assigned_from
+    ? new Date(record.assigned_from)
+    : null;
+
+  const assignedUntil = record.assigned_until
+    ? new Date(record.assigned_until)
+    : null;
+
+  if (
+    (assignedFrom &&
+      Number.isNaN(assignedFrom.getTime())) ||
+    (assignedUntil &&
+      Number.isNaN(assignedUntil.getTime()))
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Enter valid assignment start and end dates.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (
+    assignedFrom &&
+    assignedUntil &&
+    assignedUntil < assignedFrom
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Assignment end time cannot be earlier than its start time.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const [linkedDepartures, linkedResources] =
+    await Promise.all([
+      supabaseRequest("departures", {
+        query:
+          `select=id&id=eq.${encodeURIComponent(
+            departureId
+          )}&limit=1`,
+      }),
+      supabaseRequest("operations_resources", {
+        query:
+          `select=id&id=eq.${encodeURIComponent(
+            resourceId
+          )}&limit=1`,
+      }),
+    ]);
+
+  if (!linkedDepartures?.length) {
+    return NextResponse.json(
+      { error: "The selected departure was not found." },
+      { status: 404 }
+    );
+  }
+
+  if (!linkedResources?.length) {
+    return NextResponse.json(
+      {
+        error:
+          "The selected Operations resource was not found.",
+      },
+      { status: 404 }
+    );
+  }
+
+  record.departure_id = departureId;
+  record.resource_id = resourceId;
+  record.service_type = serviceType;
+  record.cost = cost;
+  record.assigned_from = assignedFrom
+    ? assignedFrom.toISOString()
+    : null;
+  record.assigned_until = assignedUntil
+    ? assignedUntil.toISOString()
+    : null;
+}
+    if (section === "payments") {
   const amount = Number(record.amount || 0);
   const reservationId = String(
     record.reservation_id || ""
