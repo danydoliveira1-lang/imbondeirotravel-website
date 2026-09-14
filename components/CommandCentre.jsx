@@ -1847,8 +1847,16 @@ dateTimeFields.forEach(field => {
         ? new Date(payload.paid_at).toISOString()
         : null;
     }
-
-    await onSave(section, payload);
+ if (section === "departure_assignments") {
+  ["assigned_from", "assigned_until"].forEach(
+    field => {
+      payload[field] = payload[field]
+        ? new Date(payload[field]).toISOString()
+        : null;
+    }
+  );
+}
+  await onSave(section, payload);
   } catch (error) {
     setSaveError(
       error.message || "The record could not be saved."
