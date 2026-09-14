@@ -30,9 +30,10 @@ const seed = {
   media: [
     { id: "media-1", name: "Kalandula Hero", type: "YouTube", reference: "Gt3K_3KQlOM", usage: "Homepage + destination", status: "Active" },
     { id: "media-2", name: "Traditional Dance", type: "YouTube", reference: "U9ILT0S2GYA", usage: "Homepage hero", status: "Active" },
-    { id: "media-3", name: "Imbondeiro Brand Mark", type: "Image", reference: "/assets/logo.png", usage: "Global", status: "Active" },
-  ],
+    { id: "media-3", name: "Imbondeiro Brand Mark", type: "Image", reference: "/assets/logo.png", usage: "Global", status: "Active" }, ],
   invoices: [],
+  operations_resources: [],
+  departure_assignments: [],
 };
 
 const nav = [
