@@ -5,6 +5,7 @@ import { printProFormaInvoice } from "./printProFormaInvoice";
 import { printTaxInvoice, previewTaxInvoice, } from "./printTaxInvoice";
 import BillingSettings from "./BillingSettings";
 import InvoiceRegister from "./InvoiceRegister";
+import OperationsDesk from "./OperationsDesk";
 
 const seed = {
   tours: [
@@ -230,7 +231,7 @@ export default function CommandCentre() {
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
-      {active === "operations" && <Operations data={data} />}
+      {active === "operations" && ( <OperationsDesk data={data} reload={loadData} flash={flash}/>)}
       {active === "reports" && <Reports data={data} />}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} invoices={data.invoices} company={data.company_settings?.[0]} reload={loadData} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
       {active === "payments" && ( <InvoiceRegister invoices={data.invoices} reload={loadData} flash={flash}/>)}
