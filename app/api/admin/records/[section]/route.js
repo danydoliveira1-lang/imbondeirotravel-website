@@ -152,7 +152,16 @@ export async function POST(request, { params }) {
       { status: 400 }
     );
   }
-
+  if (!assignedFrom || !assignedUntil) {
+  return NextResponse.json(
+    {
+      error:
+        "Assignment start and end dates are required.",
+    },
+    { status: 400 }
+  );
+}
+      
   if (
     assignedFrom &&
     assignedUntil &&
@@ -199,7 +208,79 @@ export async function POST(request, { params }) {
       { status: 404 }
     );
   }
+ const assignmentStatus = String(
+  record.status || ""
+).toLowerCase();
 
+if (assignmentStatus !== "cancelled") {
+  const existingAssignments =
+    await supabaseRequest(
+      "departure_assignments",
+      {
+        query:
+          `select=id,assigned_from,assigned_until,status&resource_id=eq.${encodeURIComponent(
+            resourceId
+          )}`,
+      }
+    );
+
+  const overlappingAssignment = (
+    existingAssignments || []
+  ).find(assignment => {
+    if (
+      String(assignment.id) ===
+      String(record.id || "")
+    ) {
+      return false;
+    }
+
+    if (
+      String(
+        assignment.status || ""
+      ).toLowerCase() === "cancelled"
+    ) {
+      return false;
+    }
+
+    if (
+      !assignment.assigned_from ||
+      !assignment.assigned_until
+    ) {
+      return false;
+    }
+
+    const existingFrom = new Date(
+      assignment.assigned_from
+    );
+
+    const existingUntil = new Date(
+      assignment.assigned_until
+    );
+
+    if (
+      Number.isNaN(existingFrom.getTime()) ||
+      Number.isNaN(existingUntil.getTime())
+    ) {
+      return false;
+    }
+
+    return (
+      existingFrom < assignedUntil &&
+      existingUntil > assignedFrom
+    );
+  });
+
+  if (overlappingAssignment) {
+    return NextResponse.json(
+      {
+        error:
+          "This resource already has an overlapping assignment. Choose another resource or change the assignment times.",
+      },
+      { status: 409 }
+    );
+  }
+}
+      
   record.departure_id = departureId;
   record.resource_id = resourceId;
   record.service_type = serviceType;
