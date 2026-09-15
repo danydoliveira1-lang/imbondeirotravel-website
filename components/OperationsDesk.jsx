@@ -1021,60 +1021,88 @@ const hasNonEurCosts = costEntries.some(
                   </select>
                 </label>
 
-                <label>
-                  Resource
-                  <select
-                    required
-                    value={editor.record.resource_id}
-                    onChange={event =>
-                      updateRecord(
-                        "resource_id",
-                        event.target.value
-                      )
-                    }
-                  >
-                    <option value="">
-                      Choose resource
-                    </option>
-                    {resources
-                      .filter(
-                        resource =>
-                          resource.status !== "Inactive" ||
-                          resource.id ===
-                            editor.record.resource_id
-                      )
-                      .map(resource => (
-                        <option
-                          key={resource.id}
-                          value={resource.id}
-                        >
-                          {resource.name} —{" "}
-                          {resource.resource_type}
-                        </option>
-                      ))}
-                  </select>
-                </label>
+               <label>
+  Resource
+  <select
+    required
+    value={editor.record.resource_id}
+    onChange={event =>
+      updateRecord(
+        "resource_id",
+        event.target.value
+      )
+    }
+  >
+    <option value="">
+      Choose{" "}
+      {editor.record.service_type || "resource"}
+    </option>
 
-                <label>
-                  Service Type
-                  <select
-                    required
-                    value={editor.record.service_type}
-                    onChange={event =>
-                      updateRecord(
-                        "service_type",
-                        event.target.value
-                      )
-                    }
-                  >
-                    {resourceTypes.map(type => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+    {resources
+      .filter(resource => {
+        const resourceIsCurrent =
+          resource.id ===
+          editor.record.resource_id;
 
+        const resourceIsActive =
+          String(
+            resource.status || "Active"
+          ).toLowerCase() !== "inactive";
+
+        const resourceMatchesService =
+          String(
+            resource.resource_type || ""
+          )
+            .trim()
+            .toLowerCase() ===
+          String(
+            editor.record.service_type || ""
+          )
+            .trim()
+            .toLowerCase();
+
+        return (
+          resourceMatchesService &&
+          (resourceIsActive || resourceIsCurrent)
+        );
+      })
+      .map(resource => (
+        <option
+          key={resource.id}
+          value={resource.id}
+        >
+          {resource.name} —{" "}
+          {resource.resource_type}
+        </option>
+      ))}
+  </select>
+</label>
+
+<label>
+  Service Type
+  <select
+    required
+    value={editor.record.service_type}
+    onChange={event => {
+      const serviceType = event.target.value;
+
+      setEditor(current => ({
+        ...current,
+        record: {
+          ...current.record,
+          service_type: serviceType,
+          resource_id: "",
+        },
+      }));
+    }}
+  >
+    {resourceTypes.map(type => (
+      <option key={type} value={type}>
+        {type}
+      </option>
+    ))}
+  </select>
+</label>
                 <label>
                   Role or Service
                   <input
