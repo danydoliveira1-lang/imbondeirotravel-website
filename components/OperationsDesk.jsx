@@ -1088,11 +1088,12 @@ const hasNonEurCosts = costEntries.some(
 
       setEditor(current => ({
         ...current,
-        record: {
-          ...current.record,
-          service_type: serviceType,
-          resource_id: "",
-        },
+             record: {
+  ...current.record,
+  service_type: serviceType,
+  resource_id: "",
+  role_or_service: "",
+}, 
       }));
     }}
   >
