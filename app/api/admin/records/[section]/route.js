@@ -243,9 +243,9 @@ if (!/^[A-Z]{3}$/.test(currency)) {
             departureId
           )}&limit=1`,
       }),
-      supabaseRequest("operations_resources", {
+     supabaseRequest("operations_resources", {
   query:
-    `select=id,status&id=eq.${encodeURIComponent(
+    `select=id,status,resource_type&id=eq.${encodeURIComponent(
       resourceId
     )}&limit=1`,
 }),
@@ -282,7 +282,26 @@ if (
     { status: 409 }
   );
 }
- const assignmentStatus = String(
+ const selectedResourceType = String(
+  linkedResource.resource_type || ""
+)
+  .trim()
+  .toLowerCase();
+
+const selectedServiceType = serviceType
+  .trim()
+  .toLowerCase();
+
+if (selectedResourceType !== selectedServiceType) {
+  return NextResponse.json(
+    {
+      error:
+        `A ${serviceType} service must use a ${serviceType} resource. The selected resource is registered as ${linkedResource.resource_type || "an unknown type"}.`,
+    },
+    { status: 409 }
+  );
+}
+  const assignmentStatus = String(
   record.status || ""
 ).toLowerCase();
 
