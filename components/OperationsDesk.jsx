@@ -462,6 +462,8 @@ const hasNonEurCosts = costEntries.some(
             <th>Guide</th>
             <th>Driver</th>
             <th>Vehicle</th>
+            <th>Assignments</th>
+            <th>Operations Cost</th>
             <th>Supporting Services</th>
             <th>Readiness</th>
           </tr>
@@ -496,7 +498,28 @@ const hasNonEurCosts = costEntries.some(
                   "vehicle"
                 )}
               </td>
+             <td>
+  {readiness.activeAssignmentCount}{" "}
+  {readiness.activeAssignmentCount === 1
+    ? "assignment"
+    : "assignments"}
+</td>
 
+<td>
+  {readiness.costEntries.length
+    ? readiness.costEntries
+        .map(([currency, total]) =>
+          operationsMoney(total, currency)
+        )
+        .join(" + ")
+    : operationsMoney(0, "EUR")}
+
+  {readiness.hasNonEurCosts && (
+    <div>
+      Includes non-EUR costs — review separately
+    </div>
+  )}
+</td>
               <td>
                 {readiness.supportingServices.length
                   ? readiness.supportingServices
