@@ -347,6 +347,12 @@ const assignedServiceTypes = new Set(
       .toLowerCase()
   )
 );
+   const missingServices =
+  requiredOperationsServices.filter(
+    service =>
+      !assignedServiceTypes.has(service)
+  );
+    
     const unconfirmedServices =
   requiredOperationsServices.filter(service => {
     if (!assignedServiceTypes.has(service)) {
