@@ -347,11 +347,33 @@ const assignedServiceTypes = new Set(
       .toLowerCase()
   )
 );
-    const missingServices =
-      requiredOperationsServices.filter(
-        service =>
-          !assignedServiceTypes.has(service)
-      );
+    const unconfirmedServices =
+  requiredOperationsServices.filter(service => {
+    if (!assignedServiceTypes.has(service)) {
+      return false;
+    }
+
+    return !departureAssignments.some(
+      assignment =>
+        String(
+          assignment.service_type || ""
+        )
+          .trim()
+          .toLowerCase() === service &&
+        String(
+          assignment.status || ""
+        )
+          .trim()
+          .toLowerCase() === "confirmed"
+    );
+  });
+
+const readinessState =
+  missingServices.length > 0
+    ? "action_required"
+    : unconfirmedServices.length > 0
+      ? "planned"
+      : "ready";
 
     const supportingServices =
       departureAssignments.filter(assignment =>
@@ -402,16 +424,18 @@ const costEntries = Object.entries(
 const hasNonEurCosts = costEntries.some(
   ([currency]) => currency !== "EUR"
 );
-  return {
+ return {
   departure,
   assignments: departureAssignments,
   activeAssignmentCount:
     departureAssignments.length,
   missingServices,
+  unconfirmedServices,
   supportingServices,
   costEntries,
   hasNonEurCosts,
-  ready: missingServices.length === 0,
+  readinessState,
+  ready: readinessState === "ready",
 };  
 });
     
