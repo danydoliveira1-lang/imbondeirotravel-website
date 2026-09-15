@@ -152,26 +152,42 @@ if (
     record.cost === "" || record.cost == null
       ? 0
       : Number(record.cost);
-
+      
+  const currency = String(
+  record.currency || ""
+)
+  .trim()
+  .toUpperCase();
+      
   if (!departureId || !resourceId || !serviceType) {
-    return NextResponse.json(
-      {
-        error:
-          "Departure, resource and service type are required for every assignment.",
-      },
-      { status: 400 }
-    );
-  }
+  return NextResponse.json(
+    {
+      error:
+        "Departure, resource and service type are required for every assignment.",
+    },
+    { status: 400 }
+  );
+}
 
-  if (!Number.isFinite(cost) || cost < 0) {
-    return NextResponse.json(
-      {
-        error:
-          "Assignment cost must be a valid number greater than or equal to zero.",
-      },
-      { status: 400 }
-    );
-  }
+if (!Number.isFinite(cost) || cost < 0) {
+  return NextResponse.json(
+    {
+      error:
+        "Assignment cost must be a valid number greater than or equal to zero.",
+    },
+    { status: 400 }
+  );
+}
+
+if (!/^[A-Z]{3}$/.test(currency)) {
+  return NextResponse.json(
+    {
+      error:
+        "Assignment currency must use a valid three-letter code, such as EUR, USD, AOA, GBP or ZAR.",
+    },
+    { status: 400 }
+  );
+}
 
   const assignedFrom = record.assigned_from
     ? new Date(record.assigned_from)
@@ -343,6 +359,7 @@ if (assignmentStatus !== "cancelled") {
   record.resource_id = resourceId;
   record.service_type = serviceType;
   record.cost = cost;
+  record.currency = currency;
   record.assigned_from = assignedFrom
     ? assignedFrom.toISOString()
     : null;
