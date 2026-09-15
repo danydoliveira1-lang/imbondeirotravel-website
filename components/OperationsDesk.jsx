@@ -555,35 +555,55 @@ const hasNonEurCosts = costEntries.some(
                       .join(", ")
                   : "—"}
               </td>
+<td>
+  <em
+    className={`cc-status ${
+      readiness.readinessState === "ready"
+        ? "active"
+        : readiness.readinessState === "planned"
+          ? "planned"
+          : "pending"
+    }`}
+  >
+    {readiness.readinessState === "ready"
+      ? "Ready"
+      : readiness.readinessState === "planned"
+        ? "Planned"
+        : "Action Required"}
+   </em>
 
-              <td>
-                <em
-                  className={`cc-status ${
-                    readiness.ready
-                      ? "active"
-                      : "pending"
-                  }`}
-                >
-                  {readiness.ready
-                    ? "Ready"
-                    : "Action Required"}
-                </em>
+  {readiness.missingServices.length > 0 && (
+    <div>
+      Missing:{" "}
+      {readiness.missingServices
+        .map(service =>
+          service.replace(
+            /\b\w/g,
+            character =>
+              character.toUpperCase()
+          )
+        )
+        .join(", ")}
+    </div>
+  )}
 
-                {!readiness.ready && (
-                  <div>
-                    Missing:{" "}
-                    {readiness.missingServices
-                      .map(service =>
-                        service.replace(
-                          /\b\w/g,
-                          character =>
-                            character.toUpperCase()
-                        )
-                      )
-                      .join(", ")}
-                  </div>
-                )}
-              </td>
+  {readiness.missingServices.length === 0 &&
+    readiness.unconfirmedServices.length > 0 && (
+      <div>
+        Awaiting confirmation:{" "}
+        {readiness.unconfirmedServices
+          .map(service =>
+            service.replace(
+              /\b\w/g,
+              character =>
+                character.toUpperCase()
+            )
+          )
+          .join(", ")}
+      </div>
+    )}
+</td>
+                               
             </tr>
           ))}
         </tbody>
