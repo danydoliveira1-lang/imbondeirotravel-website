@@ -276,7 +276,73 @@ export default function OperationsDesk({
 
     return `${departure.title} — ${departure.start_date}`;
   };
+const requiredOperationsServices = [
+  "guide",
+  "driver",
+  "vehicle",
+];
 
+const operationsReadiness = departures
+  .filter(departure => {
+    const status = String(
+      departure.status || ""
+    ).toLowerCase();
+
+    return ![
+      "cancelled",
+      "completed",
+    ].includes(status);
+  })
+  .map(departure => {
+    const departureAssignments = assignments.filter(
+      assignment =>
+        assignment.departure_id === departure.id &&
+        String(
+          assignment.status || ""
+        ).toLowerCase() !== "cancelled"
+    );
+
+    const assignedServiceTypes = new Set(
+      departureAssignments.map(assignment =>
+        String(
+          assignment.service_type || ""
+        )
+          .trim()
+          .toLowerCase()
+      )
+    );
+
+    const missingServices =
+      requiredOperationsServices.filter(
+        service =>
+          !assignedServiceTypes.has(service)
+      );
+
+    const supportingServices =
+      departureAssignments.filter(assignment =>
+        [
+          "hotel",
+          "supplier",
+          "interpreter",
+          "meet & greet",
+        ].includes(
+          String(
+            assignment.service_type || ""
+          )
+            .trim()
+            .toLowerCase()
+        )
+      );
+
+    return {
+      departure,
+      assignments: departureAssignments,
+      missingServices,
+      supportingServices,
+      ready: missingServices.length === 0,
+    };
+  });
+  
   return (
     <>
       <section className="cc-panel">
