@@ -342,9 +342,140 @@ const operationsReadiness = departures
       ready: missingServices.length === 0,
     };
   });
-  
+
+ const assignedResourceForService = (
+  readiness,
+  serviceType
+) => {
+  const assignment = readiness.assignments.find(
+    item =>
+      String(
+        item.service_type || ""
+      )
+        .trim()
+        .toLowerCase() === serviceType
+  );
+
+  return assignment
+    ? resourceName(assignment.resource_id)
+    : "Missing";
+}; 
   return (
     <>
+     <section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Departure readiness
+      </span>
+      <h3>Operations Readiness</h3>
+    </div>
+
+    <span>
+      {
+        operationsReadiness.filter(
+          item => item.ready
+        ).length
+      }{" "}
+      of {operationsReadiness.length} ready
+    </span>
+  </div>
+
+  {operationsReadiness.length ? (
+    <div className="cc-table-wrap">
+      <table className="cc-table">
+        <thead>
+          <tr>
+            <th>Departure</th>
+            <th>Guide</th>
+            <th>Driver</th>
+            <th>Vehicle</th>
+            <th>Supporting Services</th>
+            <th>Readiness</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {operationsReadiness.map(readiness => (
+            <tr key={readiness.departure.id}>
+              <td>
+                {readiness.departure.title}
+                {" — "}
+                {readiness.departure.start_date}
+              </td>
+
+              <td>
+                {assignedResourceForService(
+                  readiness,
+                  "guide"
+                )}
+              </td>
+
+              <td>
+                {assignedResourceForService(
+                  readiness,
+                  "driver"
+                )}
+              </td>
+
+              <td>
+                {assignedResourceForService(
+                  readiness,
+                  "vehicle"
+                )}
+              </td>
+
+              <td>
+                {readiness.supportingServices.length
+                  ? readiness.supportingServices
+                      .map(assignment =>
+                        `${assignment.service_type}: ${resourceName(
+                          assignment.resource_id
+                        )}`
+                      )
+                      .join(", ")
+                  : "—"}
+              </td>
+
+              <td>
+                <em
+                  className={`cc-status ${
+                    readiness.ready
+                      ? "active"
+                      : "pending"
+                  }`}
+                >
+                  {readiness.ready
+                    ? "Ready"
+                    : "Action Required"}
+                </em>
+
+                {!readiness.ready && (
+                  <div>
+                    Missing:{" "}
+                    {readiness.missingServices
+                      .map(service =>
+                        service.replace(
+                          /\b\w/g,
+                          character =>
+                            character.toUpperCase()
+                        )
+                      )
+                      .join(", ")}
+                  </div>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    <div className="cc-empty">
+      No active departures require Operations planning.
+    </div>
+  )}
+</section> 
       <section className="cc-panel">
         <div className="cc-panel-head">
           <div>
