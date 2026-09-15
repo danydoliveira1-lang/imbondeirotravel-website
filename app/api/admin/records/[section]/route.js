@@ -88,8 +88,51 @@ export async function POST(request, { params }) {
     );
   }
 
+   const resourceStatus = String(
+  record.status || "Active"
+).trim();
+
+if (
+  record.id &&
+  resourceStatus.toLowerCase() === "inactive"
+) {
+  const linkedAssignments =
+    await supabaseRequest(
+      "departure_assignments",
+      {
+        query:
+          `select=id,status&resource_id=eq.${encodeURIComponent(
+            record.id
+          )}`,
+      }
+    );
+
+  const hasActiveAssignment = (
+    linkedAssignments || []
+  ).some(assignment => {
+    const status = String(
+      assignment.status || ""
+    ).toLowerCase();
+
+    return ![
+      "completed",
+      "cancelled",
+    ].includes(status);
+  });
+
+  if (hasActiveAssignment) {
+    return NextResponse.json(
+      {
+        error:
+          "This resource cannot be marked Inactive while it has a Planned or Confirmed departure assignment. Complete or cancel the assignment first.",
+      },
+      { status: 409 }
+    );
+  }
+}  
   record.resource_type = resourceType;
   record.name = resourceName;
+  record.status = resourceStatus;
   record.capacity = capacity;
 }
     if (section === "departure_assignments") {
