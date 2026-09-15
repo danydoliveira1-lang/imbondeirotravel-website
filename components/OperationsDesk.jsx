@@ -81,6 +81,34 @@ function displayDateTime(value) {
     minute: "2-digit",
   });
 }
+function operationsMoney(
+  value,
+  currency = "EUR"
+) {
+  const amount = Number(value || 0);
+  const currencyCode = String(
+    currency || "EUR"
+  )
+    .trim()
+    .toUpperCase();
+
+  try {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(
+      Number.isFinite(amount) ? amount : 0
+    );
+  } catch {
+    return `${currencyCode} ${
+      Number.isFinite(amount)
+        ? amount.toFixed(2)
+        : "0.00"
+    }`;
+  }
+}
 
 export default function OperationsDesk({
   data,
@@ -293,25 +321,32 @@ const operationsReadiness = departures
       "completed",
     ].includes(status);
   })
+  
   .map(departure => {
     const departureAssignments = assignments.filter(
-      assignment =>
-        assignment.departure_id === departure.id &&
-        String(
-          assignment.status || ""
-        ).toLowerCase() !== "cancelled"
-    );
+  assignment => {
+    const status = String(
+      assignment.status || ""
+    ).toLowerCase();
 
-    const assignedServiceTypes = new Set(
-      departureAssignments.map(assignment =>
-        String(
-          assignment.service_type || ""
-        )
-          .trim()
-          .toLowerCase()
-      )
+    return (
+      assignment.departure_id === departure.id &&
+      ![
+        "cancelled",
+        "completed",
+      ].includes(status)
     );
-
+  }
+);
+const assignedServiceTypes = new Set(
+  departureAssignments.map(assignment =>
+    String(
+      assignment.service_type || ""
+    )
+      .trim()
+      .toLowerCase()
+  )
+);
     const missingServices =
       requiredOperationsServices.filter(
         service =>
@@ -333,16 +368,53 @@ const operationsReadiness = departures
             .toLowerCase()
         )
       );
+const costsByCurrency =
+  departureAssignments.reduce(
+    (totals, assignment) => {
+      const cost = Number(
+        assignment.cost || 0
+      );
 
-    return {
-      departure,
-      assignments: departureAssignments,
-      missingServices,
-      supportingServices,
-      ready: missingServices.length === 0,
-    };
-  });
+      if (!Number.isFinite(cost) || cost <= 0) {
+        return totals;
+      }
 
+      const currency = String(
+        assignment.currency || "EUR"
+      )
+        .trim()
+        .toUpperCase();
+
+      totals[currency] =
+        (totals[currency] || 0) + cost;
+
+      return totals;
+    },
+    {}
+  );
+
+const costEntries = Object.entries(
+  costsByCurrency
+).sort(([firstCurrency], [secondCurrency]) =>
+  firstCurrency.localeCompare(secondCurrency)
+);
+
+const hasNonEurCosts = costEntries.some(
+  ([currency]) => currency !== "EUR"
+);
+  return {
+  departure,
+  assignments: departureAssignments,
+  activeAssignmentCount:
+    departureAssignments.length,
+  missingServices,
+  supportingServices,
+  costEntries,
+  hasNonEurCosts,
+  ready: missingServices.length === 0,
+};  
+});
+    
  const assignedResourceForService = (
   readiness,
   serviceType
