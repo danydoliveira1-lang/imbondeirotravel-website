@@ -294,11 +294,78 @@ return <div className="cc-dashboard"> <section className="cc-welcome"> <div> <sp
 function Reports({ data }) { 
 const committedReservations = data.reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
 const bookedRevenue = committedReservations.reduce((sum, r) => sum + Number(r.total || 0), 0 );
-const paidTransactions = data.payments.filter(  p => p.status === "Paid");
-const refunds = paidTransactions .filter(p => p.payment_type === "Refund") .reduce((sum, p) => sum + Number(p.amount || 0), 0);
-const grossCashReceived = paidTransactions .filter(p => p.payment_type !== "Refund") .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+const paidTransactions = data.payments.filter( payment => String( payment.status || "" ).toLowerCase() === "paid" );
+const paidEurTransactions = paidTransactions.filter( payment => String( payment.currency || "EUR" ).trim().toUpperCase() === "EUR" );
+const refunds = paidEurTransactions.filter( payment => String( payment.payment_type || "" ).toLowerCase() === "refund" ) .reduce( (sum, payment) =>  sum + Number(payment.amount || 0), 0 );
+const grossCashReceived = paidEurTransactions .filter( payment => String( payment.payment_type || "" ).toLowerCase() !== "refund" ) .reduce( (sum, payment) => sum + Number(payment.amount || 0), 0  );
 const netCashReceived = grossCashReceived - refunds;
 const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
+const nonEurCashByCurrency =
+  paidTransactions.reduce(
+    (totals, payment) => {
+      const currency = String(
+        payment.currency || "EUR"
+      )
+        .trim()
+        .toUpperCase();
+
+      if (currency === "EUR") {
+        return totals;
+      }
+
+      const amount = Number(
+        payment.amount || 0
+      );
+
+      if (!Number.isFinite(amount)) {
+        return totals;
+      }
+
+      const signedAmount =
+        String(
+          payment.payment_type || ""
+        ).toLowerCase() === "refund"
+          ? -amount
+          : amount;
+
+      totals[currency] =
+        (totals[currency] || 0) +
+        signedAmount;
+
+      return totals;
+    },
+    {}
+  );
+
+const nonEurCashEntries = Object.entries( nonEurCashByCurrency).sort(([firstCurrency], [secondCurrency]) =>  firstCurrency.localeCompare(secondCurrency));
+const reportMoney = (
+  value,
+  currency = "EUR"
+) => {
+  const amount = Number(value || 0);
+  const currencyCode = String(
+    currency || "EUR"
+  )
+    .trim()
+    .toUpperCase();
+
+  try {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(
+      Number.isFinite(amount) ? amount : 0
+    );
+  } catch {
+    return `${currencyCode} ${
+      Number.isFinite(amount)
+        ? amount.toFixed(2)
+        : "0.00"
+    }`;
+  }
+};
 const pipelineStatuses = [  "Enquiry", "On Hold", "Quoted", "Deposit Paid", "Confirmed", "Travelled"];
 const reservationPipeline = pipelineStatuses.map(status => {
 const reservations = data.reservations.filter( r => r.status === status  );
@@ -500,28 +567,67 @@ const executiveSnapshot = {
     </article>
   </div>
 </nav>
-   <section id="report-financial" className="cc-stat-grid">
-    <article>
-      <span>Booked Revenue</span>
-      <strong>{money(bookedRevenue)}</strong>
-      <small>Committed reservation value</small>
-    </article>
-    <article>
-      <span>Net Cash Received</span>
-      <strong>{money(netCashReceived)}</strong>
-      <small>Paid transactions less refunds</small>
-    </article>
-    <article>
-      <span>Refunds</span>
-      <strong>{money(refunds)}</strong>
-      <small>Completed refund transactions</small>
-    </article>
-    <article>
-      <span>Outstanding Value</span>
-      <strong>{money(outstandingValue)}</strong>
-      <small>Committed value not yet received</small>
-    </article>
-  </section>
+  <section
+  id="report-financial"
+  className="cc-stat-grid"
+>
+  <article>
+    <span>Booked Revenue — EUR</span>
+    <strong>
+      {reportMoney(bookedRevenue, "EUR")}
+    </strong>
+    <small>
+      Committed reservation value
+    </small>
+  </article>
+
+  <article>
+    <span>Net Cash Received — EUR</span>
+    <strong>
+      {reportMoney(netCashReceived, "EUR")}
+    </strong>
+    <small>
+      Paid EUR transactions less EUR refunds
+    </small>
+  </article>
+
+  <article>
+    <span>Refunds — EUR</span>
+    <strong>
+      {reportMoney(refunds, "EUR")}
+    </strong>
+    <small>
+      Completed EUR refund transactions
+    </small>
+  </article>
+
+  <article>
+    <span>Outstanding Value — EUR</span>
+    <strong>
+      {reportMoney(outstandingValue, "EUR")}
+    </strong>
+    <small>
+      EUR committed value not yet received
+    </small>
+  </article>
+
+  {nonEurCashEntries.map(
+    ([currency, total]) => (
+      <article key={currency}>
+        <span>
+          Net Cash Received — {currency}
+        </span>
+        <strong>
+          {reportMoney(total, currency)}
+        </strong>
+        <small>
+          Reported separately — no currency
+          conversion
+        </small>
+      </article>
+    )
+  )}
+</section> 
   <section id="report-pipeline" className="cc-panel">
   <div className="cc-panel-head">
     <div>
