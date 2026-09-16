@@ -388,7 +388,105 @@ return journeys;  }, {})).sort((a, b) =>
   b.travellers - a.travellers ||
   b.bookedValue - a.bookedValue
 );  
-const customerPerformance = data.customers.map(customer => {
+const customerPerformance =
+  data.customers
+    .map(customer => {
+      const reservations =
+        data.reservations.filter(
+          reservation =>
+            reservation.customer_id ===
+            customer.id
+        );
+
+      const reservationIds = new Set(
+        reservations.map(
+          reservation => reservation.id
+        )
+      );
+
+      const payments = data.payments.filter(
+        payment =>
+          payment.customer_id === customer.id ||
+          reservationIds.has(
+            payment.reservation_id
+          )
+      );
+
+      const lifetimeValueByCurrency =
+        payments
+          .filter(
+            payment =>
+              String(
+                payment.status || ""
+              ).toLowerCase() === "paid"
+          )
+          .reduce(
+            (totals, payment) => {
+              const currency = String(
+                payment.currency || "EUR"
+              )
+                .trim()
+                .toUpperCase();
+
+              const amount = Number(
+                payment.amount || 0
+              );
+
+              if (!Number.isFinite(amount)) {
+                return totals;
+              }
+
+              const signedAmount =
+                String(
+                  payment.payment_type || ""
+                ).toLowerCase() === "refund"
+                  ? -amount
+                  : amount;
+
+              totals[currency] =
+                (totals[currency] || 0) +
+                signedAmount;
+
+              return totals;
+            },
+            {}
+          );
+
+      const lifetimeValueEntries =
+        Object.entries(
+          lifetimeValueByCurrency
+        ).sort(
+          ([firstCurrency], [secondCurrency]) =>
+            firstCurrency.localeCompare(
+              secondCurrency
+            )
+        );
+
+      return {
+        id: customer.id,
+        name: customer.name,
+        bookings: reservations.length,
+        travellers: reservations.reduce(
+          (sum, reservation) =>
+            sum +
+            Number(
+              reservation.travellers || 0
+            ),
+          0
+        ),
+        lifetimeValueEntries,
+        eurLifetimeValue:
+          lifetimeValueByCurrency.EUR || 0,
+      };
+    })
+    .sort(
+      (first, second) =>
+        second.eurLifetimeValue -
+          first.eurLifetimeValue ||
+        second.bookings - first.bookings ||
+        second.travellers -
+          first.travellers
+    );
 const reservations = data.reservations.filter( r => r.customer_id === customer.id
   );
 
