@@ -365,7 +365,43 @@ const readinessDetail =
             color: #153f34;
             font-size: 14px;
           }
+        .readiness-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 2px solid;
+  border-radius: 8px;
+}
 
+.readiness-banner strong {
+  font-size: 14px;
+}
+
+.readiness-banner span {
+  font-size: 12px;
+  text-align: right;
+}
+
+.readiness-banner.action-required {
+  color: #8a3426;
+  border-color: #b65d45;
+  background: #f8e9e4;
+}
+
+.readiness-banner.planned {
+  color: #72531b;
+  border-color: #b58b3c;
+  background: #faf2df;
+}
+
+.readiness-banner.ready {
+  color: #153f34;
+  border-color: #3e7564;
+  background: #e3efe9;
+}
           table {
             width: 100%;
             border-collapse: collapse;
