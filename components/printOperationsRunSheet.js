@@ -486,37 +486,48 @@ const readinessDetail =
           </p>
         </header>
 
-        <section class="summary">
-          <article>
-            <span>Start date</span>
-            <strong>${formatDate(
-              departure?.start_date
-            )}</strong>
-          </article>
+<section class="summary">
+  <article>
+    <span>Start date</span>
+    <strong>${formatDate(
+      departure?.start_date
+    )}</strong>
+  </article>
 
-          <article>
-            <span>End date</span>
-            <strong>${formatDate(
-              departure?.end_date
-            )}</strong>
-          </article>
+  <article>
+    <span>End date</span>
+    <strong>${formatDate(
+      departure?.end_date
+    )}</strong>
+  </article>
 
-          <article>
-            <span>Location</span>
-            <strong>${escapeHtml(
-              departure?.location || "—"
-            )}</strong>
-          </article>
+  <article>
+    <span>Location</span>
+    <strong>${escapeHtml(
+      departure?.location || "—"
+    )}</strong>
+  </article>
 
-          <article>
-            <span>Departure status</span>
-            <strong>${escapeHtml(
-              departure?.status || "—"
-            )}</strong>
-          </article>
-        </section>
+  <article>
+    <span>Departure status</span>
+    <strong>${escapeHtml(
+      departure?.status || "—"
+    )}</strong>
+  </article>
+</section>
 
-        <table>
+<section class="readiness-banner ${escapeHtml(
+  readinessState
+)}">
+  <strong>${escapeHtml(
+    readinessTitle
+  )}</strong>
+  <span>${escapeHtml(
+    readinessDetail
+  )}</span>
+</section>
+
+<table>
           <thead>
             <tr>
               <th>Service</th>
