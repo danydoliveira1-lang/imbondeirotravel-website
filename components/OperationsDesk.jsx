@@ -497,6 +497,7 @@ const hasNonEurCosts = costEntries.some(
             <th>Operations Cost</th>
             <th>Supporting Services</th>
             <th>Readiness</th>
+            <th>Run Sheet</th>
           </tr>
         </thead>
 
