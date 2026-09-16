@@ -823,7 +823,13 @@ const executiveSnapshot = {
           </span>
         </div>
 
-        <b>{money(customer.lifetimeValue)}</b>
+        <b> {customer.lifetimeValueEntries.length ? customer.lifetimeValueEntries
+        .map(([currency, total]) =>
+          reportMoney(total, currency)
+        )
+        .join(" + ")
+    : reportMoney(0, "EUR")}
+</b>
       </div>
     ))}
   </div>
