@@ -103,7 +103,85 @@ export function printOperationsRunSheet({
         String(second.service_type || "")
       )
     );
+const requiredServices = [
+  "guide",
+  "driver",
+  "vehicle",
+];
 
+const assignedServiceTypes = new Set(
+  activeAssignments.map(assignment =>
+    String(
+      assignment.service_type || ""
+    )
+      .trim()
+      .toLowerCase()
+  )
+);
+
+const missingServices = requiredServices.filter(
+  service =>
+    !assignedServiceTypes.has(service)
+);
+
+const unconfirmedServices =
+  requiredServices.filter(service => {
+    if (!assignedServiceTypes.has(service)) {
+      return false;
+    }
+
+    return !activeAssignments.some(
+      assignment =>
+        String(
+          assignment.service_type || ""
+        )
+          .trim()
+          .toLowerCase() === service &&
+        String(
+          assignment.status || ""
+        )
+          .trim()
+          .toLowerCase() === "confirmed"
+    );
+  });
+
+const readinessState =
+  missingServices.length > 0
+    ? "action-required"
+    : unconfirmedServices.length > 0
+      ? "planned"
+      : "ready";
+
+const readinessTitle =
+  readinessState === "ready"
+    ? "READY — Core operations confirmed"
+    : readinessState === "planned"
+      ? "PLANNED — Awaiting confirmation"
+      : "ACTION REQUIRED — Missing core services";
+
+const readinessDetail =
+  missingServices.length > 0
+    ? `Missing: ${missingServices
+        .map(service =>
+          service.replace(
+            /\b\w/g,
+            character =>
+              character.toUpperCase()
+          )
+        )
+        .join(", ")}`
+    : unconfirmedServices.length > 0
+      ? `Awaiting confirmation: ${unconfirmedServices
+          .map(service =>
+            service.replace(
+              /\b\w/g,
+              character =>
+                character.toUpperCase()
+            )
+          )
+          .join(", ")}`
+      : "Guide, Driver and Vehicle are confirmed.";
+  
   const totalsByCurrency = activeAssignments.reduce(
     (totals, assignment) => {
       const amount = Number(assignment.cost || 0);
