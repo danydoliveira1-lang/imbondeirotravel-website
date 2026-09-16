@@ -611,7 +611,22 @@ const hasNonEurCosts = costEntries.some(
       </div>
     )}
 </td>
-                               
+    <td>
+  <div className="cc-row-actions">
+    <button
+      type="button"
+      onClick={() =>
+        printOperationsRunSheet({
+          departure: readiness.departure,
+          assignments: readiness.assignments,
+          resources,
+        })
+      }
+    >
+      Print
+    </button>
+  </div>
+</td>                           
             </tr>
           ))}
         </tbody>
