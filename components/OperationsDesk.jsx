@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { printOperationsRunSheet } from "./printOperationsRunSheet";
 
 const blankResource = {
   resource_type: "Guide",
