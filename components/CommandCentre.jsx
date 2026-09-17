@@ -1182,7 +1182,7 @@ const operationsStatusDetail = departure => {
   </div>
 
   {operationsPerformance.length ? (
-    <div className="cc-activity">
+   <div className="cc-activity cc-operations-performance">
       {operationsPerformance.map(
         departure => (
           <div key={departure.id}>
@@ -1207,9 +1207,9 @@ const operationsStatusDetail = departure => {
               </span>
             </div>
 
-            <div>
-              <em
-                className={`cc-status ${
+            <div className="cc-operations-financials">
+                 <em
+                  className={`cc-status ${
                   departure.readinessState ===
                   "ready"
                     ? "active"
