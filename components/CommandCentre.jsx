@@ -572,10 +572,14 @@ const executiveSnapshot = {
     </article>
 
     <article>
-      <span>Net Cash</span>
-      <strong>{money(executiveSnapshot.netCash)}</strong>
-      <small>Received less refunds</small>
-    </article>
+  <span>Net Cash — EUR</span>
+  <strong>
+    {reportMoney(executiveSnapshot.netCash, "EUR"   )}
+  </strong>
+  <small>
+    EUR received less EUR refunds
+  </small>
+</article>
 
     <article>
       <span>Occupancy</span>
