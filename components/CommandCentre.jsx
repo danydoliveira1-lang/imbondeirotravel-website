@@ -763,7 +763,194 @@ const operationsStatusDetail = departure => {
     .map(reportServiceName)
     .join(", ")}`;
 };
-  
+const receivablesPerformance =
+  committedReservations
+    .map(reservation => {
+      const reservationPayments =
+        paidTransactions.filter(
+          payment =>
+            payment.reservation_id ===
+            reservation.id
+        );
+
+      const paidEur =
+        reservationPayments.reduce(
+          (total, payment) => {
+            const currency = String(
+              payment.currency || "EUR"
+            )
+              .trim()
+              .toUpperCase();
+
+            if (currency !== "EUR") {
+              return total;
+            }
+
+            const amount = Number(
+              payment.amount || 0
+            );
+
+            if (!Number.isFinite(amount)) {
+              return total;
+            }
+
+            const isRefund =
+              String(
+                payment.payment_type || ""
+              ).toLowerCase() === "refund";
+
+            return total +
+              (isRefund ? -amount : amount);
+          },
+          0
+        );
+
+      const nonEurPaymentsByCurrency =
+        reservationPayments.reduce(
+          (totals, payment) => {
+            const currency = String(
+              payment.currency || "EUR"
+            )
+              .trim()
+              .toUpperCase();
+
+            if (currency === "EUR") {
+              return totals;
+            }
+
+            const amount = Number(
+              payment.amount || 0
+            );
+
+            if (!Number.isFinite(amount)) {
+              return totals;
+            }
+
+            const isRefund =
+              String(
+                payment.payment_type || ""
+              ).toLowerCase() === "refund";
+
+            totals[currency] =
+              (totals[currency] || 0) +
+              (isRefund ? -amount : amount);
+
+            return totals;
+          },
+          {}
+        );
+
+      const totalEur = Number(
+        reservation.total || 0
+      );
+
+      const safeTotalEur =
+        Number.isFinite(totalEur)
+          ? totalEur
+          : 0;
+
+      const balanceEur = Math.max(
+        0,
+        safeTotalEur - paidEur
+      );
+
+      const overpaymentEur = Math.max(
+        0,
+        paidEur - safeTotalEur
+      );
+
+      const issuedInvoice =
+        (data.invoices || []).find(
+          invoice =>
+            invoice.reservation_id ===
+              reservation.id &&
+            String(
+              invoice.status || ""
+            ).toLowerCase() === "issued"
+        );
+
+      return {
+        id: reservation.id,
+        customer:
+          reservation.customer ||
+          data.customers.find(
+            customer =>
+              customer.id ===
+              reservation.customer_id
+          )?.name ||
+          "Unnamed customer",
+        journey:
+          reservation.journey ||
+          "Unassigned journey",
+        status: reservation.status,
+        totalEur: safeTotalEur,
+        paidEur,
+        balanceEur,
+        overpaymentEur,
+        invoiceNumber:
+          issuedInvoice?.invoice_number ||
+          null,
+        nonEurPaymentEntries:
+          Object.entries(
+            nonEurPaymentsByCurrency
+          ).sort(
+            (
+              [firstCurrency],
+              [secondCurrency]
+            ) =>
+              firstCurrency.localeCompare(
+                secondCurrency
+              )
+          ),
+      };
+    })
+    .sort(
+      (first, second) =>
+        second.balanceEur -
+          first.balanceEur ||
+        first.customer.localeCompare(
+          second.customer
+        )
+    );
+
+const totalReceivableEur =
+  receivablesPerformance.reduce(
+    (total, reservation) =>
+      total + reservation.balanceEur,
+    0
+  );
+
+const fullyPaidReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      reservation.balanceEur === 0 &&
+      reservation.overpaymentEur === 0
+  ).length;
+
+const invoicedReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      Boolean(reservation.invoiceNumber)
+  ).length;
+
+  const outstandingReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      reservation.balanceEur > 0
+  ).length;
+
+const overpaidReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      reservation.overpaymentEur > 0
+  ).length;
+
+const totalOverpaymentEur =
+  receivablesPerformance.reduce(
+    (total, reservation) =>
+      total + reservation.overpaymentEur,
+    0
+  );
   const executiveSnapshot = {
   reservations: pipelineBookings,
   travellers: pipelineTravellers,
