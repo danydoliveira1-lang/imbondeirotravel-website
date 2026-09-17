@@ -566,7 +566,33 @@ const operationsPerformance =
             ].includes(status)
           );
         });
+      
+      const committedDepartureReservations =
+        data.reservations.filter(
+          reservation =>
+            reservation.departure_id ===
+              departure.id &&
+            [
+              "Deposit Paid",
+              "Confirmed",
+              "Travelled",
+            ].includes(reservation.status)
+        );
 
+      const bookedRevenueEur =
+        committedDepartureReservations.reduce(
+          (total, reservation) => {
+            const amount = Number(
+              reservation.total || 0
+            );
+
+            return Number.isFinite(amount)
+              ? total + amount
+              : total;
+          },
+          0
+        );
+      
       const assignedServiceTypes =
         new Set(
           departureAssignments.map(
@@ -652,7 +678,7 @@ const operationsPerformance =
           {}
         );
 
-      const costEntries = Object.entries(
+  const costEntries = Object.entries(
         costsByCurrency
       ).sort(
         ([firstCurrency], [secondCurrency]) =>
@@ -661,12 +687,24 @@ const operationsPerformance =
           )
       );
 
+      const eurOperationsCost =
+        costsByCurrency.EUR || 0;
+
+      const contributionEur =
+        bookedRevenueEur -
+        eurOperationsCost;
+
       return {
         id: departure.id,
         title: departure.title,
         startDate: departure.start_date,
         assignments:
           departureAssignments.length,
+        committedBookings:
+          committedDepartureReservations.length,
+        bookedRevenueEur,
+        eurOperationsCost,
+        contributionEur,
         missingServices,
         unconfirmedServices,
         readinessState,
@@ -1190,19 +1228,53 @@ const operationsStatusDetail = departure => {
                     : "Action Required"}
               </em>
 
+                           <span>
+                Booked revenue — EUR:{" "}
+                {reportMoney(
+                  departure.bookedRevenueEur,
+                  "EUR"
+                )}
+              </span>
+
+              <span>
+                Operations cost — EUR:{" "}
+                {reportMoney(
+                  departure.eurOperationsCost,
+                  "EUR"
+                )}
+              </span>
+
               <b>
-                {departure.costEntries.length
-                  ? departure.costEntries
-                      .map(
-                        ([currency, total]) =>
-                          reportMoney(
-                            total,
-                            currency
-                          )
-                      )
-                      .join(" + ")
-                  : reportMoney(0, "EUR")}
+                Contribution — EUR:{" "}
+                {reportMoney(
+                  departure.contributionEur,
+                  "EUR"
+                )}
               </b>
+
+              {departure.costEntries.some(
+                ([currency]) =>
+                  currency !== "EUR"
+              ) && (
+                <small>
+                  Additional operational costs:{" "}
+                  {departure.costEntries
+                    .filter(
+                      ([currency]) =>
+                        currency !== "EUR"
+                    )
+                    .map(
+                      ([currency, total]) =>
+                        reportMoney(
+                          total,
+                          currency
+                        )
+                    )
+                    .join(" + ")}
+                  {" — "}
+                  excluded from EUR contribution
+                </small>
+              )}
             </div>
           </div>
         )
