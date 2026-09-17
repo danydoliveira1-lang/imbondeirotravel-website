@@ -530,7 +530,203 @@ const overallOccupancy =
   totalCapacity > 0
     ? Math.round((totalBookedSeats / totalCapacity) * 100)
     : 0;
-const executiveSnapshot = {
+const requiredReportServices = [
+  "guide",
+  "driver",
+  "vehicle",
+];
+
+const operationsPerformance =
+  data.departures
+    .filter(departure => {
+      const status = String(
+        departure.status || ""
+      ).toLowerCase();
+
+      return ![
+        "cancelled",
+        "completed",
+      ].includes(status);
+    })
+    .map(departure => {
+      const departureAssignments =
+        (
+          data.departure_assignments || []
+        ).filter(assignment => {
+          const status = String(
+            assignment.status || ""
+          ).toLowerCase();
+
+          return (
+            assignment.departure_id ===
+              departure.id &&
+            ![
+              "cancelled",
+              "completed",
+            ].includes(status)
+          );
+        });
+
+      const assignedServiceTypes =
+        new Set(
+          departureAssignments.map(
+            assignment =>
+              String(
+                assignment.service_type || ""
+              )
+                .trim()
+                .toLowerCase()
+          )
+        );
+
+      const missingServices =
+        requiredReportServices.filter(
+          service =>
+            !assignedServiceTypes.has(
+              service
+            )
+        );
+
+      const unconfirmedServices =
+        requiredReportServices.filter(
+          service => {
+            if (
+              !assignedServiceTypes.has(
+                service
+              )
+            ) {
+              return false;
+            }
+
+            return !departureAssignments.some(
+              assignment =>
+                String(
+                  assignment.service_type ||
+                    ""
+                )
+                  .trim()
+                  .toLowerCase() === service &&
+                String(
+                  assignment.status || ""
+                )
+                  .trim()
+                  .toLowerCase() ===
+                  "confirmed"
+            );
+          }
+        );
+
+      const readinessState =
+        missingServices.length > 0
+          ? "action_required"
+          : unconfirmedServices.length > 0
+            ? "planned"
+            : "ready";
+
+      const costsByCurrency =
+        departureAssignments.reduce(
+          (totals, assignment) => {
+            const amount = Number(
+              assignment.cost || 0
+            );
+
+            if (
+              !Number.isFinite(amount) ||
+              amount <= 0
+            ) {
+              return totals;
+            }
+
+            const currency = String(
+              assignment.currency || "EUR"
+            )
+              .trim()
+              .toUpperCase();
+
+            totals[currency] =
+              (totals[currency] || 0) +
+              amount;
+
+            return totals;
+          },
+          {}
+        );
+
+      const costEntries = Object.entries(
+        costsByCurrency
+      ).sort(
+        ([firstCurrency], [secondCurrency]) =>
+          firstCurrency.localeCompare(
+            secondCurrency
+          )
+      );
+
+      return {
+        id: departure.id,
+        title: departure.title,
+        startDate: departure.start_date,
+        assignments:
+          departureAssignments.length,
+        missingServices,
+        unconfirmedServices,
+        readinessState,
+        costEntries,
+      };
+    })
+    .sort(
+      (first, second) =>
+        new Date(first.startDate || 0) -
+        new Date(second.startDate || 0)
+    );
+
+const readyDepartures =
+  operationsPerformance.filter(
+    departure =>
+      departure.readinessState === "ready"
+  ).length;
+
+const plannedDepartures =
+  operationsPerformance.filter(
+    departure =>
+      departure.readinessState === "planned"
+  ).length;
+
+const actionRequiredDepartures =
+  operationsPerformance.filter(
+    departure =>
+      departure.readinessState ===
+      "action_required"
+  ).length;
+ 
+  const reportServiceName = service =>
+  service.replace(
+    /\b\w/g,
+    character => character.toUpperCase()
+  );
+
+const operationsStatusDetail = departure => {
+  if (
+    departure.readinessState === "ready"
+  ) {
+    
+    return "Core services confirmed";
+  }
+
+  if (
+    departure.readinessState === "planned"
+  ) {
+    
+    return `Awaiting confirmation: ${departure.unconfirmedServices
+      .map(reportServiceName)
+      .join(", ")}`;
+  }
+
+  return `Missing: ${departure.missingServices
+    .map(reportServiceName)
+    .join(", ")}`;
+};
+  
+  const executiveSnapshot = {
   reservations: pipelineBookings,
   travellers: pipelineTravellers,
   netCash: netCashReceived,
@@ -595,10 +791,15 @@ const executiveSnapshot = {
   </div>
 </section>
     
-  <nav className="cc-panel" aria-label="Report sections">
+  <nav
+  className="cc-panel"
+  aria-label="Report sections"
+>
   <div className="cc-panel-head">
     <div>
-      <span className="cc-eyebrow">Report navigator</span>
+      <span className="cc-eyebrow">
+        Report navigator
+      </span>
       <h3>Explore Performance</h3>
     </div>
   </div>
@@ -607,35 +808,54 @@ const executiveSnapshot = {
     <article>
       <a href="#report-financial">
         <strong>Financial</strong>
-        <small>Revenue, cash & refunds</small>
+        <small>
+          Revenue, cash & refunds
+        </small>
       </a>
     </article>
 
     <article>
       <a href="#report-pipeline">
         <strong>Pipeline</strong>
-        <small>Reservations & travellers</small>
+        <small>
+          Reservations & travellers
+        </small>
       </a>
     </article>
 
     <article>
       <a href="#report-journeys">
         <strong>Journeys</strong>
-        <small>Journey performance</small>
+        <small>
+          Journey performance
+        </small>
       </a>
     </article>
 
     <article>
       <a href="#report-customers">
         <strong>Customers</strong>
-        <small>Value & booking activity</small>
+        <small>
+          Value & booking activity
+        </small>
       </a>
     </article>
 
     <article>
       <a href="#report-capacity">
         <strong>Capacity</strong>
-        <small>Seats & occupancy</small>
+        <small>
+          Seats & occupancy
+        </small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-operations">
+        <strong>Operations</strong>
+        <small>
+          Readiness, assignments & costs
+        </small>
       </a>
     </article>
   </div>
@@ -869,7 +1089,132 @@ const executiveSnapshot = {
       </div>
     ))}
   </div>
-</section> 
+
+  </section> 
+  <section
+  id="report-operations"
+  className="cc-panel"
+>
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Operations control
+      </span>
+      <h3>
+        Departure Readiness & Costs
+      </h3>
+    </div>
+
+    <span>
+      {readyDepartures} of{" "}
+      {operationsPerformance.length} ready
+      {" · "}
+      <a href="#reports-top">
+        ↑ Back to Reports
+      </a>
+    </span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Ready</span>
+      <strong>{readyDepartures}</strong>
+      <small>
+        Core services confirmed
+      </small>
+    </article>
+
+    <article>
+      <span>Planned</span>
+      <strong>{plannedDepartures}</strong>
+      <small>
+        Awaiting service confirmation
+      </small>
+    </article>
+
+    <article>
+      <span>Action Required</span>
+      <strong>
+        {actionRequiredDepartures}
+      </strong>
+      <small>
+        Missing core services
+      </small>
+    </article>
+  </div>
+
+  {operationsPerformance.length ? (
+    <div className="cc-activity">
+      {operationsPerformance.map(
+        departure => (
+          <div key={departure.id}>
+            <span className="cc-dot"></span>
+
+            <div>
+              <strong>
+                {departure.title}
+                {" — "}
+                {departure.startDate}
+              </strong>
+
+              <span>
+                {departure.assignments}{" "}
+                {departure.assignments === 1
+                  ? "assignment"
+                  : "assignments"}
+                {" · "}
+                {operationsStatusDetail(
+                  departure
+                )}
+              </span>
+            </div>
+
+            <div>
+              <em
+                className={`cc-status ${
+                  departure.readinessState ===
+                  "ready"
+                    ? "active"
+                    : departure.readinessState ===
+                        "planned"
+                      ? "planned"
+                      : "pending"
+                }`}
+              >
+                {departure.readinessState ===
+                "ready"
+                  ? "Ready"
+                  : departure.readinessState ===
+                      "planned"
+                    ? "Planned"
+                    : "Action Required"}
+              </em>
+
+              <b>
+                {departure.costEntries.length
+                  ? departure.costEntries
+                      .map(
+                        ([currency, total]) =>
+                          reportMoney(
+                            total,
+                            currency
+                          )
+                      )
+                      .join(" + ")
+                  : reportMoney(0, "EUR")}
+              </b>
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  ) : (
+    <div className="cc-empty">
+      No active departures require Operations
+      reporting.
+    </div>
+  )}
+</section>
   </div>;
 }
 function Settings({ data, reload, flash }) {
