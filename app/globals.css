@@ -951,3 +951,47 @@ button:disabled{opacity:.6;cursor:not-allowed}
     object-position: center center;
   }
 }
+.cc-operations-performance > div {
+  display: grid;
+  grid-template-columns:
+    10px minmax(0, 1fr) minmax(260px, 340px);
+  align-items: start;
+  column-gap: 18px;
+}
+
+.cc-operations-financials {
+  display: grid;
+  gap: 6px;
+  min-width: 260px;
+  justify-items: start;
+  text-align: left;
+}
+
+.cc-operations-financials > span,
+.cc-operations-financials > b,
+.cc-operations-financials > small {
+  display: block;
+  line-height: 1.4;
+}
+
+.cc-operations-financials > b {
+  color: #153f34;
+}
+
+.cc-operations-financials .cc-status {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 900px) {
+  .cc-operations-performance > div {
+    grid-template-columns:
+      10px minmax(0, 1fr);
+    row-gap: 10px;
+  }
+
+  .cc-operations-financials {
+    grid-column: 2;
+    min-width: 0;
+    margin-top: 6px;
+  }
+}
