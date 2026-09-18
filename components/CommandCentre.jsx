@@ -1038,7 +1038,16 @@ const totalOverpaymentEur =
         </small>
       </a>
     </article>
-
+   
+    <article>
+  <a href="#report-receivables">
+    <strong>Receivables</strong>
+    <small>
+      Balances, payments & invoices
+    </small>
+  </a>
+  </article>
+   
     <article>
       <a href="#report-pipeline">
         <strong>Pipeline</strong>
@@ -1145,8 +1154,194 @@ const totalOverpaymentEur =
       </article>
     )
   )}
-</section> 
-  <section id="report-pipeline" className="cc-panel">
+</section>
+
+<section
+  id="report-receivables"
+  className="cc-panel"
+>
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Credit control
+      </span>
+      <h3>Receivables & Invoices</h3>
+    </div>
+
+    <span>
+      {receivablesPerformance.length} committed{" "}
+      {receivablesPerformance.length === 1
+        ? "reservation"
+        : "reservations"}
+      {" · "}
+      <a href="#reports-top">
+        ↑ Back to Reports
+      </a>
+    </span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Outstanding — EUR</span>
+      <strong>
+        {reportMoney(
+          totalReceivableEur,
+          "EUR"
+        )}
+      </strong>
+      <small>
+        Unpaid committed reservation value
+      </small>
+    </article>
+
+    <article>
+      <span>Balances Due</span>
+      <strong>
+        {outstandingReservations}
+      </strong>
+      <small>
+        Reservations requiring payment
+      </small>
+    </article>
+
+    <article>
+      <span>Fully Paid</span>
+      <strong>
+        {fullyPaidReservations}
+      </strong>
+      <small>
+        EUR balance settled
+      </small>
+    </article>
+
+    <article>
+      <span>Tax Invoices Issued</span>
+      <strong>
+        {invoicedReservations}
+      </strong>
+      <small>
+        Official issued invoices
+      </small>
+    </article>
+
+    <article>
+      <span>Overpayments — EUR</span>
+      <strong>
+        {reportMoney(
+          totalOverpaymentEur,
+          "EUR"
+        )}
+      </strong>
+      <small>
+        {overpaidReservations}{" "}
+        {overpaidReservations === 1
+          ? "reservation"
+          : "reservations"}
+      </small>
+    </article>
+  </div>
+
+  {receivablesPerformance.length ? (
+    <div className="cc-activity">
+      {receivablesPerformance.map(
+        reservation => (
+          <div key={reservation.id}>
+            <span className="cc-dot"></span>
+
+            <div>
+              <strong>
+                {reservation.customer}
+              </strong>
+
+              <span>
+                {reservation.journey}
+                {" · "}
+                {reservation.status}
+              </span>
+
+              <span>
+                Booking:{" "}
+                {reportMoney(
+                  reservation.totalEur,
+                  "EUR"
+                )}
+                {" · "}
+                Paid:{" "}
+                {reportMoney(
+                  reservation.paidEur,
+                  "EUR"
+                )}
+                {" · "}
+                Tax Invoice:{" "}
+                {reservation.invoiceNumber ||
+                  "Not issued"}
+              </span>
+
+              {reservation
+                .nonEurPaymentEntries
+                .length > 0 && (
+                <span>
+                  Additional payments:{" "}
+                  {reservation.nonEurPaymentEntries
+                    .map(
+                      ([currency, total]) =>
+                        reportMoney(
+                          total,
+                          currency
+                        )
+                    )
+                    .join(" + ")}
+                  {" — "}
+                  not applied to EUR balance
+                </span>
+              )}
+            </div>
+
+            <em
+              className={`cc-status ${
+                reservation.balanceEur > 0
+                  ? "pending"
+                  : reservation.overpaymentEur >
+                      0
+                    ? "planned"
+                    : "active"
+              }`}
+            >
+              {reservation.balanceEur > 0
+                ? "Outstanding"
+                : reservation.overpaymentEur >
+                    0
+                  ? "Overpaid"
+                  : "Paid"}
+            </em>
+
+            <b>
+              {reservation.balanceEur > 0
+                ? `Balance ${reportMoney(
+                    reservation.balanceEur,
+                    "EUR"
+                  )}`
+                : reservation.overpaymentEur >
+                    0
+                  ? `Credit ${reportMoney(
+                      reservation.overpaymentEur,
+                      "EUR"
+                    )}`
+                  : "Paid in full"}
+            </b>
+          </div>
+        )
+      )}
+    </div>
+  ) : (
+    <div className="cc-empty">
+      No committed reservations require
+      receivables reporting.
+    </div>
+  )}
+</section>
+
+   <section id="report-pipeline" className="cc-panel">
   <div className="cc-panel-head">
     <div>
       <span className="cc-eyebrow">Sales pipeline</span>
