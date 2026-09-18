@@ -805,41 +805,79 @@ const totalOverpaymentEur =
       <p>
         Live performance reporting across bookings, customers, departures and payments.
       </p>
-      <button
-  type="button"
-  className="cc-primary"
-  disabled={reportPeriodInvalid}
-  title={
-    reportPeriodInvalid
-      ? "The end date cannot be earlier than the start date"
-      : `Print report: ${reportPeriodLabel}`
-  }
-  onClick={() =>
-    printManagementReport({
-      reportPeriod: {
-        label: reportPeriodLabel,
-        startDate: reportStartDate,
-        endDate: reportEndDate,
-      },
-      executiveSnapshot,
-      financial: {
-        bookedRevenue,
-        netCashReceived,
-        refunds,
-        totalReceivableEur,
-        invoicedReservations,
-      },
-      nonEurCashEntries,
-      receivables:
-        receivablesPerformance,
-      capacity: capacityPerformance,
-      operations:
-        operationsPerformance,
-    })
-  }
->
-  Print Management Report
-</button>  
+      <div className="cc-report-actions">
+  <button
+    type="button"
+    className="cc-primary"
+    disabled={reportPeriodInvalid}
+    title={
+      reportPeriodInvalid
+        ? "The end date cannot be earlier than the start date"
+        : `Print report: ${reportPeriodLabel}`
+    }
+    onClick={() =>
+      printManagementReport({
+        reportPeriod: {
+          label: reportPeriodLabel,
+          startDate: reportStartDate,
+          endDate: reportEndDate,
+        },
+        executiveSnapshot,
+        financial: {
+          bookedRevenue,
+          netCashReceived,
+          refunds,
+          totalReceivableEur,
+          invoicedReservations,
+        },
+        nonEurCashEntries,
+        receivables:
+          receivablesPerformance,
+        capacity: capacityPerformance,
+        operations:
+          operationsPerformance,
+      })
+    }
+  >
+    Print Management Report
+  </button>
+
+  <button
+    type="button"
+    className="cc-primary"
+    disabled={reportPeriodInvalid}
+    title={
+      reportPeriodInvalid
+        ? "The end date cannot be earlier than the start date"
+        : `Export report: ${reportPeriodLabel}`
+    }
+    onClick={() =>
+      exportManagementReport({
+        reportPeriod: {
+          label: reportPeriodLabel,
+          startDate: reportStartDate,
+          endDate: reportEndDate,
+        },
+        executiveSnapshot,
+        financial: {
+          bookedRevenue,
+          netCashReceived,
+          refunds,
+          totalReceivableEur,
+          invoicedReservations,
+        },
+        nonEurCashEntries,
+        receivables:
+          receivablesPerformance,
+        capacity: capacityPerformance,
+        operations:
+          operationsPerformance,
+      })
+    }
+  >
+    Export Management Data
+  </button>
+</div>
     </div>
     
     <div className="cc-orbit">
