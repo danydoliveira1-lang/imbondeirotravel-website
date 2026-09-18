@@ -277,7 +277,7 @@ const travellersExpected = upcomingDepartures.reduce((sum, d) => sum + Number(d.
 const seatsAvailable = upcomingDepartures.reduce( (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)), 0 );
 const attentionItems = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status) ).length;
 const departureReadiness = upcomingDepartures.map(departure => {
-const reservations = data.reservations.filter( r => r.departure_id === departure.id  );
+const reservations = reportingReservations.filter( r => r.departure_id === departure.id  );
 const reservationIds = new Set(reservations.map(r => r.id));
 const payments = data.payments.filter( p => reservationIds.has(p.reservation_id) );
 const activeReservations = reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
@@ -294,89 +294,51 @@ return <div className="cc-dashboard"> <section className="cc-welcome"> <div> <sp
 }
 
 function Reports({ data }) { 
-const committedReservations = data.reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
-const bookedRevenue = committedReservations.reduce((sum, r) => sum + Number(r.total || 0), 0 );
-const paidTransactions = data.payments.filter( payment => String( payment.status || "" ).toLowerCase() === "paid" );
-const paidEurTransactions = paidTransactions.filter( payment => String( payment.currency || "EUR" ).trim().toUpperCase() === "EUR" );
-const refunds = paidEurTransactions.filter( payment => String( payment.payment_type || "" ).toLowerCase() === "refund" ) .reduce( (sum, payment) =>  sum + Number(payment.amount || 0), 0 );
-const grossCashReceived = paidEurTransactions .filter( payment => String( payment.payment_type || "" ).toLowerCase() !== "refund" ) .reduce( (sum, payment) => sum + Number(payment.amount || 0), 0  );
-const netCashReceived = grossCashReceived - refunds;
-const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
-const nonEurCashByCurrency =
-  paidTransactions.reduce(
-    (totals, payment) => {
-      const currency = String(
-        payment.currency || "EUR"
-      )
-        .trim()
-        .toUpperCase();
+ const [ reportStartDate, setReportStartDate,] = useState("");
+ const [ reportEndDate, setReportEndDate,] = useState("");
+ const hasReportPeriod = Boolean(reportStartDate) || Boolean(reportEndDate);
+ const reportPeriodInvalid = Boolean( reportStartDate && reportEndDate && reportEndDate < reportStartDate );
+ const reportingDepartures = data.departures.filter(departure => { if (!hasReportPeriod) { return true;}
+ const departureDate = String( departure.start_date || "" ).slice(0, 10); if (!departureDate) { return false; }
+ return ( (!reportStartDate || departureDate >= reportStartDate) && (!reportEndDate || departureDate <= reportEndDate)    );
+  });
 
-      if (currency === "EUR") {
-        return totals;
-      }
+ const reportingDepartureIds =  new Set( reportingDepartures.map( departure => departure.id ) );
+ const reportingReservations = hasReportPeriod ? data.reservations.filter( reservation => reportingDepartureIds.has( reservation.departure_id ) ) : data.reservations;
+ const reportingReservationIds = new Set( reportingReservations.map( reservation => reservation.id ) );
+ const reportingPayments =  hasReportPeriod ? data.payments.filter( payment => reportingReservationIds.has( payment.reservation_id )) : data.payments;
+ const reportingInvoices = hasReportPeriod ? (data.invoices || []).filter( invoice => reportingReservationIds.has( invoice.reservation_id ) ) : data.invoices || [];
+ const committedReservations = reportingReservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
+ const bookedRevenue = committedReservations.reduce((sum, r) => sum + Number(r.total || 0), 0 );
+ const paidTransactions = reportingPayments.filter( payment => String( payment.status || "" ).toLowerCase() === "paid" );
+ const paidEurTransactions = paidTransactions.filter( payment => String( payment.currency || "EUR" ).trim().toUpperCase() === "EUR" );
+ const refunds = paidEurTransactions.filter( payment => String( payment.payment_type || "" ).toLowerCase() === "refund" ) .reduce( (sum, payment) =>  sum + Number(payment.amount || 0), 0 );
+ const grossCashReceived = paidEurTransactions .filter( payment => String( payment.payment_type || "" ).toLowerCase() !== "refund" ) .reduce( (sum, payment) => sum + Number(payment.amount || 0), 0  );
+ const netCashReceived = grossCashReceived - refunds;
+ const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
+ const nonEurCashByCurrency =  paidTransactions.reduce( (totals, payment) => {
+ const currency = String( payment.currency || "EUR" ) .trim() .toUpperCase(); if (currency === "EUR") { return totals; }
+ const amount = Number( payment.amount || 0  );  if (!Number.isFinite(amount)) { return totals; }
 
-      const amount = Number(
-        payment.amount || 0
-      );
-
-      if (!Number.isFinite(amount)) {
-        return totals;
-      }
-
-      const signedAmount =
-        String(
-          payment.payment_type || ""
-        ).toLowerCase() === "refund"
-          ? -amount
-          : amount;
-
-      totals[currency] =
-        (totals[currency] || 0) +
-        signedAmount;
-
-      return totals;
-    },
-    {}
-  );
+ const signedAmount = String(  payment.payment_type || "" ).toLowerCase() === "refund" ? -amount : amount; 
+    totals[currency] =  (totals[currency] || 0) + signedAmount; return totals; }, {}  );
 
 const nonEurCashEntries = Object.entries( nonEurCashByCurrency).sort(([firstCurrency], [secondCurrency]) =>  firstCurrency.localeCompare(secondCurrency));
-const reportMoney = (
-  value,
-  currency = "EUR"
-) => {
+const reportMoney = ( value, currency = "EUR" ) => {
   const amount = Number(value || 0);
-  const currencyCode = String(
-    currency || "EUR"
-  )
-    .trim()
-    .toUpperCase();
-
-  try {
-    return new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: currencyCode,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(
-      Number.isFinite(amount) ? amount : 0
-    );
-  } catch {
-    return `${currencyCode} ${
-      Number.isFinite(amount)
-        ? amount.toFixed(2)
-        : "0.00"
-    }`;
-  }
-};
+  const currencyCode = String( currency || "EUR" ) .trim() .toUpperCase(); try {
+    
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency: currencyCode, minimumFractionDigits: 2, maximumFractionDigits: 2, }).format(  Number.isFinite(amount) ? amount : 0 );
+  } catch { return `${currencyCode} ${  Number.isFinite(amount) ? amount.toFixed(2) : "0.00" }`; } };
 const pipelineStatuses = [  "Enquiry", "On Hold", "Quoted", "Deposit Paid", "Confirmed", "Travelled"];
 const reservationPipeline = pipelineStatuses.map(status => {
-const reservations = data.reservations.filter( r => r.status === status  );
+const reservations = reportingReservations.filter( r => r.status === status );
 
-return { status, bookings: reservations.length, travellers: reservations.reduce( (sum, r) => sum + Number(r.travellers || 0), 0  ) };});
+ return { status, bookings: reservations.length, travellers: reservations.reduce( (sum, r) => sum + Number(r.travellers || 0), 0  ) };});
 
 const pipelineBookings = reservationPipeline.reduce( (sum, stage) => sum + stage.bookings, 0);
 const pipelineTravellers = reservationPipeline.reduce( (sum, stage) => sum + stage.travellers, 0);
-const journeyPerformance = Object.values( data.reservations.reduce((journeys, reservation) => {
+const journeyPerformance = Object.values( reportingReservations.reduce((journeys, reservation) => {
 const journey = reservation.journey || "Unassigned Journey";
 
 if (!journeys[journey]) { journeys[journey] = { journey, bookings: 0, travellers: 0, bookedValue: 0  };  }
@@ -385,137 +347,29 @@ journeys[journey].travellers += Number(reservation.travellers || 0);
 if ( ["Deposit Paid", "Confirmed", "Travelled"].includes( reservation.status  ) ) {
     journeys[journey].bookedValue += Number(reservation.total || 0);
     }
-return journeys;  }, {})).sort((a, b) =>
-  b.bookings - a.bookings ||
-  b.travellers - a.travellers ||
-  b.bookedValue - a.bookedValue
-);  
-const customerPerformance =
-  data.customers
-    .map(customer => {
-      const reservations =
-        data.reservations.filter(
-          reservation =>
-            reservation.customer_id ===
-            customer.id
-        );
-
-      const reservationIds = new Set(
-        reservations.map(
-          reservation => reservation.id
-        )
-      );
-
-      const payments = data.payments.filter(
-        payment =>
-          payment.customer_id === customer.id ||
-          reservationIds.has(
-            payment.reservation_id
-          )
-      );
-
-      const lifetimeValueByCurrency =
-        payments
-          .filter(
-            payment =>
-              String(
-                payment.status || ""
-              ).toLowerCase() === "paid"
-          )
-          .reduce(
-            (totals, payment) => {
-              const currency = String(
-                payment.currency || "EUR"
-              )
-                .trim()
-                .toUpperCase();
-
-              const amount = Number(
-                payment.amount || 0
-              );
-
-              if (!Number.isFinite(amount)) {
-                return totals;
-              }
-
-              const signedAmount =
-                String(
-                  payment.payment_type || ""
-                ).toLowerCase() === "refund"
-                  ? -amount
-                  : amount;
-
-              totals[currency] =
-                (totals[currency] || 0) +
-                signedAmount;
-
-              return totals;
-            },
-            {}
-          );
-
-      const lifetimeValueEntries =
-        Object.entries(
-          lifetimeValueByCurrency
-        ).sort(
-          ([firstCurrency], [secondCurrency]) =>
-            firstCurrency.localeCompare(
-              secondCurrency
-            )
-        );
-
-      return {
-        id: customer.id,
-        name: customer.name,
-        bookings: reservations.length,
-        travellers: reservations.reduce(
-          (sum, reservation) =>
-            sum +
-            Number(
-              reservation.travellers || 0
-            ),
-          0
-        ),
-        lifetimeValueEntries,
-        eurLifetimeValue:
-          lifetimeValueByCurrency.EUR || 0,
-      };
-    })
+return journeys;  }, {})).sort((a, b) => b.bookings - a.bookings || b.travellers - a.travellers || b.bookedValue - a.bookedValue );  
+const customerPerformance = data.customers .map(customer => { const reservations = reportingReservations.filter( reservation => reservation.customer_id === customer.id );
+const reservationIds = new Set( reservations.map( reservation => reservation.id ) );
+const payments = reportingPayments.filter(  payment => payment.customer_id === customer.id || reservationIds.has( payment.reservation_id ) );
+const lifetimeValueByCurrency = payments.filter( payment => String( payment.status || "" ).toLowerCase() === "paid" ) .reduce(  (totals, payment) => {
+const currency = String(  payment.currency || "EUR"  ) .trim() .toUpperCase();
+const amount = Number( payment.amount || 0  ); if (!Number.isFinite(amount)) { return totals; }
+const signedAmount =  String( payment.payment_type || "" ).toLowerCase() === "refund" ? -amount  : amount; totals[currency] = (totals[currency] || 0) + signedAmount; return totals; }, {} );
+const lifetimeValueEntries = Object.entries( lifetimeValueByCurrency ).sort( ([firstCurrency], [secondCurrency]) => firstCurrency.localeCompare( secondCurrency )  );
+   return { id: customer.id,  name: customer.name, bookings: reservations.length, travellers: reservations.reduce(  (sum, reservation) =>
+            sum +  Number(  reservation.travellers || 0  ), 0  ), lifetimeValueEntries,  eurLifetimeValue: lifetimeValueByCurrency.EUR || 0, }; })
     .sort(
-      (first, second) =>
-        second.eurLifetimeValue -
-          first.eurLifetimeValue ||
-        second.bookings - first.bookings ||
-        second.travellers -
-          first.travellers
-    );
+      (first, second) => second.eurLifetimeValue - first.eurLifetimeValue || second.bookings - first.bookings || second.travellers - first.travellers );
   
-const capacityPerformance = data.departures
-  .filter(departure => departure.status !== "cancelled")
-  .map(departure => {
-    const capacity = Number(departure.maximum_guests || 0);
-    const booked = Number(departure.reserved_guests || 0);
-    const held = Number(departure.held_guests || 0);
-    const available = Math.max(0, capacity - booked - held);
-
-    const occupancy =
-      capacity > 0
-        ? Math.round((booked / capacity) * 100)
-        : 0;
-
-    return {
-      id: departure.id,
-      title: departure.title,
-      startDate: departure.start_date,
-      capacity,
-      booked,
-      held,
-      available,
-      occupancy
-    };
+const capacityPerformance = reportingDepartures .filter(departure => departure.status !== "cancelled") .map(departure => {
+ const capacity = Number(departure.maximum_guests || 0);
+ const booked = Number(departure.reserved_guests || 0);
+ const held = Number(departure.held_guests || 0);
+ const available = Math.max(0, capacity - booked - held);
+ const occupancy = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
+    return { id: departure.id, title: departure.title, startDate: departure.start_date, capacity, booked, held, available, occupancy };
   })
-  .sort((a, b) =>
-    b.occupancy - a.occupancy ||
+  .sort((a, b) => b.occupancy - a.occupancy ||
     new Date(a.startDate || 0) - new Date(b.startDate || 0)
   );
 
@@ -528,28 +382,12 @@ const totalHeldSeats = capacityPerformance.reduce(
 const totalAvailableSeats = capacityPerformance.reduce(
   (sum, departure) => sum + departure.available, 0 );
   
-const overallOccupancy =
-  totalCapacity > 0
-    ? Math.round((totalBookedSeats / totalCapacity) * 100)
-    : 0;
-const requiredReportServices = [
-  "guide",
-  "driver",
-  "vehicle",
-];
+const overallOccupancy = totalCapacity > 0 ? Math.round((totalBookedSeats / totalCapacity) * 100) : 0;
+const requiredReportServices = [ "guide", "driver", "vehicle",];
 
-const operationsPerformance =
-  data.departures
-    .filter(departure => {
-      const status = String(
-        departure.status || ""
-      ).toLowerCase();
-
-      return ![
-        "cancelled",
-        "completed",
-      ].includes(status);
-    })
+ const operationsPerformance = reportingDepartures .filter(departure => {
+  const status = String( departure.status || ""  ).toLowerCase();
+    return ![ "cancelled", "completed", ].includes(status);  })
     .map(departure => {
       const departureAssignments =
         (
@@ -559,21 +397,11 @@ const operationsPerformance =
             assignment.status || ""
           ).toLowerCase();
 
-          return (
-            assignment.departure_id ===
-              departure.id &&
-            ![
-              "cancelled",
-              "completed",
-            ].includes(status)
-          );
+      return (  assignment.departure_id ===  departure.id && ![  "cancelled", "completed", ].includes(status)  );
         });
       
-      const committedDepartureReservations =
-        data.reservations.filter(
-          reservation =>
-            reservation.departure_id ===
-              departure.id &&
+      const committedDepartureReservations = reportingReservations.filter(
+          reservation =>  reservation.departure_id === departure.id &&
             [
               "Deposit Paid",
               "Confirmed",
@@ -861,14 +689,9 @@ const receivablesPerformance =
         paidEur - safeTotalEur
       );
 
-      const issuedInvoice =
-        (data.invoices || []).find(
-          invoice =>
-            invoice.reservation_id ===
-              reservation.id &&
-            String(
-              invoice.status || ""
-            ).toLowerCase() === "issued"
+      const issuedInvoice = reportingInvoices.find(
+          invoice => invoice.reservation_id === reservation.id &&
+            String( invoice.status || "" ).toLowerCase() === "issued"
         );
 
       return {
@@ -953,6 +776,17 @@ const totalOverpaymentEur =
       total + reservation.overpaymentEur,
     0
   );
+  
+  const reportPeriodLabel = reportPeriodInvalid
+  ? "Invalid reporting period"
+  : !hasReportPeriod
+    ? "All departure dates"
+    : reportStartDate && reportEndDate
+      ? `${reportStartDate} to ${reportEndDate}`
+      : reportStartDate
+        ? `From ${reportStartDate}`
+        : `Up to ${reportEndDate}`;
+  
   const executiveSnapshot = {
   reservations: pipelineBookings,
   travellers: pipelineTravellers,
@@ -970,11 +804,22 @@ const totalOverpaymentEur =
       <p>
         Live performance reporting across bookings, customers, departures and payments.
       </p>
-        <button
+      <button
   type="button"
   className="cc-primary"
+  disabled={reportPeriodInvalid}
+  title={
+    reportPeriodInvalid
+      ? "The end date cannot be earlier than the start date"
+      : `Print report: ${reportPeriodLabel}`
+  }
   onClick={() =>
     printManagementReport({
+      reportPeriod: {
+        label: reportPeriodLabel,
+        startDate: reportStartDate,
+        endDate: reportEndDate,
+      },
       executiveSnapshot,
       financial: {
         bookedRevenue,
@@ -993,16 +838,75 @@ const totalOverpaymentEur =
   }
 >
   Print Management Report
-</button>
+</button>  
     </div>
     
     <div className="cc-orbit">
       <span>LIVE</span>
-      <strong>{data.reservations.length}</strong>
+      <strong>{reportingReservations.length}</strong>
       <small>reservations</small>
     </div>
   </section>
-  <section className="cc-panel">
+  <section className="cc-panel cc-report-period">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Reporting period
+      </span>
+      <h3>Select Departure Dates</h3>
+    </div>
+
+    <span>{reportPeriodLabel}</span>
+  </div>
+
+  <div className="cc-report-period-controls">
+    <label>
+      <span>Start date</span>
+      <input
+        type="date"
+        value={reportStartDate}
+        onChange={event =>
+          setReportStartDate(
+            event.target.value
+          )
+        }
+      />
+    </label>
+
+    <label>
+      <span>End date</span>
+      <input
+        type="date"
+        value={reportEndDate}
+        onChange={event =>
+          setReportEndDate(
+            event.target.value
+          )
+        }
+      />
+    </label>
+
+    <button
+      type="button"
+      className="cc-primary"
+      disabled={!hasReportPeriod}
+      onClick={() => {
+        setReportStartDate("");
+        setReportEndDate("");
+      }}
+    >
+      Reset to All Dates
+    </button>
+  </div>
+
+  {reportPeriodInvalid && (
+    <div className="cc-report-period-error">
+      The end date cannot be earlier than the
+      start date.
+    </div>
+  )}
+</section>
+    <section className="cc-panel">
   <div className="cc-panel-head">
     <div>
       <span className="cc-eyebrow">Executive snapshot</span>
@@ -1047,8 +951,8 @@ const totalOverpaymentEur =
     </article>
   </div>
 </section>
-    
-  <nav
+
+<nav
   className="cc-panel"
   aria-label="Report sections"
 >
