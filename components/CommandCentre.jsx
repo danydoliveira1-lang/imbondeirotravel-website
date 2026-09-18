@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState,} from "react";
+import { useEffect, useMemo, useState,} from "react";
 import { printOperationsRunSheet } from "./printOperationsRunSheet";
 import { printManagementReport } from "./printManagementReport";
 import { printProFormaInvoice } from "./printProFormaInvoice";
