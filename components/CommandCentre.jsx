@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import { printOperationsRunSheet } from "./printOperationsRunSheet";
+import { printManagementReport } from "./printManagementReport";
 import { printProFormaInvoice } from "./printProFormaInvoice";
 import { printTaxInvoice, previewTaxInvoice, } from "./printTaxInvoice";
 import BillingSettings from "./BillingSettings";
@@ -961,9 +963,39 @@ const totalOverpaymentEur =
   
   return <div id="reports-top" className="cc-dashboard">
   <section className="cc-welcome">
-    <div><span>EXECUTIVE REPORTING</span> <h2>From activity.<br/>To management insight.</h2>
-      <p>Live performance reporting across bookings, customers, departures and payments.</p>
+    <div>
+      <span>EXECUTIVE REPORTING</span> 
+      <h2> From activity.<br/>To management insight.
+      </h2>
+      <p>
+        Live performance reporting across bookings, customers, departures and payments.
+      </p>
+        <button
+  type="button"
+  className="cc-primary"
+  onClick={() =>
+    printManagementReport({
+      executiveSnapshot,
+      financial: {
+        bookedRevenue,
+        netCashReceived,
+        refunds,
+        totalReceivableEur,
+        invoicedReservations,
+      },
+      nonEurCashEntries,
+      receivables:
+        receivablesPerformance,
+      capacity: capacityPerformance,
+      operations:
+        operationsPerformance,
+    })
+  }
+>
+  Print Management Report
+</button>
     </div>
+    
     <div className="cc-orbit">
       <span>LIVE</span>
       <strong>{data.reservations.length}</strong>
