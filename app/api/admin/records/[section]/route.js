@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import { isAuthenticated } from "../../../../../lib/commandCentreAuth";
+import { getAuthenticatedAdminEmail, } from "../../../../../lib/commandCentreAuth";
 import { supabaseRequest } from "../../../../../lib/supabaseRest";
+
+const editableSections = new Set([
+  "tours",
+  "departures",
+  "reservations",
+  "customers",
+  "media",
+  "payments",
+  "operations_resources",
+  "departure_assignments",
+]);
 
 const reservedStatuses = new Set([
   "Deposit Paid",
@@ -44,13 +55,31 @@ async function syncDepartureSeats(departureId) {
 }
 
 export async function POST(request, { params }) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  const actorEmail =
+  await getAuthenticatedAdminEmail();
+
+if (!actorEmail) {
+  return NextResponse.json(
+    { error: "Unauthorised" },
+    { status: 401 }
+  );
+}
   }
 
   try {
     const { section } = await params;
-    const record = await request.json();
+
+if (!editableSections.has(section)) {
+  return NextResponse.json(
+    {
+      error:
+        "This Command Centre section is not available for record editing.",
+    },
+    { status: 400 }
+  );
+}
+
+const record = await request.json();
    if (section === "operations_resources") {
   const resourceType = String(
     record.resource_type || ""
@@ -817,7 +846,18 @@ export async function DELETE(request, { params }) {
 
   try {
     const { section } = await params;
-    const { searchParams } = new URL(request.url);
+
+if (!editableSections.has(section)) {
+  return NextResponse.json(
+    {
+      error:
+        "This Command Centre section is not available for record deletion.",
+    },
+    { status: 400 }
+  );
+}
+
+const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
