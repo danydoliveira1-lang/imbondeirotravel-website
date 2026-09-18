@@ -93,6 +93,7 @@ function operationsDetail(departure) {
 }
 
 export function printManagementReport({
+  reportPeriod = {},
   executiveSnapshot = {},
   financial = {},
   nonEurCashEntries = [],
@@ -100,6 +101,23 @@ export function printManagementReport({
   capacity = [],
   operations = [],
 }) {
+  const printedPeriodLabel =
+  reportPeriod.startDate &&
+  reportPeriod.endDate
+    ? `${formatDate(
+        reportPeriod.startDate
+      )} to ${formatDate(
+        reportPeriod.endDate
+      )}`
+    : reportPeriod.startDate
+      ? `From ${formatDate(
+          reportPeriod.startDate
+        )}`
+      : reportPeriod.endDate
+        ? `Up to ${formatDate(
+            reportPeriod.endDate
+          )}`
+        : "All departure dates";
   const printWindow = window.open(
     "",
     "_blank",
@@ -565,6 +583,12 @@ export function printManagementReport({
             financial performance, receivables,
             capacity and operational readiness.
           </p>
+        <p class="report-period">
+  Reporting period:
+  <strong>
+    ${escapeHtml(printedPeriodLabel)}
+  </strong>
+</p>
         </header>
 
         <section class="section">
