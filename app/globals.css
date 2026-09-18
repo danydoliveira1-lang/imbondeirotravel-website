@@ -1061,3 +1061,25 @@ button:disabled{opacity:.6;cursor:not-allowed}
     width: 100%;
   }
 }
+.cc-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.cc-report-actions .cc-primary {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .cc-report-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cc-report-actions .cc-primary {
+    width: 100%;
+  }
+}
