@@ -441,6 +441,15 @@ export function printManagementReport({
             color: #52605b;
           }
 
+         .report-period {
+         margin: 9px 0 0;
+         color: #153f34;
+         font-size: 11px;
+         }
+
+        .report-period strong {
+        color: #b58b3c;
+         }
           .section {
             margin: 0 0 24px;
             break-inside: avoid;
