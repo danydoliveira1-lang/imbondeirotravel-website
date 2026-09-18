@@ -995,3 +995,69 @@ button:disabled{opacity:.6;cursor:not-allowed}
     margin-top: 6px;
   }
 }
+.cc-report-period-controls {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 240px)
+    minmax(180px, 240px)
+    max-content;
+  align-items: end;
+  gap: 18px;
+}
+
+.cc-report-period-controls label {
+  display: grid;
+  gap: 7px;
+}
+
+.cc-report-period-controls label > span {
+  color: #52605b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cc-report-period-controls input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: #153f34;
+  font: inherit;
+  border: 1px solid #d8ddd9;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.cc-report-period-controls input:focus {
+  border-color: #b58b3c;
+  outline: 2px solid rgba(181, 139, 60, 0.18);
+  outline-offset: 1px;
+}
+
+.cc-report-period-error {
+  margin-top: 14px;
+  padding: 10px 12px;
+  color: #8a3426;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #b65d45;
+  border-radius: 8px;
+  background: #f8e9e4;
+}
+
+.cc-report-period .cc-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 760px) {
+  .cc-report-period-controls {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .cc-report-period-controls .cc-primary {
+    width: 100%;
+  }
+}
