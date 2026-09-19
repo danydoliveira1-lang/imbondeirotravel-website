@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
-import { isAuthenticated } from "../../../../lib/commandCentreAuth";
-import { supabaseRequest } from "../../../../lib/supabaseRest";
+import {
+  getAuthenticatedAdminEmail,
+} from "../../../../lib/commandCentreAuth";
+import {
+  supabaseRequest,
+} from "../../../../lib/supabaseRest";
 
 const SETTINGS_ID = "imbondeiro-travel";
-
-export async function PATCH(request) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json(
-      { error: "Unauthorised" },
-      { status: 401 }
-    );
-  }
-
-  try {
-    const body = await request.json();
 
 const allowedFields = [
   "company_name",
@@ -34,63 +27,190 @@ const allowedFields = [
   "default_tax_rate",
   "payment_instructions",
   "tax_invoice_enabled",
+  "website_logo_url",
+  "document_logo_url",
 ];
 
-const payload = Object.fromEntries(
-  allowedFields
-    .filter(field =>
-      Object.prototype.hasOwnProperty.call(body, field)
-    )
-    .map(field => [field, body[field]])
-);
+const logoFields = [
+  "website_logo_url",
+  "document_logo_url",
+];
 
-if (Object.prototype.hasOwnProperty.call(payload, "default_tax_rate")) {
-  payload.default_tax_rate =
-    payload.default_tax_rate === "" ||
-    payload.default_tax_rate === null
-      ? 0
-      : Number(payload.default_tax_rate);
+function validLogoLocation(value) {
+  if (!value) return true;
 
-  if (
-    !Number.isFinite(payload.default_tax_rate) ||
-    payload.default_tax_rate < 0 ||
-    payload.default_tax_rate > 100
-  ) {
+  if (value.startsWith("/")) {
+    return !value.startsWith("//");
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export async function PATCH(request) {
+  const actorEmail =
+    await getAuthenticatedAdminEmail();
+
+  if (!actorEmail) {
     return NextResponse.json(
-      { error: "Default tax rate must be between 0 and 100." },
-      { status: 400 }
+      { error: "Unauthorised" },
+      { status: 401 }
     );
   }
-}
 
-if (
-  Object.prototype.hasOwnProperty.call(
-    payload,
-    "tax_invoice_enabled"
-  )
-) {
-  payload.tax_invoice_enabled =
-    payload.tax_invoice_enabled === true;
-}
+  try {
+    const body = await request.json();
 
-const result = await supabaseRequest(
-  "company_settings",
-  {
-    method: "PATCH",
-    query: `id=eq.${encodeURIComponent(SETTINGS_ID)}`,
-    body: payload,
-  }
-);
+    const payload = Object.fromEntries(
+      allowedFields
+        .filter(field =>
+          Object.prototype.hasOwnProperty.call(
+            body,
+            field
+          )
+        )
+        .map(field => [field, body[field]])
+    );
 
-return NextResponse.json({
-  record: result?.[0] || {
-    id: SETTINGS_ID,
-    ...payload,
-  },
-});
+    if (!Object.keys(payload).length) {
+      return NextResponse.json(
+        {
+          error:
+            "No approved settings were provided.",
+        },
+        { status: 400 }
+      );
+    }
+
+    for (const field of logoFields) {
+      if (
+        Object.prototype.hasOwnProperty.call(
+          payload,
+          field
+        )
+      ) {
+        payload[field] = String(
+          payload[field] || ""
+        ).trim();
+
+        if (!validLogoLocation(payload[field])) {
+          return NextResponse.json(
+            {
+              error:
+                "Logo selections must use a secure image URL or an approved local asset path.",
+            },
+            { status: 400 }
+          );
+        }
+
+        if (!payload[field]) {
+          payload[field] = null;
+        }
+      }
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        payload,
+        "default_tax_rate"
+      )
+    ) {
+      payload.default_tax_rate =
+        payload.default_tax_rate === "" ||
+        payload.default_tax_rate === null
+          ? 0
+          : Number(payload.default_tax_rate);
+
+      if (
+        !Number.isFinite(
+          payload.default_tax_rate
+        ) ||
+        payload.default_tax_rate < 0 ||
+        payload.default_tax_rate > 100
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Default tax rate must be between 0 and 100.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        payload,
+        "tax_invoice_enabled"
+      )
+    ) {
+      payload.tax_invoice_enabled =
+        payload.tax_invoice_enabled === true;
+    }
+
+    const previousRecords =
+      await supabaseRequest(
+        "company_settings",
+        {
+          query:
+            `select=*&id=eq.${encodeURIComponent(
+              SETTINGS_ID
+            )}&limit=1`,
+        }
+      );
+
+    const previousValues =
+      previousRecords?.[0] || null;
+
+    const result = await supabaseRequest(
+      "company_settings",
+      {
+        method: "PATCH",
+        query:
+          `id=eq.${encodeURIComponent(
+            SETTINGS_ID
+          )}`,
+        body: {
+          ...payload,
+          updated_at: new Date().toISOString(),
+        },
+      }
+    );
+
+    const savedRecord =
+      result?.[0] || {
+        ...(previousValues || {}),
+        id: SETTINGS_ID,
+        ...payload,
+      };
+
+    await supabaseRequest("audit_logs", {
+      method: "POST",
+      body: {
+        action: "update",
+        section: "company_settings",
+        record_id: SETTINGS_ID,
+        actor_email: actorEmail,
+        previous_values: previousValues,
+        new_values: savedRecord,
+      },
+    });
+
+    return NextResponse.json({
+      record: savedRecord,
+    });
   } catch (error) {
     return NextResponse.json(
-      { error: error.message },
+      {
+        error:
+          error?.message ||
+          "Settings could not be updated.",
+      },
       { status: 500 }
     );
   }
