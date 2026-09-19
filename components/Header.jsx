@@ -106,6 +106,7 @@ export default function Header(){
     <span>{t("close")}</span>×
   </button>
 </div>
+  <div className="full-menu-body">
    <div className="menu-intro"><p className="eyebrow">Project Baobab</p><h2>{t("menuIntro")}</h2><p>Journey • Wonder • Culture</p></div>
    <nav className="menu-chapters" aria-label="Full navigation">
     <a href="#top" onClick={close}><small>01</small><span>{t("gateway")}</span></a>
