@@ -38,6 +38,7 @@ const seed = {
   invoices: [],
   operations_resources: [],
   departure_assignments: [],
+  audit_logs: [],
 };
 
 const nav = [
