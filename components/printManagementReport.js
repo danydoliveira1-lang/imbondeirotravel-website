@@ -425,10 +425,8 @@ export function printManagementReport({
 
           .report-logo {
             display: block;
-            width: auto;
-            max-width: 180px;
-            height: auto;
-            max-height: 82px;
+            width: 220px;
+            height: 100px;
             object-fit: contain;
           }
 
