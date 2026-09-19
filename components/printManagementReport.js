@@ -417,6 +417,24 @@ export function printManagementReport({
             border-bottom: 3px solid #b58b3c;
           }
 
+            .report-brand {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+          }
+
+          .report-logo {
+            display: block;
+            width: auto;
+            max-width: 180px;
+            height: auto;
+            max-height: 82px;
+            object-fit: contain;
+          }
+
+          .report-heading {
+            min-width: 0;
+          }
           .eyebrow {
             margin: 0 0 7px;
             color: #b58b3c;
