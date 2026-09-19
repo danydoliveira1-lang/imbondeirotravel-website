@@ -1083,3 +1083,247 @@ button:disabled{opacity:.6;cursor:not-allowed}
     width: 100%;
   }
 }
+.cc-audit-log {
+  display: grid;
+  gap: 22px;
+}
+
+.cc-audit-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px;
+  border: 1px solid #d8ddd9;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.cc-audit-intro h2 {
+  margin: 6px 0 8px;
+}
+
+.cc-audit-intro p {
+  margin: 0;
+  color: #66716d;
+}
+
+.cc-audit-intro > strong {
+  color: #153f34;
+  white-space: nowrap;
+}
+
+.cc-audit-filters {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(180px, 1fr)
+    minmax(240px, 1.5fr)
+    max-content;
+  align-items: end;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid #d8ddd9;
+  border-radius: 16px;
+  background: #f7f5ef;
+}
+
+.cc-audit-filters label {
+  display: grid;
+  gap: 7px;
+}
+
+.cc-audit-filters label > span {
+  color: #52605b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.cc-audit-filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 34px 10px 12px;
+  color: #153f34;
+  font: inherit;
+  border: 1px solid #d8ddd9;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.cc-audit-filters select:focus {
+  border-color: #b58b3c;
+  outline: 2px solid rgba(181, 139, 60, 0.18);
+  outline-offset: 1px;
+}
+
+.cc-audit-filters .cc-primary {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.cc-audit-filters .cc-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cc-audit-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #d8ddd9;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.cc-audit-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.cc-audit-table th {
+  padding: 13px 15px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+  background: #153f34;
+}
+
+.cc-audit-table td {
+  padding: 15px;
+  color: #303b37;
+  font-size: 12px;
+  vertical-align: top;
+  border-bottom: 1px solid #e5e8e5;
+}
+
+.cc-audit-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cc-audit-table tbody tr:hover {
+  background: #faf9f5;
+}
+
+.cc-audit-table td strong,
+.cc-audit-table td small {
+  display: block;
+}
+
+.cc-audit-table td small {
+  max-width: 220px;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #7a8580;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-audit-action {
+  display: inline-flex;
+  align-items: center;
+  min-width: 68px;
+  justify-content: center;
+  padding: 6px 9px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+.cc-audit-action.create {
+  color: #24624f;
+  background: #e3f1eb;
+}
+
+.cc-audit-action.update {
+  color: #725619;
+  background: #f7edcf;
+}
+
+.cc-audit-action.delete {
+  color: #8a3426;
+  background: #f8e4df;
+}
+
+.cc-audit-action.issue_invoice {
+  color: #294d78;
+  background: #e4edf8;
+}
+
+.cc-audit-table details {
+  min-width: 110px;
+}
+
+.cc-audit-table summary {
+  color: #153f34;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cc-audit-change {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(280px, 1fr));
+  gap: 12px;
+  width: min(720px, 70vw);
+  margin-top: 12px;
+}
+
+.cc-audit-change > div {
+  min-width: 0;
+}
+
+.cc-audit-change > div > strong {
+  margin-bottom: 6px;
+  color: #52605b;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cc-audit-change pre {
+  max-height: 280px;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  color: #e8eee9;
+  font-size: 10px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  background: #10251f;
+}
+
+@media (max-width: 900px) {
+  .cc-audit-filters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .cc-audit-filters .cc-primary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .cc-audit-intro {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .cc-audit-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-audit-change {
+    grid-template-columns: 1fr;
+    width: 70vw;
+  }
+}
