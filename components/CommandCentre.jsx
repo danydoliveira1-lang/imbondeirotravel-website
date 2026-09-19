@@ -848,6 +848,8 @@ const totalOverpaymentEur =
         capacity: capacityPerformance,
         operations:
           operationsPerformance,
+        company:
+          data.company_settings?.[0] || {},
       })
     }
   >
