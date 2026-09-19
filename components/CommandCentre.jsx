@@ -10,6 +10,7 @@ import BillingSettings from "./BillingSettings";
 import InvoiceRegister from "./InvoiceRegister";
 import OperationsDesk from "./OperationsDesk";
 import AuditLog from "./AuditLog";
+import BrandAssets from "./BrandAssets";
 
 const seed = {
   tours: [
@@ -1922,7 +1923,14 @@ useEffect(() => {
     </button>
   </div>
 )}
+        
 </section>
+<BrandAssets
+  company={company}
+  reload={reload}
+  flash={flash}
+/>
+
 <BillingSettings
   company={company}
   reload={reload}
