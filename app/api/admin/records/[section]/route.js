@@ -64,8 +64,7 @@ if (!actorEmail) {
     { status: 401 }
   );
 }
-  }
-
+  
   try {
     const { section } = await params;
 
@@ -779,6 +778,22 @@ if (existingReservation) {
     }
   }
 }
+
+    const previousRecords = record.id
+  ? await supabaseRequest(section, {
+      query:
+        `select=*&id=eq.${encodeURIComponent(
+          record.id
+        )}&limit=1`,
+    })
+  : [];
+
+const previousValues =
+  previousRecords?.[0] || null;
+
+const auditAction = previousValues
+  ? "update"
+  : "create";
     const payload = {
       ...record,
       id: record.id || crypto.randomUUID(),
@@ -815,7 +830,19 @@ if (existingReservation) {
         await syncDepartureSeats(currentDepartureId);
       }
     }
-
+await supabaseRequest("audit_logs", {
+  method: "POST",
+  body: {
+    action: auditAction,
+    section,
+    record_id: String(
+      savedRecord.id || payload.id
+    ),
+    actor_email: actorEmail,
+    previous_values: previousValues,
+    new_values: savedRecord,
+  },
+});
     return NextResponse.json({ record: savedRecord });
     } catch (error) {
     const message =
@@ -833,16 +860,19 @@ if (existingReservation) {
           : message,
       },
       {
-        status: duplicatePaymentReference ? 409 : 500,
-      }
+        status: duplicatePaymentReference ? 409 : 500,    }
     );
   }
 }
 
 export async function DELETE(request, { params }) {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-  }
+  const actorEmail =  await getAuthenticatedAdminEmail();
+    if (!actorEmail) {
+  return NextResponse.json(
+    { error: "Unauthorised" },
+    { status: 401 }
+  );
+}
 
   try {
     const { section } = await params;
@@ -851,8 +881,7 @@ if (!editableSections.has(section)) {
   return NextResponse.json(
     {
       error:
-        "This Command Centre section is not available for record deletion.",
-    },
+        "This Command Centre section is not available for record deletion.",   },
     { status: 400 }
   );
 }
@@ -866,7 +895,24 @@ const { searchParams } = new URL(request.url);
         { status: 400 }
       );
     }
-  if (section === "operations_resources") {
+ const recordsToDelete =
+  await supabaseRequest(section, {
+    query:
+      `select=*&id=eq.${encodeURIComponent(
+        id
+      )}&limit=1`,
+  });
+
+const previousValues =
+  recordsToDelete?.[0] || null;
+
+if (!previousValues) {
+  return NextResponse.json(
+    { error: "Record not found." },
+    { status: 404 }
+  );
+}
+    if (section === "operations_resources") {
   const linkedAssignments =
     await supabaseRequest(
       "departure_assignments",
@@ -1032,11 +1078,28 @@ if (section === "payments") {
       query: `id=eq.${encodeURIComponent(id)}`,
     });
 
-    if (section === "reservations" && departureId) {
-      await syncDepartureSeats(departureId);
-    }
+   if (
+  section === "reservations" &&
+  departureId
+) {
+  await syncDepartureSeats(departureId);
+}
 
-    return NextResponse.json({ ok: true });
+await supabaseRequest("audit_logs", {
+  method: "POST",
+  body: {
+    action: "delete",
+    section,
+    record_id: String(id),
+    actor_email: actorEmail,
+    previous_values: previousValues,
+    new_values: null,
+  },
+});
+
+return NextResponse.json({
+  ok: true,
+});
   } catch (error) {
     return NextResponse.json(
       { error: error.message },
