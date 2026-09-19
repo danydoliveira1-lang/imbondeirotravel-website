@@ -9,6 +9,7 @@ import { printTaxInvoice, previewTaxInvoice, } from "./printTaxInvoice";
 import BillingSettings from "./BillingSettings";
 import InvoiceRegister from "./InvoiceRegister";
 import OperationsDesk from "./OperationsDesk";
+import AuditLog from "./AuditLog";
 
 const seed = {
   tours: [
@@ -41,10 +42,18 @@ const seed = {
   audit_logs: [],
 };
 
-const nav = [
-  ["dashboard", "⌂", "Dashboard"], ["tours", "◉", "Tours"], ["departures", "□", "Departures"],
-  ["reservations", "◇", "Reservations"], ["customers", "◎", "Customers"], ["media", "▣", "Media Library"],
-  ["payments", "€", "Payments"], ["operations", "↗", "Operations"], ["reports", "⌁", "Reports"], ["settings", "⚙", "Settings"],
+ const nav = [
+  ["dashboard", "⌂", "Dashboard"],
+  ["tours", "◉", "Tours"],
+  ["departures", "□", "Departures"],
+  ["reservations", "◇", "Reservations"],
+  ["customers", "◎", "Customers"],
+  ["media", "▣", "Media Library"],
+  ["payments", "€", "Payments"],
+  ["operations", "↗", "Operations"],
+  ["reports", "⌁", "Reports"],
+  ["audit_log", "◷", "Audit Log"],
+  ["settings", "⚙", "Settings"],
 ];
 
 const moduleMeta = {
