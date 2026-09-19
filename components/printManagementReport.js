@@ -100,7 +100,13 @@ export function printManagementReport({
   receivables = [],
   capacity = [],
   operations = [],
+  company = {},
 }) {
+  const documentLogo =
+    company.document_logo_url ||
+    company.website_logo_url ||
+    "/assets/imbondeiro-logo-luxury-web.png";
+  
   const printedPeriodLabel =
   reportPeriod.startDate &&
   reportPeriod.endDate
@@ -118,7 +124,7 @@ export function printManagementReport({
             reportPeriod.endDate
           )}`
         : "All departure dates";
-  const printWindow = window.open(
+    const printWindow = window.open(
     "",
     "_blank",
     "width=1400,height=900"
@@ -130,8 +136,8 @@ export function printManagementReport({
     );
     return;
   }
-
-  const receivableRows = receivables.length
+  
+ const receivableRows = receivables.length
     ? receivables
         .map(reservation => {
           const paymentState =
@@ -581,23 +587,39 @@ export function printManagementReport({
         </style>
       </head>
 
-      <body>
-        <header>
-          <p class="eyebrow">
-            Imbondeiro Travel · Management
-          </p>
-          <h1>Management Performance Report</h1>
-          <p class="subtitle">
-            Executive overview of bookings,
-            financial performance, receivables,
-            capacity and operational readiness.
-          </p>
-        <p class="report-period">
-  Reporting period:
-  <strong>
-    ${escapeHtml(printedPeriodLabel)}
-  </strong>
-</p>
+              <header>
+          <div class="report-brand">
+            <img
+              class="report-logo"
+              src="${escapeHtml(documentLogo)}"
+              alt="Imbondeiro Travel"
+            />
+
+            <div class="report-heading">
+              <p class="eyebrow">
+                Imbondeiro Travel · Management
+              </p>
+
+              <h1>
+                Management Performance Report
+              </h1>
+
+              <p class="subtitle">
+                Executive overview of bookings,
+                financial performance, receivables,
+                capacity and operational readiness.
+              </p>
+
+              <p class="report-period">
+                Reporting period:
+                <strong>
+                  ${escapeHtml(
+                    printedPeriodLabel
+                  )}
+                </strong>
+              </p>
+            </div>
+          </div>
         </header>
 
         <section class="section">
