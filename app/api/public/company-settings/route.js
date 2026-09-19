@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseRequest } from "../../../../../lib/supabaseRest";
+import { supabaseRequest } from "../../../../lib/supabaseRest";
 
 const SETTINGS_ID = "imbondeiro-travel";
 
