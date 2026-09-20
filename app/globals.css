@@ -841,7 +841,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 .story-map-svg-province {
   fill: rgba(255,255,255,.68);
-  font: 600 15px var(--font-body) ;
+  font: 600 15px var(--font-body);
   letter-spacing: 1.4px;
   text-transform: uppercase;
 }
