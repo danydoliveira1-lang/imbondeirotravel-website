@@ -2464,9 +2464,13 @@ const issueTaxInvoice = async reservation => {
   const existingInvoice = findIssuedInvoice(reservation.id);
 
   if (existingInvoice) {
-  printTaxInvoice(existingInvoice);
+  printTaxInvoice(
+    existingInvoice,
+    company
+  );
   return;
 }
+ 
      
   if (!taxInvoicesEnabled) {
     window.alert(
@@ -2582,12 +2586,12 @@ const issueTaxInvoice = async reservation => {
               : "Issue an official Tax Invoice"
       }
       onClick={() =>
-       issuedInvoice
-         ? printTaxInvoice(
-          issuedInvoice,
-          company
-          )
-           : issueTaxInvoice(row) 
+  issuedInvoice
+    ? printTaxInvoice(
+        issuedInvoice,
+        company
+      )
+       : issueTaxInvoice(row)
       }
     >
       {issuedInvoice
