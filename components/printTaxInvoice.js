@@ -1,4 +1,5 @@
-export function printTaxInvoice(invoice) {
+export function printTaxInvoice(
+  invoice, company = {} ) {
   if (!invoice) {
     window.alert("Tax Invoice data is unavailable.");
     return;
@@ -11,7 +12,12 @@ export function printTaxInvoice(invoice) {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
-
+  const documentLogo =
+    invoice.document_logo_url ||
+    company.document_logo_url ||
+    company.website_logo_url ||
+    "/assets/imbondeiro-logo-luxury-web.png";
+  
   const formatMoney = value =>
     `${escapeHtml(invoice.currency || "EUR")} ${Number(
       value || 0
@@ -94,18 +100,12 @@ export function printTaxInvoice(invoice) {
             border-bottom: 1px solid #d9cfb8;
           }
 
-          .brand {
-            color: #0b3027;
-            font-family: Georgia, serif;
-            font-size: 29px;
-            letter-spacing: .07em;
-          }
-
-          .tagline {
-            margin-top: 6px;
-            color: #a67f2d;
-            font-family: Georgia, serif;
-            font-style: italic;
+          .brand-logo {
+            display: block;
+            width: 210px;
+            height: 85px;
+            object-fit: contain;
+            object-position: left center;
           }
 
           .document-title {
@@ -325,10 +325,6 @@ export function printTaxInvoice(invoice) {
               padding-bottom: 15px;
             }
 
-            .brand {
-              font-size: 24px;
-            }
-
             .document-title h1 {
               font-size: 27px;
             }
@@ -395,8 +391,9 @@ export function printTaxInvoice(invoice) {
         <main class="invoice">
           <header class="header">
             <div>
-              <div class="brand">IMBONDEIRO TRAVEL</div>
-              <div class="tagline">Your Lifetime Experience</div>
+              <img class="brand-logo"
+                src="${escapeHtml(documentLogo)}"
+                alt="Imbondeiro Travel" />
             </div>
 
             <div class="document-title">
@@ -627,7 +624,7 @@ export function previewTaxInvoice({
       "TEST ADDRESS — NOT VALID",
     tax_registration_number:
       "TEST-NOT-VALID-0001",
-    payment_instructions:
+       payment_instructions:
       "TEST PREVIEW ONLY — NO PAYMENT REQUIRED",
-  });
+  }, company);
 }
