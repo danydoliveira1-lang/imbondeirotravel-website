@@ -1,8 +1,14 @@
 export function printProFormaInvoice({
   reservation,
   departures = [],
-  payments = []
+  payments = [],
+  company = {},
 }) {
+  const documentLogo =
+    company.document_logo_url ||
+    company.website_logo_url ||
+    "/assets/imbondeiro-logo-luxury-web.png";
+  
   const departure = departures.find(
     item => item.id === reservation.departure_id
   );
@@ -119,18 +125,12 @@ export function printProFormaInvoice({
             border-bottom: 1px solid #d9cfb8;
           }
 
-          .brand {
-            color: #0b3027;
-            font-family: Georgia, serif;
-            font-size: 28px;
-            letter-spacing: .08em;
-          }
-
-          .tagline {
-            margin-top: 7px;
-            color: #a67f2d;
-            font-family: Georgia, serif;
-            font-style: italic;
+          .brand-logo {
+            display: block;
+            width: 210px;
+            height: 85px;
+            object-fit: contain;
+            object-position: left center;
           }
 
           .document-title {
@@ -306,9 +306,10 @@ export function printProFormaInvoice({
       <body>
         <main class="invoice">
           <header class="header">
-            <div>
-              <div class="brand">IMBONDEIRO TRAVEL</div>
-              <div class="tagline">Your Lifetime Experience</div>
+          <div>
+              <img class="brand-logo"
+                src="${escapeHtml(documentLogo)}"
+                alt="Imbondeiro Travel" />
             </div>
 
             <div class="document-title">
