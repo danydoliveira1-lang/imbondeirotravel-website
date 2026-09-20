@@ -2532,10 +2532,11 @@ const issueTaxInvoice = async reservation => {
   <button
     type="button"
     onClick={() =>
-      printProFormaInvoice({
-        reservation: row,
-        departures,
-        payments
+    printProFormaInvoice({
+      reservation: row,
+      departures,
+      payments,
+      company,
       })
     }
   >
@@ -2547,15 +2548,15 @@ const issueTaxInvoice = async reservation => {
     type="button"
     title="Preview a non-fiscal test Tax Invoice"
     onClick={() =>
-      previewTaxInvoice({
-        reservation: row,
-        departures,
-        company,
-      })
-    }
-  >
-    Tax Preview
-  </button>
+       previewTaxInvoice({
+         reservation: row,
+         departures,
+         company,
+          })
+          }
+         >
+     Tax Preview
+    </button>
 )} 
     
 {section === "reservations" && (() => {
