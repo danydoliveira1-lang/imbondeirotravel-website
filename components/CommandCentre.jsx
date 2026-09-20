@@ -2582,9 +2582,12 @@ const issueTaxInvoice = async reservation => {
               : "Issue an official Tax Invoice"
       }
       onClick={() =>
-        issuedInvoice
-          ? printTaxInvoice(issuedInvoice)
-          : issueTaxInvoice(row)
+       issuedInvoice
+         ? printTaxInvoice(
+          issuedInvoice,
+          company
+          )
+           : issueTaxInvoice(row) 
       }
     >
       {issuedInvoice
