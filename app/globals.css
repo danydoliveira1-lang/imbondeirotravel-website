@@ -100,7 +100,7 @@
 .angola-geography{stroke:#d2ad5f;stroke-width:4;vector-effect:non-scaling-stroke;filter:drop-shadow(0 18px 35px rgba(0,0,0,.38))}
 .map-river{fill:none;stroke:#4eb4aa;stroke-opacity:.38;stroke-width:3;vector-effect:non-scaling-stroke}
 .map-contour{fill:none;stroke:#f6f1e8;stroke-opacity:.09;stroke-width:2;vector-effect:non-scaling-stroke}
-.angola-label{fill:rgba(232,207,150,.52);font-family:"Cormorant Garamond",serif;font-size:46px;letter-spacing:11px;text-anchor:middle;pointer-events:none}
+.angola-label{fill:rgba(232,207,150,.52);font-family:var(--font-heading);font-size:46px;letter-spacing:11px;text-anchor:middle;pointer-events:none}
 .live-route{fill:none;stroke:#d4b160;stroke-width:3;stroke-opacity:.72;stroke-dasharray:1;stroke-dashoffset:1;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(212,177,96,.68));animation:drawRoute 1.8s ease forwards}
 .svg-marker{cursor:pointer;outline:none;animation:markerArrive .55s ease both}
 .svg-marker .marker-halo{fill:rgba(212,177,96,.10);stroke:rgba(212,177,96,.34);stroke-width:2;opacity:.78;animation:markerPulse 2.8s ease-in-out infinite}
