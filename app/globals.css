@@ -285,7 +285,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .living-story{box-shadow:0 28px 70px rgba(0,0,0,.25)}
 .living-story>img{filter:saturate(.92) contrast(1.02)}
 .living-story>div{display:flex;flex-direction:column;justify-content:center}
-.living-story dl>div:last-child dd{font-style:italic;color:#715c3a}
+.living-story dl>div:last-child dd{font-style:italic;color:var(--royal-coffee)}
 .explorer-benefits{max-width:1560px;margin:16px auto 0;display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(132,100,31,.19);border-radius:12px;background:rgba(3,17,14,.72);overflow:hidden}
 .explorer-benefits article{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;padding:25px 28px;border-right:1px solid rgba(255,255,255,.08)}.explorer-benefits article:last-child{border-right:0}
 .explorer-benefits article>span{color:var(--golden-harvest);font-size:29px}.explorer-benefits strong{display:block;color:var(--pale-tree);font-size:13px;margin-bottom:5px}.explorer-benefits p{margin:0;color:rgba(255,255,255,.63);font-size:11px;line-height:1.5}
