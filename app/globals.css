@@ -122,10 +122,10 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 
 /* Bulletproof Explorer map fallback: visible even when SVG gradients are unsupported */
 .angola-map{position:relative;min-width:280px;min-height:392px}
-.angola-map::before{content:"";position:absolute;inset:4% 6% 3% 7%;background:linear-gradient(145deg,#23624d,#0d3228);clip-path:polygon(32% 0,61% 3%,79% 14%,75% 29%,84% 40%,79% 54%,92% 67%,79% 82%,63% 100%,39% 95%,29% 86%,15% 79%,8% 62%,15% 46%,12% 32%,23% 14%);border:2px solid #c6a25a;filter:drop-shadow(0 0 24px rgba(198,162,90,.28));opacity:.9;z-index:0}
+.angola-map::before{content:"";position:absolute;inset:4% 6% 3% 7%;background:linear-gradient(145deg,#23624d,#0d3228);clip-path:polygon(32% 0,61% 3%,79% 14%,75% 29%,84% 40%,79% 54%,92% 67%,79% 82%,63% 100%,39% 95%,29% 86%,15% 79%,8% 62%,15% 46%,12% 32%,23% 14%);border:2px solid var(--golden-harvest);filter:drop-shadow(0 0 24px rgba(198,162,90,.28));opacity:.9;z-index:0}
 .angola-map-art{z-index:2!important;display:block!important;visibility:visible!important;opacity:1!important}
-.angola-map-art .angola-country{fill:#174b3b!important;stroke:#c6a25a!important;stroke-width:4!important}
-.angola-map-art .cabinda{fill:#215845!important;stroke:#c6a25a!important;stroke-width:4!important}
+.angola-map-art .angola-country{fill:#174b3b!important;stroke:var(--golden-harvest)!important;stroke-width:4!important}
+.angola-map-art .cabinda{fill:#215845!important;stroke:var(--golden-harvest)!important;stroke-width:4!important}
 .angola-map .journey-routes{z-index:3!important}
 .angola-map .destination-marker{z-index:10!important}
 .map-viewport{background:radial-gradient(circle at 50% 46%,rgba(198,162,90,.10),transparent 58%)}
