@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
     url: siteUrl,
     email: "imbondeirotravel@gmail.com",
     areaServed: ["Angola", "Worldwide"],
-    slogan: "Your Lifetime Experience Starts Here.",
+    slogan: "Your Lifetime Experience",
   };
   return <html lang="en"><head>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
