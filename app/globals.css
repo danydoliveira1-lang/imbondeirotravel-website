@@ -247,7 +247,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .explorer-premium:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 15%,rgba(132,100,31,.09),transparent 34%),linear-gradient(180deg,rgba(1,8,7,.16),transparent 30%)}
 .explorer-premium>.section-intro,.explorer-premium>.experience-tabs,.explorer-premium>.living-layout,.explorer-premium>.living-story,.explorer-premium>.explorer-benefits{position:relative;z-index:1}
 .explorer-premium>.section-intro.centered{max-width:850px;margin-bottom:26px}
-.explorer-premium>.section-intro.centered h2{font-size:clamp(50px,5.4vw,86px);line-height:.94;color:color:var(--pale-tree);letter-spacing:-.025em}
+.explorer-premium>.section-intro.centered h2{font-size:clamp(50px,5.4vw,86px);line-height:.94;color:var(--pale-tree);letter-spacing:-.025em}
 .explorer-premium>.section-intro.centered p:last-child{font-size:15px;color:rgba(255,255,255,.72)}
 .luxury-tabs{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .luxury-tabs button{position:relative;overflow:hidden;border:1px solid rgba(208,186,171,.19);color:#f5eee1;backdrop-filter:blur(12px)}
