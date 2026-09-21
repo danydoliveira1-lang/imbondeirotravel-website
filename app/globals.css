@@ -154,14 +154,14 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .live-route{fill:none;stroke:var(--golden-harvest);stroke-width:3;stroke-opacity:.72;stroke-dasharray:1;stroke-dashoffset:1;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(132,100,31,.68));animation:drawRoute 1.8s ease forwards}
 .svg-marker{cursor:pointer;outline:none;animation:markerArrive .55s ease both}
 .svg-marker .marker-halo{fill:rgba(132,100,31,.10);stroke:rgba(132,100,31,.34);stroke-width:2;opacity:.78;animation:markerPulse 2.8s ease-in-out infinite}
-.svg-marker .marker-pin{fill:#cfa958;stroke:#fae2a3;stroke-width:2;filter:url(#softGlow);transition:.25s}
+.svg-marker .marker-pin{fill:var(--golden-harvest);stroke:var(--seashell);stroke-width:2;filter:url(#softGlow);transition:.25s}
 .svg-marker .marker-core{fill:#fff2c8;transition:.25s}
 .svg-marker .marker-label rect{fill:rgba(4,24,20,.88);stroke:rgba(132,100,31,.30);stroke-width:1}
 .svg-marker .marker-label text{fill:#f6f1e8;font:600 12px var(--font-body);letter-spacing:.04em;text-transform:uppercase}
 .svg-marker .marker-check{fill:#073025;font:700 11px var(--font-body);text-anchor:middle;pointer-events:none}
-.svg-marker:hover .marker-pin,.svg-marker.active .marker-pin{fill:#f0c766;transform:scale(1.14)}
+.svg-marker:hover .marker-pin,.svg-marker.active .marker-pin{fill:var(--pale-tree);transform:scale(1.14)}
 .svg-marker:hover .marker-halo,.svg-marker.active .marker-halo{opacity:1;transform:scale(1.35)}
-.svg-marker.active .marker-label rect{stroke:#e5bd62;stroke-width:2}
+.svg-marker.active .marker-label rect{stroke:var(--pale-tree);stroke-width:2}
 .svg-marker:focus-visible .marker-pin{stroke:#fff;stroke-width:4}
 @keyframes markerPulse{0%,100%{transform:scale(.86);opacity:.45}50%{transform:scale(1.18);opacity:.95}}
 @keyframes markerArrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
