@@ -270,7 +270,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .map-chapter-label{position:absolute;left:20px;top:18px;z-index:8;display:flex;gap:10px;align-items:baseline;padding:9px 12px;border:1px solid rgba(215,173,83,.22);border-radius:8px;background:rgba(2,14,12,.55);backdrop-filter:blur(8px);pointer-events:none}
 .map-chapter-label span{color:#e4bd69;font:600 12px var(--font-body);letter-spacing:.16em}.map-chapter-label small{color:rgba(255,255,255,.56);text-transform:uppercase;font-size:8px;letter-spacing:.12em}
 .living-map-canvas{z-index:4}
-.living-land{stroke-width:3.3;filter:drop-shadow(0 0 8px rgba(216,175,86,.22))}
+.living-land{stroke-width:3.3;filter:drop-shadow(0 0 8px rgba(132,100,31,.22))}
 .living-angola-label{paint-order:stroke;stroke:rgba(5,23,18,.5);stroke-width:3px;font-size:54px;letter-spacing:16px}
 .living-route{stroke-width:2.2;stroke-dasharray:5 9;opacity:.9;animation-duration:5.5s}
 .living-marker{transition:filter .25s ease,transform .25s ease}.living-marker:hover{filter:brightness(1.16);z-index:6}.living-marker.active{z-index:7}
