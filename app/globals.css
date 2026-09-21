@@ -247,7 +247,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .explorer-premium:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 15%,rgba(132,100,31,.09),transparent 34%),linear-gradient(180deg,rgba(1,8,7,.16),transparent 30%)}
 .explorer-premium>.section-intro,.explorer-premium>.experience-tabs,.explorer-premium>.living-layout,.explorer-premium>.living-story,.explorer-premium>.explorer-benefits{position:relative;z-index:1}
 .explorer-premium>.section-intro.centered{max-width:850px;margin-bottom:26px}
-.explorer-premium>.section-intro.centered h2{font-size:clamp(50px,5.4vw,86px);line-height:.94;color:#e6bd66;letter-spacing:-.025em}
+.explorer-premium>.section-intro.centered h2{font-size:clamp(50px,5.4vw,86px);line-height:.94;color:color:var(--pale-tree);;letter-spacing:-.025em}
 .explorer-premium>.section-intro.centered p:last-child{font-size:15px;color:rgba(255,255,255,.72)}
 .luxury-tabs{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .luxury-tabs button{position:relative;overflow:hidden;border:1px solid rgba(235,211,158,.19);color:#f5eee1;backdrop-filter:blur(12px)}
@@ -268,7 +268,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .living-map:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,10,8,.7),transparent 25%,transparent 72%,rgba(0,10,8,.55)),linear-gradient(180deg,rgba(0,10,8,.32),transparent 24%,rgba(0,10,8,.28))}
 .living-map:after{z-index:3;opacity:.9}
 .map-chapter-label{position:absolute;left:20px;top:18px;z-index:8;display:flex;gap:10px;align-items:baseline;padding:9px 12px;border:1px solid rgba(215,173,83,.22);border-radius:8px;background:rgba(2,14,12,.55);backdrop-filter:blur(8px);pointer-events:none}
-.map-chapter-label span{color:#e4bd69;font:600 12px var(--font-body);letter-spacing:.16em}.map-chapter-label small{color:rgba(255,255,255,.56);text-transform:uppercase;font-size:8px;letter-spacing:.12em}
+.map-chapter-label span{color:var(--pale-tree);font:600 12px var(--font-body);letter-spacing:.16em}.map-chapter-label small{color:rgba(255,255,255,.56);text-transform:uppercase;font-size:8px;letter-spacing:.12em}
 .living-map-canvas{z-index:4}
 .living-land{stroke-width:3.3;filter:drop-shadow(0 0 8px rgba(132,100,31,.22))}
 .living-angola-label{paint-order:stroke;stroke:rgba(5,23,18,.5);stroke-width:3px;font-size:54px;letter-spacing:16px}
@@ -288,7 +288,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .living-story dl>div:last-child dd{font-style:italic;color:#715c3a}
 .explorer-benefits{max-width:1560px;margin:16px auto 0;display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(215,173,83,.19);border-radius:12px;background:rgba(3,17,14,.72);overflow:hidden}
 .explorer-benefits article{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;padding:25px 28px;border-right:1px solid rgba(255,255,255,.08)}.explorer-benefits article:last-child{border-right:0}
-.explorer-benefits article>span{color:var(--golden-harvest);font-size:29px}.explorer-benefits strong{display:block;color:#e4bd69;font-size:13px;margin-bottom:5px}.explorer-benefits p{margin:0;color:rgba(255,255,255,.63);font-size:11px;line-height:1.5}
+.explorer-benefits article>span{color:var(--golden-harvest);font-size:29px}.explorer-benefits strong{display:block;color:var(--pale-tree);font-size:13px;margin-bottom:5px}.explorer-benefits p{margin:0;color:rgba(255,255,255,.63);font-size:11px;line-height:1.5}
 @keyframes markerBreathe{0%,100%{transform:rotate(-45deg) scale(1)}50%{transform:rotate(-45deg) scale(1.07);box-shadow:0 0 0 10px rgba(215,173,83,.08),0 0 28px rgba(215,173,83,.75)}}
 @keyframes markerSelected{0%,100%{transform:rotate(-45deg) scale(1.15)}50%{transform:rotate(-45deg) scale(1.24);box-shadow:0 0 0 13px rgba(215,173,83,.11),0 0 34px rgba(215,173,83,.95)}}
 @media(max-width:1180px){.explorer-benefits{grid-template-columns:repeat(2,1fr)}.explorer-benefits article:nth-child(2){border-right:0}.explorer-benefits article:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.08)}}
