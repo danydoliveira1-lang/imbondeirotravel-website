@@ -250,7 +250,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .explorer-premium>.section-intro.centered h2{font-size:clamp(50px,5.4vw,86px);line-height:.94;color:color:var(--pale-tree);letter-spacing:-.025em}
 .explorer-premium>.section-intro.centered p:last-child{font-size:15px;color:rgba(255,255,255,.72)}
 .luxury-tabs{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
-.luxury-tabs button{position:relative;overflow:hidden;border:1px solid rgba(235,211,158,.19);color:#f5eee1;backdrop-filter:blur(12px)}
+.luxury-tabs button{position:relative;overflow:hidden;border:1px solid rgba(208,186,171,.19);color:#f5eee1;backdrop-filter:blur(12px)}
 .luxury-tabs button:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.07),transparent);transform:translateX(-120%);transition:.6s}
 .luxury-tabs button:hover:before{transform:translateX(120%)}
 .luxury-tabs button.active{color:#fff8e7;border-color:var(--pale-tree);background:linear-gradient(145deg,var(--royal-coffee),var(--golden-harvest) 55%,var(--royal-coffee))}
