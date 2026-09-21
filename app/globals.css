@@ -155,7 +155,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .svg-marker{cursor:pointer;outline:none;animation:markerArrive .55s ease both}
 .svg-marker .marker-halo{fill:rgba(132,100,31,.10);stroke:rgba(132,100,31,.34);stroke-width:2;opacity:.78;animation:markerPulse 2.8s ease-in-out infinite}
 .svg-marker .marker-pin{fill:var(--golden-harvest);stroke:var(--seashell);stroke-width:2;filter:url(#softGlow);transition:.25s}
-.svg-marker .marker-core{fill:#fff2c8;transition:.25s}
+.svg-marker .marker-core{fill:var(--seashell);transition:.25s}
 .svg-marker .marker-label rect{fill:rgba(4,24,20,.88);stroke:rgba(132,100,31,.30);stroke-width:1}
 .svg-marker .marker-label text{fill:#f6f1e8;font:600 12px var(--font-body);letter-spacing:.04em;text-transform:uppercase}
 .svg-marker .marker-check{fill:#073025;font:700 11px var(--font-body);text-anchor:middle;pointer-events:none}
