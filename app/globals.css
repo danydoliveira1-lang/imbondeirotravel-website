@@ -400,7 +400,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .story-curation>div{border-top:1px solid rgba(23,54,45,.22);padding-top:28px}
 .story-curation ul{list-style:none;padding:0;margin:25px 0}
 .story-curation li{padding:14px 0;border-bottom:1px solid rgba(23,54,45,.12)}
-.story-curation li:before{content:"↗";color:#b58b37;margin-right:12px}
+.story-curation li:before{content:"↗";color:var(--golden-harvest);margin-right:12px}
 .story-curation small{display:block;color:#60736d;line-height:1.6}
 .journey-form select{width:100%;border:0;border-bottom:1px solid rgba(255,255,255,.35);background:transparent;color:inherit;padding:12px 0;font:inherit}
 .journey-form select option{color:#102a23;background:#fff}
