@@ -253,7 +253,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 .luxury-tabs button{position:relative;overflow:hidden;border:1px solid rgba(235,211,158,.19);color:#f5eee1;backdrop-filter:blur(12px)}
 .luxury-tabs button:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.07),transparent);transform:translateX(-120%);transition:.6s}
 .luxury-tabs button:hover:before{transform:translateX(120%)}
-.luxury-tabs button.active{color:#fff8e7;border-color:#e7c171;background:linear-gradient(145deg,#7c5b1d,#c99d3d 55%,#8d681f)}
+.luxury-tabs button.active{color:#fff8e7;border-color:var(--pale-tree);background:linear-gradient(145deg,var(--royal-coffee),var(--golden-harvest) 55%,#8d681f)}
 .living-layout{box-shadow:0 35px 80px rgba(0,0,0,.35)}
 .living-left,.living-journey,.living-map{border-color:rgba(221,181,91,.28);background:linear-gradient(160deg,rgba(6,28,23,.92),rgba(2,13,11,.9));box-shadow:inset 0 1px rgba(255,255,255,.025)}
 .living-heading{background:linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
