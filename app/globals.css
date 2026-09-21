@@ -244,7 +244,7 @@ img{display:block;width:100%;height:100%;object-fit:cover}a{color:inherit;text-d
 
 /* BAOBAB PHASE 2 — Living Explorer editorial polish */
 .explorer-premium{position:relative;padding-top:clamp(90px,10vw,150px);padding-bottom:clamp(72px,8vw,120px);overflow:hidden}
-.explorer-premium:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 15%,rgba(214,173,84,.09),transparent 34%),linear-gradient(180deg,rgba(1,8,7,.16),transparent 30%)}
+.explorer-premium:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 15%,rgba(132,100,31,.09),transparent 34%),linear-gradient(180deg,rgba(1,8,7,.16),transparent 30%)}
 .explorer-premium>.section-intro,.explorer-premium>.experience-tabs,.explorer-premium>.living-layout,.explorer-premium>.living-story,.explorer-premium>.explorer-benefits{position:relative;z-index:1}
 .explorer-premium>.section-intro.centered{max-width:850px;margin-bottom:26px}
 .explorer-premium>.section-intro.centered h2{font-size:clamp(50px,5.4vw,86px);line-height:.94;color:#e6bd66;letter-spacing:-.025em}
