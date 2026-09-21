@@ -232,7 +232,7 @@ setMediaScenes(loadedScenes);
       <div className="hero-copy">
         <p className="chapter">{t("chapter")}</p>
         <p className="hero-word" key={scene.word}>{scene.word}</p>
-        <h1>{t("headline1")}<br />{t("headline2")}<br /><em>{t("headline3")}</em></h1>
+        <h1>{t("headline1")}<br />{t("headline2")}</h1>
         <p className="hero-lede">{t("heroLede")}</p>
         <div className="hero-actions">
           <a className="btn gold" href="#contact">{t("plan")}</a>
