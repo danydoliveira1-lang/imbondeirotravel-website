@@ -1,0 +1,15 @@
+IMBONDEIRO TRAVEL — FINAL WEBSITE LOGO UPDATE
+
+Upload the contents of the "website-files" folder to the root of the GitHub
+repository on the main branch. Keep the included folder paths unchanged.
+
+Files included:
+1. components/Header.jsx
+2. components/Footer.jsx
+3. public/assets/imbondeiro-logo-seashell-gold.png
+
+The approved Seashell and Golden Harvest logo is locked to the public header,
+full-screen menu, and footer. The document/invoice logo setting remains separate.
+
+After committing, wait for the Vercel Production deployment to show Ready and
+then refresh the live website with Ctrl+F5.

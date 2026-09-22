@@ -3,12 +3,9 @@
 import { useEffect, useState } from "react";
 
 const fallbackLogo =
-  "/assets/imbondeiro-logo-luxury-web.png";
+  "/assets/imbondeiro-logo-seashell-gold.png";
 
 export default function Footer() {
-  const [websiteLogo, setWebsiteLogo] =
-    useState(fallbackLogo);
-
   const [tagline, setTagline] =
     useState("Your Lifetime Experience");
 
@@ -28,10 +25,6 @@ export default function Footer() {
         if (!response.ok) return;
 
         const settings = await response.json();
-
-        if (settings.website_logo_url) {
-          setWebsiteLogo(settings.website_logo_url);
-        }
 
         if (settings.tagline) {
           setTagline(settings.tagline);
@@ -54,7 +47,7 @@ export default function Footer() {
   return (
     <footer>
       <img
-        src={websiteLogo}
+        src={fallbackLogo}
         alt="Imbondeiro Travel"
         onError={event => {
           event.currentTarget.onerror = null;

@@ -5,43 +5,12 @@ import {languages,useLanguage} from "./LanguageContext";
 import {currencies,useCurrency} from "./CurrencyContext";
 import CurrencyConverter from "./CurrencyConverter";
 
+const approvedWebsiteLogo =
+  "/assets/imbondeiro-logo-seashell-gold.png";
+
 export default function Header(){
- const [open,setOpen]=useState(false),[scrolled,setScrolled]=useState(false),[converter,setConverter]=useState(false),[websiteLogo,setWebsiteLogo]=useState("/assets/imbondeiro-logo-luxury-web.png");
+ const [open,setOpen]=useState(false),[scrolled,setScrolled]=useState(false),[converter,setConverter]=useState(false);
  const {summary}=useJourney();const {language,setLanguage,t}=useLanguage();const {currency,setCurrency}=useCurrency();
- useEffect(()=>{
-  const controller=new AbortController();
-
-  async function loadWebsiteLogo(){
-    try{
-      const response=await fetch(
-        "/api/public/company-settings",
-        {
-          cache:"no-store",
-          signal:controller.signal
-        }
-      );
-
-      if(!response.ok)return;
-
-      const settings=await response.json();
-
-      if(settings.website_logo_url){
-        setWebsiteLogo(settings.website_logo_url);
-      }
-    }catch(error){
-      if(error.name!=="AbortError"){
-        console.error(
-          "Website logo could not be loaded.",
-          error
-        );
-      }
-    }
-  }
-
-  loadWebsiteLogo();
-
-  return()=>controller.abort();
-},[]);
  useEffect(()=>{const f=()=>setScrolled(window.scrollY>30);f();addEventListener("scroll",f);return()=>removeEventListener("scroll",f)},[]);
  useEffect(()=>{document.body.classList.toggle("menu-open",open);const key=e=>e.key==="Escape"&&setOpen(false);addEventListener("keydown",key);return()=>{document.body.classList.remove("menu-open");removeEventListener("keydown",key)}},[open]);
  const close=()=>setOpen(false);
@@ -66,11 +35,11 @@ export default function Header(){
  <header className={`site-header chapter-header ${scrolled?"is-scrolled":""} ${open?"menu-active":""}`}>
   <a className="brand" href="#top" aria-label="Imbondeiro Travel">
   <img
-    src={websiteLogo}
+    src={approvedWebsiteLogo}
     alt="Imbondeiro Travel"
     onError={event=>{
       event.currentTarget.onerror=null;
-      event.currentTarget.src="/assets/imbondeiro-logo-luxury-web.png";
+      event.currentTarget.src=approvedWebsiteLogo;
     }}
   />
 </a>
@@ -90,11 +59,11 @@ export default function Header(){
     onClick={close}
   >
     <img
-      src={websiteLogo}
+      src={approvedWebsiteLogo}
       alt="Imbondeiro Travel"
       onError={event=>{
         event.currentTarget.onerror=null;
-        event.currentTarget.src="/assets/imbondeiro-logo-luxury-web.png";
+        event.currentTarget.src=approvedWebsiteLogo;
       }}
     />
   </a>
