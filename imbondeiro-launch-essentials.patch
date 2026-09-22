@@ -1,0 +1,74 @@
+From 0b85e9b76b4108b31282fe306377dafe945ad096 Mon Sep 17 00:00:00 2001
+From: Codex <codex@openai.com>
+Date: Tue, 22 Sep 2026 06:58:04 +0200
+Subject: [PATCH] Harden launch metadata and translated navigation
+
+---
+ app/layout.js         | 7 ++++++-
+ app/robots.js         | 2 +-
+ app/sitemap.js        | 2 +-
+ components/Header.jsx | 2 +-
+ 4 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/app/layout.js b/app/layout.js
+index 02dfe99..68ef38b 100644
+--- a/app/layout.js
++++ b/app/layout.js
+@@ -1,7 +1,7 @@
+ import "./globals.css";
+ import Analytics from "../components/Analytics";
+ 
+-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.imbondeirotravel.com";
++const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://imbondeirotravel.com";
+ 
+ export const metadata = {
+   metadataBase: new URL(siteUrl),
+@@ -27,6 +27,11 @@ export const metadata = {
+     images: ["/assets/hero-kalandula.jpg"],
+   },
+   robots: { index: true, follow: true },
++  icons: {
++    icon: "/assets/imbondeiro-logo-seashell-gold.png",
++    shortcut: "/assets/imbondeiro-logo-seashell-gold.png",
++    apple: "/assets/imbondeiro-logo-seashell-gold.png",
++  },
+ };
+ 
+ export default function RootLayout({ children }) {
+diff --git a/app/robots.js b/app/robots.js
+index 750f3b8..5f2867d 100644
+--- a/app/robots.js
++++ b/app/robots.js
+@@ -1,4 +1,4 @@
+ export default function robots() {
+-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://www.imbondeirotravel.com";
++  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://imbondeirotravel.com";
+   return { rules: { userAgent: "*", allow: "/" }, sitemap: `${base}/sitemap.xml`, host: base };
+ }
+diff --git a/app/sitemap.js b/app/sitemap.js
+index 8b31ab9..d84c902 100644
+--- a/app/sitemap.js
++++ b/app/sitemap.js
+@@ -1,5 +1,5 @@
+ export default function sitemap() {
+-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://www.imbondeirotravel.com";
++  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://imbondeirotravel.com";
+   return [
+     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
+     { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+diff --git a/components/Header.jsx b/components/Header.jsx
+index b5dac94..084a9ed 100644
+--- a/components/Header.jsx
++++ b/components/Header.jsx
+@@ -87,7 +87,7 @@ export default function Header(){
+     <a href="#journal" onClick={(e)=>{e.preventDefault();revealChapter("journal");}}><small>07</small><span>{t("journal")}</span></a>
+     <a href="#about" onClick={(e)=>{e.preventDefault();revealChapter("about")}}><small>08</small><span>{t("story")}</span></a>
+     <a href="#partners" onClick={(e)=>{e.preventDefault();revealChapter("partners");}}><small>09</small><span>{t("partners")}</span></a>
+-    <a href="#contact" onClick={(e)=>{e.preventDefault();revealChapter("contact")}}><small>10</small><span>Craft My Journey</span></a>
++    <a href="#contact" onClick={(e)=>{e.preventDefault();revealChapter("contact")}}><small>10</small><span>{t("craft")}</span></a>
+    </nav>
+    <aside className="menu-utilities">
+     <section><h3>{t("language")}</h3><div className="utility-options">{languages.map(l=><button key={l.code} className={language===l.code?"active":""} onClick={()=>setLanguage(l.code)}>{l.short}</button>)}</div></section>
+-- 
+2.51.1
+
