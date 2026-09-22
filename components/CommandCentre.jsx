@@ -119,6 +119,21 @@ const moduleMeta = {
 
 function money(value) { return new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(value || 0)); }
 function titleCase(value) { if (value === "tour_id") return "Tour"; if (value === "departure_id") return "Departure"; return value.replaceAll("_", " ").replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());}
+function departureNumber(departure, liveField, legacyField) {
+  const value = Number(departure?.[liveField] ?? departure?.[legacyField] ?? 0);
+  return Number.isFinite(value) ? value : 0;
+}
+function departureDateParts(departure) {
+  const value = String(departure?.start_date || departure?.date || "").slice(0, 10);
+  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00`)
+    : null;
+  if (!parsed || Number.isNaN(parsed.getTime())) return { day: "—", month: "Date TBC" };
+  return {
+    day: String(parsed.getDate()).padStart(2, "0"),
+    month: parsed.toLocaleString("en", { month: "short" }),
+  };
+}
 function getYouTubeId(value) {
   if (!value) return "";
   try {
@@ -153,7 +168,12 @@ export default function CommandCentre() {
     const enquiries = data.reservations.filter(r => r.status === "Enquiry").length;
     const held = data.reservations.filter(r => r.status === "On Hold").length;
     const upcoming = data.departures.filter(d => d.status !== "Cancelled").length;
-    const seats = data.departures.reduce((sum, d) => sum + Math.max(0, Number(d.maximum_guests) - Number(d.reserved_guests) - Number(d.held_guests)), 0);
+    const seats = data.departures.reduce((sum, d) => {
+      const capacity = departureNumber(d, "maximum_guests", "capacity");
+      const booked = departureNumber(d, "reserved_guests", "booked");
+      const held = departureNumber(d, "held_guests", "held");
+      return sum + Math.max(0, capacity - booked - held);
+    }, 0);
     const revenue = data.reservations.filter(r => r.status === "Confirmed").reduce((sum, r) => sum + Number(r.total || 0), 0);
     return { enquiries, held, upcoming, seats, revenue };
   }, [data]);
@@ -278,7 +298,7 @@ function Dashboard({ stats, data, open, navigate }) {
     <section className="cc-stat-grid">{cards.map(([label,value,sub],i)=><article key={label} className={i===4?"wide":""}><span>{label}</span><strong>{value}</strong><small>{sub}</small></article>)}</section>
    {attentionReservations.length > 0 && <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Action centre</span><h3>Needs Attention</h3></div><span>{attentionReservations.length} item{attentionReservations.length===1?"":"s"}</span></div><div className="cc-activity">{attentionReservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{Number(r.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(r.status||"").toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><button type="button" onClick={() => open("reservations", { ...r, _source: "attention" })}>{followUpAction(r.status)}</button></div>)}</div></section>}
     <section className="cc-grid-two"><div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Fast workflows</span><h3>Quick actions</h3></div></div><div className="cc-quick">{[["tours","＋","New tour"],["departures","□","New departure"],["reservations","◇","New reservation"],["customers","◎","New customer"],["media","▣","Add media"]].map(([s,i,l])=><button key={s} onClick={()=>open(s)}><i>{i}</i><span>{l}</span><b>→</b></button>)}</div></div>
-    <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Seat control</span><h3>Upcoming departures</h3></div><button onClick={()=>navigate("departures")}>View all</button></div><div className="cc-departure-list">{data.departures.slice(0,4).map(d=>{const available=Math.max(0,d.maximum_guests-d.reserved_guests-d.held_guests);return <div key={d.id}><div className="cc-date"><strong>{new Date(d.start_date+"T12:00:00").getDate()}</strong><span>{new Date(d.start_date+"T12:00:00").toLocaleString("en",{month:"short"})}</span></div><div><strong>{d.title}</strong><span>{d.reserved_guests} booked · {d.held_guests} held</span></div><div className="cc-seat"><strong>{available}</strong><span>available</span></div><em className={`cc-status ${d.status.toLowerCase().replaceAll(" ","-")}`}>{d.status}</em></div>})}</div></div></section>
+    <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Seat control</span><h3>Upcoming departures</h3></div><button onClick={()=>navigate("departures")}>View all</button></div><div className="cc-departure-list">{data.departures.slice(0,4).map(d=>{const date=departureDateParts(d);const capacity=departureNumber(d,"maximum_guests","capacity");const booked=departureNumber(d,"reserved_guests","booked");const held=departureNumber(d,"held_guests","held");const available=Math.max(0,capacity-booked-held);const status=String(d.status||"Unscheduled");return <div key={d.id}><div className="cc-date"><strong>{date.day}</strong><span>{date.month}</span></div><div><strong>{d.title||d.tour||"Untitled departure"}</strong><span>{booked} booked · {held} held</span></div><div className="cc-seat"><strong>{available}</strong><span>available</span></div><em className={`cc-status ${status.toLowerCase().replaceAll(" ","-")}`}>{status}</em></div>})}</div></div></section>
     <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Reservation desk</span><h3>Latest activity</h3></div><button onClick={()=>navigate("reservations")}>Open reservations</button></div><div className="cc-activity">{data.reservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{r.travellers!==1?"s":""}</span></div><em className={`cc-status ${r.status.toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"Awaiting quote"}</b></div>)}</div></section>
   </div>;
 }
