@@ -158,6 +158,10 @@ export default function CommandCentre() {
     return { enquiries, held, upcoming, seats, revenue };
   }, [data]);
 
+  const notificationCount = data.reservations.filter(reservation =>
+    ["Enquiry", "On Hold", "Quoted"].includes(reservation.status)
+  ).length;
+
   if (!ready) return null;
   if (!signedIn) return <Login onLogin={async () => { setSignedIn(true); await loadData(); }} />;
 
@@ -241,7 +245,7 @@ export default function CommandCentre() {
     </aside>
 
     <main className="cc-main">
-      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title="Notifications">♢<b>3</b></button></div></header>
+      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title={`${notificationCount} reservation item${notificationCount === 1 ? "" : "s"} need attention`} onClick={() => setActive("reservations")}>♢<b>{notificationCount}</b></button></div></header>
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
