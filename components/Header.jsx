@@ -6,8 +6,42 @@ import {currencies,useCurrency} from "./CurrencyContext";
 import CurrencyConverter from "./CurrencyConverter";
 
 export default function Header(){
- const [open,setOpen]=useState(false),[scrolled,setScrolled]=useState(false),[converter,setConverter]=useState(false);
+ const [open,setOpen]=useState(false),[scrolled,setScrolled]=useState(false),[converter,setConverter]=useState(false),[websiteLogo,setWebsiteLogo]=useState("/assets/imbondeiro-logo-luxury-web.png");
  const {summary}=useJourney();const {language,setLanguage,t}=useLanguage();const {currency,setCurrency}=useCurrency();
+ useEffect(()=>{
+  const controller=new AbortController();
+
+  async function loadWebsiteLogo(){
+    try{
+      const response=await fetch(
+        "/api/public/company-settings",
+        {
+          cache:"no-store",
+          signal:controller.signal
+        }
+      );
+
+      if(!response.ok)return;
+
+      const settings=await response.json();
+
+      if(settings.website_logo_url){
+        setWebsiteLogo(settings.website_logo_url);
+      }
+    }catch(error){
+      if(error.name!=="AbortError"){
+        console.error(
+          "Website logo could not be loaded.",
+          error
+        );
+      }
+    }
+  }
+
+  loadWebsiteLogo();
+
+  return()=>controller.abort();
+},[]);
  useEffect(()=>{const f=()=>setScrolled(window.scrollY>30);f();addEventListener("scroll",f);return()=>removeEventListener("scroll",f)},[]);
  useEffect(()=>{document.body.classList.toggle("menu-open",open);const key=e=>e.key==="Escape"&&setOpen(false);addEventListener("keydown",key);return()=>{document.body.classList.remove("menu-open");removeEventListener("keydown",key)}},[open]);
  const close=()=>setOpen(false);
@@ -30,7 +64,16 @@ export default function Header(){
  },[]);
  return <>
  <header className={`site-header chapter-header ${scrolled?"is-scrolled":""} ${open?"menu-active":""}`}>
-  <a className="brand" href="#top" aria-label="Imbondeiro Travel"><img src="/assets/imbondeiro-logo-luxury-web.png" alt="Imbondeiro Travel"/></a>
+  <a className="brand" href="#top" aria-label="Imbondeiro Travel">
+  <img
+    src={websiteLogo}
+    alt="Imbondeiro Travel"
+    onError={event=>{
+      event.currentTarget.onerror=null;
+      event.currentTarget.src="/assets/imbondeiro-logo-luxury-web.png";
+    }}
+  />
+</a>
   <nav className="chapter-nav" aria-label="Primary navigation">
    <a href="#angola">{t("meet")}</a><a href="#explorer">{t("explorer")}</a>
   </nav>
@@ -40,7 +83,29 @@ export default function Header(){
   </div>
  </header>
  <div className={`full-menu ${open?"is-open":""}`} aria-hidden={!open}>
-  <div className="full-menu-top"><a className="menu-brand" href="#top" onClick={close}><img src="/assets/imbondeiro-logo-luxury-web.png" alt="Imbondeiro Travel"/></a><button className="menu-close" onClick={close}><span>{t("close")}</span>×</button></div>
+  <div className="full-menu-top">
+  <a
+    className="menu-brand"
+    href="#top"
+    onClick={close}
+  >
+    <img
+      src={websiteLogo}
+      alt="Imbondeiro Travel"
+      onError={event=>{
+        event.currentTarget.onerror=null;
+        event.currentTarget.src="/assets/imbondeiro-logo-luxury-web.png";
+      }}
+    />
+  </a>
+
+  <button
+    className="menu-close"
+    onClick={close}
+  >
+    <span>{t("close")}</span>×
+  </button>
+</div>
   <div className="full-menu-body">
    <div className="menu-intro"><p className="eyebrow">Project Baobab</p><h2>{t("menuIntro")}</h2><p>Journey • Wonder • Culture</p></div>
    <nav className="menu-chapters" aria-label="Full navigation">

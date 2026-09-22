@@ -157,14 +157,14 @@ export default function ContactForm(){
       <label>Indicative budget<select name="budget" value={form.budget} onChange={updateField}><option value="">Prefer not to say</option><option>Under USD 2,500</option><option>USD 2,500–5,000</option><option>USD 5,000–10,000</option><option>USD 10,000+</option></select></label>
       <label className="full">Tell us about your journey<textarea name="message" rows="5" value={form.message} onChange={updateField}/></label>
       <label className="honeypot" aria-hidden="true">Website<input name="website" value={form.website} onChange={updateField} tabIndex="-1" autoComplete="off"/></label>
-      <label className="full consent"><input name="consent" type="checkbox" checked={form.consent} onChange={updateField} required/> I agree that Imbondeiro Travel may use these details to respond to my enquiry.</label>
+      <label className="full consent"><input name="consent" type="checkbox" checked={form.consent} onChange={updateField} required/> I agree that Imbondeiro Travel may use these details to respond to my enquiry in accordance with its <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</label>
       <div className="full form-actions">
         <button className="btn gold" type="submit" disabled={sending}>{sending ? "Sending…" : "Craft My Journey"}</button>
         <a className="btn whatsapp" href={whatsappHref} target="_blank" rel="noreferrer" onClick={()=>trackEvent("contact",{method:"whatsapp",destination:form.destination||"Not specified"})}>Continue on WhatsApp</a>
         <a className="btn email-fallback" href={emailHref} onClick={()=>trackEvent("contact",{method:"email_link",destination:form.destination||"Not specified"})}>Email My Journey Request</a>
       </div>
       <p className="full contact-email-line">Email: <a href="mailto:imbondeirotravel@gmail.com">imbondeirotravel@gmail.com</a></p>
-      <p className="full form-status" role="status" aria-live="polite">{status} {!status && <span>Automatic confirmation email requires the secure Vercel email key. Until it is connected, <strong>Craft My Journey</strong> will open your email app with the full request ready to send.</span>}</p>
+      <p className="full form-status" role="status" aria-live="polite">{status || "We normally respond to journey enquiries within 24 hours."}</p>
     </form>
   </div>;
 }

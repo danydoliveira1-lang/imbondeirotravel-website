@@ -1,6 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState,} from "react";
+import { printOperationsRunSheet } from "./printOperationsRunSheet";
+import { printManagementReport } from "./printManagementReport";
+import { exportManagementReport } from "./exportManagementReport";
+import { printProFormaInvoice } from "./printProFormaInvoice";
+import { printTaxInvoice, previewTaxInvoice, } from "./printTaxInvoice";
+import BillingSettings from "./BillingSettings";
+import InvoiceRegister from "./InvoiceRegister";
+import OperationsDesk from "./OperationsDesk";
+import AuditLog from "./AuditLog";
+import BrandAssets from "./BrandAssets";
 
 const seed = {
   tours: [
@@ -26,27 +36,103 @@ const seed = {
   media: [
     { id: "media-1", name: "Kalandula Hero", type: "YouTube", reference: "Gt3K_3KQlOM", usage: "Homepage + destination", status: "Active" },
     { id: "media-2", name: "Traditional Dance", type: "YouTube", reference: "U9ILT0S2GYA", usage: "Homepage hero", status: "Active" },
-    { id: "media-3", name: "Imbondeiro Brand Mark", type: "Image", reference: "/assets/logo.png", usage: "Global", status: "Active" },
-  ],
+    { id: "media-3", name: "Imbondeiro Brand Mark", type: "Image", reference: "/assets/logo.png", usage: "Global", status: "Active" }, ],
+  invoices: [],
+  operations_resources: [],
+  departure_assignments: [],
+  audit_logs: [],
 };
 
-const nav = [
-  ["dashboard", "⌂", "Dashboard"], ["tours", "◉", "Tours"], ["departures", "□", "Departures"],
-  ["reservations", "◇", "Reservations"], ["customers", "◎", "Customers"], ["media", "▣", "Media Library"],
-  ["payments", "€", "Payments"], ["operations", "↗", "Operations"], ["reports", "⌁", "Reports"], ["settings", "⚙", "Settings"],
+ const nav = [
+  ["dashboard", "⌂", "Dashboard"],
+  ["tours", "◉", "Tours"],
+  ["departures", "□", "Departures"],
+  ["reservations", "◇", "Reservations"],
+  ["customers", "◎", "Customers"],
+  ["media", "▣", "Media Library"],
+  ["payments", "€", "Payments"],
+  ["operations", "↗", "Operations"],
+  ["reports", "⌁", "Reports"],
+  ["audit_log", "◷", "Audit Log"],
+  ["settings", "⚙", "Settings"],
 ];
 
 const moduleMeta = {
-  tours: { title: "Tour Manager", singular: "Tour", fields: ["title", "location", "duration", "price", "status", "video", "start", "end"] },
-  departures: { title: "Departure Manager", singular: "Departure", fields: ["title", "location", "start_date", "end_date", "maximum_guests", "reserved_guests", "held_guests", "status", "featured", "image", "duration", "travel_style", "guide"] },
-  reservations: { title: "Reservation Manager", singular: "Reservation", fields: ["customer", "journey", "travellers", "status", "total", "consultant"] },
+  tours: {
+  title: "Tour Manager",
+  singular: "Tour",
+  fields: [
+    "title",
+    "slug",
+    "category",
+    "duration",
+    "days",
+    "status",
+    "summary",
+    "description",
+    "image",
+    "hero_video_url",
+    "sort_order"
+  ]
+},
+  departures: { title: "Departure Manager", singular: "Departure", fields: ["tour_id", "title", "location", "start_date", "end_date", "maximum_guests", "reserved_guests", "held_guests", "status", "featured", "image", "duration", "travel_style", "guide"] },
+  reservations: { title: "Reservation Manager", singular: "Reservation", fields: ["customer", "departure_id", "journey", "travellers", "status", "total", "consultant"] },
   customers: { title: "Customer CRM", singular: "Customer", fields: ["name", "email", "phone", "language", "preference", "notes"] },
-  media: { title: "Media Library", singular: "Media Item", fields: ["name", "type", "reference", "usage", "status"] },
+  media: { title: "Media Library", singular: "Media Item", fields: [ "name", "type", "reference", "usage", "content_key", "sort_order", "hero_word", "hero_place", "status" ] },
+  payments: { title: "Payments", singular: "Payment", fields: ["reservation_id", "payment_type", "amount", "currency", "payment_method", "status", "paid_at", "reference", "notes"] },
+  operations_resources: {
+    title: "Operations Directory",
+    singular: "Operations Resource",
+    fields: [
+      "resource_type",
+      "name",
+      "company",
+      "phone",
+      "email",
+      "location",
+      "languages",
+      "capacity",
+      "registration_number",
+      "status",
+      "notes",
+    ],
+  },
+
+  departure_assignments: {
+    title: "Departure Assignments",
+    singular: "Departure Assignment",
+    fields: [
+      "departure_id",
+      "resource_id",
+      "service_type",
+      "role_or_service",
+      "assigned_from",
+      "assigned_until",
+      "cost",
+      "currency",
+      "confirmation_reference",
+      "status",
+      "notes",
+    ],
+  },
 };
 
 function money(value) { return new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(value || 0)); }
-function titleCase(value) { return value.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase()); }
-
+function titleCase(value) { if (value === "tour_id") return "Tour"; if (value === "departure_id") return "Departure"; return value.replaceAll("_", " ").replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());}
+function getYouTubeId(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    if (url.hostname.includes("youtu.be")) return url.pathname.split("/").filter(Boolean)[0] || "";
+    if (url.hostname.includes("youtube.com")) {
+      if (url.searchParams.get("v")) return url.searchParams.get("v");
+      const parts = url.pathname.split("/").filter(Boolean);
+      const index = parts.findIndex(part => ["embed","shorts"].includes(part));
+      if (index >= 0) return parts[index + 1] || "";
+    }
+  } catch {}
+  return "";
+}
 export default function CommandCentre() {
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
@@ -72,34 +158,106 @@ export default function CommandCentre() {
     return { enquiries, held, upcoming, seats, revenue };
   }, [data]);
 
+  const notificationCount = data.reservations.filter(reservation =>
+    ["Enquiry", "On Hold", "Quoted"].includes(reservation.status)
+  ).length;
+
   if (!ready) return null;
   if (!signedIn) return <Login onLogin={async () => { setSignedIn(true); await loadData(); }} />;
 
   const saveRecord = async (section, record) => {
-    const response = await fetch(`/api/admin/records/${section}`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(record) });
-    const payload = await response.json(); if(!response.ok) return flash(payload.error || "Save failed.");
-    setData(prev => ({...prev,[section]:prev[section].some(x=>x.id===payload.record.id)?prev[section].map(x=>x.id===payload.record.id?payload.record:x):[payload.record,...prev[section]]}));
-    setModal(null); flash(`${moduleMeta[section].singular} saved to the live website.`);
-  };
-  const deleteRecord = async (section, id) => { if(confirm("Delete this record?")){ const r=await fetch(`/api/admin/records/${section}?id=${encodeURIComponent(id)}`,{method:"DELETE"}); if(r.ok){setData(prev=>({...prev,[section]:prev[section].filter(x=>x.id!==id)}));flash("Record deleted.");}else flash("Delete failed."); } };
+  const response = await fetch(
+    `/api/admin/records/${section}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(record),
+    }
+  );
+
+  const payload = await response.json();
+
+  if (!response.ok) {
+    const message = payload.error || "Save failed.";
+    flash(message);
+    throw new Error(message);
+  }
+
+  setData(prev => ({
+    ...prev,
+    [section]: prev[section].some(
+      item => item.id === payload.record.id
+    )
+      ? prev[section].map(item =>
+          item.id === payload.record.id
+            ? payload.record
+            : item
+        )
+      : [payload.record, ...prev[section]],
+  }));
+
+  setModal(null);
+  flash(
+    `${moduleMeta[section].singular} saved to the live website.`
+  );
+
+  return payload.record;
+};
+  const deleteRecord = async (section, id) => {
+  if (!window.confirm("Delete this record?")) return;
+
+  try {
+    const response = await fetch(
+      `/api/admin/records/${section}?id=${encodeURIComponent(
+        id
+      )}`,
+      { method: "DELETE" }
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      flash(payload.error || "Delete failed.");
+      return;
+    }
+
+    setData(prev => ({
+      ...prev,
+      [section]: prev[section].filter(
+        record => record.id !== id
+      ),
+    }));
+
+    flash("Record deleted.");
+  } catch {
+    flash("Delete failed.");
+  }
+};
   const flash = message => { setNotice(message); setTimeout(() => setNotice(""), 2600); };
 
   return <div className="cc-shell">
     <aside className="cc-sidebar">
       <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
-      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{["payments","operations","reports"].includes(key) && <small>Soon</small>}</button>)}</nav>
+      <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{[].includes(key) && <small>Soon</small>}</button>)}</nav> 
       <div className="cc-profile"><div className="cc-avatar">DN</div><div><strong>Daniela</strong><span>Administrator</span></div><button title="Sign out" onClick={async () => { await fetch("/api/admin/logout",{method:"POST"}); setSignedIn(false); }}>↪</button></div>
     </aside>
 
     <main className="cc-main">
-      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title="Notifications">♢<b>3</b></button></div></header>
+      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title={`${notificationCount} reservation item${notificationCount === 1 ? "" : "s"} need attention`} onClick={() => setActive("reservations")}>♢<b>{notificationCount}</b></button></div></header>
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
-      {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section) => { setActive(section); setModal({ section, record: {} }); }} navigate={setActive} />}
-      {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
-      {["payments","operations","reports","settings"].includes(active) && <ComingSoon type={active} />}
+      {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
+      {active === "operations" && ( <OperationsDesk data={data} reload={loadData} flash={flash} />)}
+      {active === "reports" && ( <Reports data={data} />)}
+      {active === "audit_log" && (  <AuditLog entries={data.audit_logs || []}  /> )}
+      {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} invoices={data.invoices} company={data.company_settings?.[0]} reload={loadData} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
+      {active === "payments" && ( <InvoiceRegister invoices={data.invoices} reload={loadData} flash={flash}/>)}
+      {active === "settings" && <Settings data={data} reload={loadData} flash={flash} />}
     </main>
-    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} onClose={() => setModal(null)} onSave={saveRecord} />}
+    {modal && <RecordModal section={modal.section} meta={moduleMeta[modal.section]} initial={modal.record} tours={data.tours} departures={data.departures} 
+            customers={data.customers} reservations={data.reservations} payments={data.payments} invoices={data.invoices} operationsResources={data.operations_resources} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
 }
 
@@ -112,28 +270,2930 @@ function Login({ onLogin }) {
 }
 
 function Dashboard({ stats, data, open, navigate }) {
+  const attentionReservations = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status));
+  const followUpAction = status => status === "Enquiry" ? "Respond to enquiry" : status === "On Hold" ? "Confirm or release hold" : status === "Quoted" ? "Follow up on quote" : "";
   const cards = [["Today’s enquiries", stats.enquiries, "+18% this week"], ["Reservations on hold", stats.held, "Require follow-up"], ["Upcoming departures", stats.upcoming, "Next 90 days"], ["Available seats", stats.seats, "Across live departures"], ["Confirmed revenue", money(stats.revenue), "Current records"]];
   return <div className="cc-dashboard">
     <section className="cc-welcome"><div><span>IMBONDEIRO COMMAND CENTRE</span><h2>Elegant for the traveller.<br/>Powerful for the team.</h2><p>Your Phase 5 workspace is ready. All changes made here are saved to the live Supabase database and published to the website.</p></div><div className="cc-orbit"><span>LIVE</span><strong>{stats.upcoming}</strong><small>departures</small></div></section>
     <section className="cc-stat-grid">{cards.map(([label,value,sub],i)=><article key={label} className={i===4?"wide":""}><span>{label}</span><strong>{value}</strong><small>{sub}</small></article>)}</section>
-    {attentionReservations.length > 0 && <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Action centre</span><h3>Needs Attention</h3></div><span>{attentionReservations.length} item{attentionReservations.length===1?"":"s"}</span></div><div className="cc-activity">{attentionReservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{Number(r.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(r.status||"").toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"Awaiting quote"}</b></div>)}</div></section>}
+   {attentionReservations.length > 0 && <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Action centre</span><h3>Needs Attention</h3></div><span>{attentionReservations.length} item{attentionReservations.length===1?"":"s"}</span></div><div className="cc-activity">{attentionReservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{Number(r.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(r.status||"").toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><button type="button" onClick={() => open("reservations", { ...r, _source: "attention" })}>{followUpAction(r.status)}</button></div>)}</div></section>}
     <section className="cc-grid-two"><div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Fast workflows</span><h3>Quick actions</h3></div></div><div className="cc-quick">{[["tours","＋","New tour"],["departures","□","New departure"],["reservations","◇","New reservation"],["customers","◎","New customer"],["media","▣","Add media"]].map(([s,i,l])=><button key={s} onClick={()=>open(s)}><i>{i}</i><span>{l}</span><b>→</b></button>)}</div></div>
     <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Seat control</span><h3>Upcoming departures</h3></div><button onClick={()=>navigate("departures")}>View all</button></div><div className="cc-departure-list">{data.departures.slice(0,4).map(d=>{const available=Math.max(0,d.maximum_guests-d.reserved_guests-d.held_guests);return <div key={d.id}><div className="cc-date"><strong>{new Date(d.start_date+"T12:00:00").getDate()}</strong><span>{new Date(d.start_date+"T12:00:00").toLocaleString("en",{month:"short"})}</span></div><div><strong>{d.title}</strong><span>{d.reserved_guests} booked · {d.held_guests} held</span></div><div className="cc-seat"><strong>{available}</strong><span>available</span></div><em className={`cc-status ${d.status.toLowerCase().replaceAll(" ","-")}`}>{d.status}</em></div>})}</div></div></section>
     <section className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Reservation desk</span><h3>Latest activity</h3></div><button onClick={()=>navigate("reservations")}>Open reservations</button></div><div className="cc-activity">{data.reservations.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.customer}</strong><span>{r.journey} · {r.travellers} traveller{r.travellers!==1?"s":""}</span></div><em className={`cc-status ${r.status.toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"Awaiting quote"}</b></div>)}</div></section>
   </div>;
 }
 
-function Manager({ section, meta, rows, query, onNew, onEdit, onDelete }) {
-  const filtered = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
-  return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td><div className="cc-row-actions"><button onClick={()=>onEdit(row)}>Edit</button><button className="danger" onClick={()=>onDelete(row.id)}>Delete</button></div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
+function Operations({ data }) {
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const upcomingDepartures = [...data.departures]
+    .filter(d => d.start_date && new Date(d.start_date + "T12:00:00") >= today && d.status !== "cancelled")
+    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+
+const travellersExpected = upcomingDepartures.reduce((sum, d) => sum + Number(d.reserved_guests || 0), 0);
+const seatsAvailable = upcomingDepartures.reduce( (sum, d) => sum + Math.max(0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)), 0 );
+const attentionItems = data.reservations.filter(r => ["Enquiry", "On Hold", "Quoted"].includes(r.status) ).length;
+const departureReadiness = upcomingDepartures.map(departure => {
+const reservations = reportingReservations.filter( r => r.departure_id === departure.id  );
+const reservationIds = new Set(reservations.map(r => r.id));
+const payments = data.payments.filter( p => reservationIds.has(p.reservation_id) );
+const activeReservations = reservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
+const guestReady = activeReservations.length > 0;
+const paidAmount = payments .filter(p => p.status === "Paid") .reduce( (sum, p) => sum + (p.payment_type === "Refund" ? -Number(p.amount || 0) : Number(p.amount || 0)), 0 );
+const paymentReady = paidAmount > 0;
+const guideReady = Boolean(  departure.guide && departure.guide.trim());
+const ready = guestReady && paymentReady && guideReady;
+
+return { departure, reservations, payments, activeReservations, paidAmount, guestReady, paymentReady, guideReady, ready};});
+ 
+return <div className="cc-dashboard"> <section className="cc-welcome"> <div> <span>OPERATIONS CONTROL</span> <h2>Every journey.<br/>One operational view.</h2> <p>Live readiness across departures, travellers, capacity and outstanding actions.</p></div><div className="cc-orbit"> <span>LIVE</span> <strong>{upcomingDepartures.length}</strong> <small>upcoming departures</small></div> </section> <section className="cc-stat-grid"> <article> <span>Upcoming departures</span> <strong>{upcomingDepartures.length}</strong> <small>Future active journeys</small> </article> <article> <span>Travellers expected</span> <strong>{travellersExpected}</strong> <small>Reserved guests</small> </article> <article> <span>Seats available</span> <strong>{seatsAvailable}</strong> <small>Across upcoming departures</small> </article> <article><span>Needs attention</span> <strong>{attentionItems}</strong> <small>Open reservation actions</small> </article> </section> 
+<section className="cc-panel"> <div className="cc-panel-head"><div> <span className="cc-eyebrow">Journey control</span> <h3>Upcoming Journey Operations</h3></div> <span> {upcomingDepartures.length} departure{upcomingDepartures.length === 1 ? "" : "s"} </span> </div><div className="cc-activity">{upcomingDepartures.map(d => {const available = Math.max( 0, Number(d.maximum_guests || 0) - Number(d.reserved_guests || 0) - Number(d.held_guests || 0)); return <div key={d.id}> <span className="cc-dot"></span><div><strong>{d.title}</strong> <span>{d.start_date} · {d.guide || "Guide not assigned"}</span></div><em className={`cc-status ${String(d.status || "").toLowerCase().replaceAll(" ","-")}`}> {d.status} </em><b> {d.reserved_guests || 0} booked · {d.held_guests || 0} held · {available} available</b> </div>; })} {upcomingDepartures.length === 0 && <p>No upcoming departures found.</p>} </div> </section> <section className="cc-panel"> <div className="cc-panel-head"><div><span className="cc-eyebrow">Operational readiness</span><h3>Departure Readiness</h3></div><span> {departureReadiness.length} journey{departureReadiness.length === 1 ? "" : "s"} </span></div> <div className="cc-activity"> {departureReadiness.map(item => ( <div key={item.departure.id}><span className="cc-dot"></span> <div><strong>{item.departure.title}</strong> <span>Guests {item.guestReady ? "✓" : "—"} ·{" "} Payment {item.paymentReady ? `✓ ${money(item.paidAmount)}` : "attention"} ·{" "} Guide {item.guideReady ? "✓" : "attention"} </span> </div> <em className={`cc-status ${item.ready ? "confirmed" : "on-hold"}`}>{item.ready ? "READY" : "ACTION REQUIRED"}</em><b> {item.ready? "Operational checks passed" : [ !item.guestReady && "Guests", !item.paymentReady && "Payment",!item.guideReady && "Guide" ].filter(Boolean).join(" · ") + " requires attention"} </b></div> ))} </div></section></div>;
 }
 
-function RecordModal({ section, meta, initial, onClose, onSave }) {
+function Reports({ data }) { 
+ const [ reportStartDate, setReportStartDate,] = useState("");
+ const [ reportEndDate, setReportEndDate,] = useState("");
+ const hasReportPeriod = Boolean(reportStartDate) || Boolean(reportEndDate);
+ const reportPeriodInvalid = Boolean( reportStartDate && reportEndDate && reportEndDate < reportStartDate );
+ const reportingDepartures = data.departures.filter(departure => { if (!hasReportPeriod) { return true;}
+ const departureDate = String( departure.start_date || "" ).slice(0, 10); if (!departureDate) { return false; }
+ return ( (!reportStartDate || departureDate >= reportStartDate) && (!reportEndDate || departureDate <= reportEndDate)    );
+  });
+
+ const reportingDepartureIds =  new Set( reportingDepartures.map( departure => departure.id ) );
+ const reportingReservations = hasReportPeriod ? data.reservations.filter( reservation => reportingDepartureIds.has( reservation.departure_id ) ) : data.reservations;
+ const reportingReservationIds = new Set( reportingReservations.map( reservation => reservation.id ) );
+ const reportingPayments =  hasReportPeriod ? data.payments.filter( payment => reportingReservationIds.has( payment.reservation_id )) : data.payments;
+ const reportingInvoices = hasReportPeriod ? (data.invoices || []).filter( invoice => reportingReservationIds.has( invoice.reservation_id ) ) : data.invoices || [];
+ const committedReservations = reportingReservations.filter( r => ["Deposit Paid", "Confirmed", "Travelled"].includes(r.status));
+ const bookedRevenue = committedReservations.reduce((sum, r) => sum + Number(r.total || 0), 0 );
+ const paidTransactions = reportingPayments.filter( payment => String( payment.status || "" ).toLowerCase() === "paid" );
+ const paidEurTransactions = paidTransactions.filter( payment => String( payment.currency || "EUR" ).trim().toUpperCase() === "EUR" );
+ const refunds = paidEurTransactions.filter( payment => String( payment.payment_type || "" ).toLowerCase() === "refund" ) .reduce( (sum, payment) =>  sum + Number(payment.amount || 0), 0 );
+ const grossCashReceived = paidEurTransactions .filter( payment => String( payment.payment_type || "" ).toLowerCase() !== "refund" ) .reduce( (sum, payment) => sum + Number(payment.amount || 0), 0  );
+ const netCashReceived = grossCashReceived - refunds;
+ const outstandingValue = Math.max( 0, bookedRevenue - netCashReceived );
+ const nonEurCashByCurrency =  paidTransactions.reduce( (totals, payment) => {
+ const currency = String( payment.currency || "EUR" ) .trim() .toUpperCase(); if (currency === "EUR") { return totals; }
+ const amount = Number( payment.amount || 0  );  if (!Number.isFinite(amount)) { return totals; }
+
+ const signedAmount = String(  payment.payment_type || "" ).toLowerCase() === "refund" ? -amount : amount; 
+    totals[currency] =  (totals[currency] || 0) + signedAmount; return totals; }, {}  );
+
+const nonEurCashEntries = Object.entries( nonEurCashByCurrency).sort(([firstCurrency], [secondCurrency]) =>  firstCurrency.localeCompare(secondCurrency));
+const reportMoney = ( value, currency = "EUR" ) => {
+  const amount = Number(value || 0);
+  const currencyCode = String( currency || "EUR" ) .trim() .toUpperCase(); try {
+    
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency: currencyCode, minimumFractionDigits: 2, maximumFractionDigits: 2, }).format(  Number.isFinite(amount) ? amount : 0 );
+  } catch { return `${currencyCode} ${  Number.isFinite(amount) ? amount.toFixed(2) : "0.00" }`; } };
+const pipelineStatuses = [  "Enquiry", "On Hold", "Quoted", "Deposit Paid", "Confirmed", "Travelled"];
+const reservationPipeline = pipelineStatuses.map(status => {
+const reservations = reportingReservations.filter( r => r.status === status );
+
+ return { status, bookings: reservations.length, travellers: reservations.reduce( (sum, r) => sum + Number(r.travellers || 0), 0  ) };});
+
+const pipelineBookings = reservationPipeline.reduce( (sum, stage) => sum + stage.bookings, 0);
+const pipelineTravellers = reservationPipeline.reduce( (sum, stage) => sum + stage.travellers, 0);
+const journeyPerformance = Object.values( reportingReservations.reduce((journeys, reservation) => {
+const journey = reservation.journey || "Unassigned Journey";
+
+if (!journeys[journey]) { journeys[journey] = { journey, bookings: 0, travellers: 0, bookedValue: 0  };  }
+journeys[journey].bookings += 1;
+journeys[journey].travellers += Number(reservation.travellers || 0);
+if ( ["Deposit Paid", "Confirmed", "Travelled"].includes( reservation.status  ) ) {
+    journeys[journey].bookedValue += Number(reservation.total || 0);
+    }
+return journeys;  }, {})).sort((a, b) => b.bookings - a.bookings || b.travellers - a.travellers || b.bookedValue - a.bookedValue );  
+const customerPerformance = data.customers .map(customer => { const reservations = reportingReservations.filter( reservation => reservation.customer_id === customer.id );
+const reservationIds = new Set( reservations.map( reservation => reservation.id ) );
+const payments = reportingPayments.filter(  payment => payment.customer_id === customer.id || reservationIds.has( payment.reservation_id ) );
+const lifetimeValueByCurrency = payments.filter( payment => String( payment.status || "" ).toLowerCase() === "paid" ) .reduce(  (totals, payment) => {
+const currency = String(  payment.currency || "EUR"  ) .trim() .toUpperCase();
+const amount = Number( payment.amount || 0  ); if (!Number.isFinite(amount)) { return totals; }
+const signedAmount =  String( payment.payment_type || "" ).toLowerCase() === "refund" ? -amount  : amount; totals[currency] = (totals[currency] || 0) + signedAmount; return totals; }, {} );
+const lifetimeValueEntries = Object.entries( lifetimeValueByCurrency ).sort( ([firstCurrency], [secondCurrency]) => firstCurrency.localeCompare( secondCurrency )  );
+   return { id: customer.id,  name: customer.name, bookings: reservations.length, travellers: reservations.reduce(  (sum, reservation) =>
+            sum +  Number(  reservation.travellers || 0  ), 0  ), lifetimeValueEntries,  eurLifetimeValue: lifetimeValueByCurrency.EUR || 0, }; })
+    .sort(
+      (first, second) => second.eurLifetimeValue - first.eurLifetimeValue || second.bookings - first.bookings || second.travellers - first.travellers );
+  
+const capacityPerformance = reportingDepartures .filter(departure => departure.status !== "cancelled") .map(departure => {
+ const capacity = Number(departure.maximum_guests || 0);
+ const booked = Number(departure.reserved_guests || 0);
+ const held = Number(departure.held_guests || 0);
+ const available = Math.max(0, capacity - booked - held);
+ const occupancy = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
+    return { id: departure.id, title: departure.title, startDate: departure.start_date, capacity, booked, held, available, occupancy };
+  })
+  .sort((a, b) => b.occupancy - a.occupancy ||
+    new Date(a.startDate || 0) - new Date(b.startDate || 0)
+  );
+
+const totalCapacity = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.capacity, 0 );
+const totalBookedSeats = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.booked,  0 );
+const totalHeldSeats = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.held,  0 );
+const totalAvailableSeats = capacityPerformance.reduce(
+  (sum, departure) => sum + departure.available, 0 );
+  
+const overallOccupancy = totalCapacity > 0 ? Math.round((totalBookedSeats / totalCapacity) * 100) : 0;
+const requiredReportServices = [ "guide", "driver", "vehicle",];
+
+ const operationsPerformance = reportingDepartures .filter(departure => {
+  const status = String( departure.status || ""  ).toLowerCase();
+    return ![ "cancelled", "completed", ].includes(status);  })
+    .map(departure => {
+      const departureAssignments =
+        (
+          data.departure_assignments || []
+        ).filter(assignment => {
+          const status = String(
+            assignment.status || ""
+          ).toLowerCase();
+
+      return (  assignment.departure_id ===  departure.id && ![  "cancelled", "completed", ].includes(status)  );
+        });
+      
+      const committedDepartureReservations = reportingReservations.filter(
+          reservation =>  reservation.departure_id === departure.id &&
+            [
+              "Deposit Paid",
+              "Confirmed",
+              "Travelled",
+            ].includes(reservation.status)
+        );
+
+      const bookedRevenueEur =
+        committedDepartureReservations.reduce(
+          (total, reservation) => {
+            const amount = Number(
+              reservation.total || 0
+            );
+
+            return Number.isFinite(amount)
+              ? total + amount
+              : total;
+          },
+          0
+        );
+      
+      const assignedServiceTypes =
+        new Set(
+          departureAssignments.map(
+            assignment =>
+              String(
+                assignment.service_type || ""
+              )
+                .trim()
+                .toLowerCase()
+          )
+        );
+
+      const missingServices =
+        requiredReportServices.filter(
+          service =>
+            !assignedServiceTypes.has(
+              service
+            )
+        );
+
+      const unconfirmedServices =
+        requiredReportServices.filter(
+          service => {
+            if (
+              !assignedServiceTypes.has(
+                service
+              )
+            ) {
+              return false;
+            }
+
+            return !departureAssignments.some(
+              assignment =>
+                String(
+                  assignment.service_type ||
+                    ""
+                )
+                  .trim()
+                  .toLowerCase() === service &&
+                String(
+                  assignment.status || ""
+                )
+                  .trim()
+                  .toLowerCase() ===
+                  "confirmed"
+            );
+          }
+        );
+
+      const readinessState =
+        missingServices.length > 0
+          ? "action_required"
+          : unconfirmedServices.length > 0
+            ? "planned"
+            : "ready";
+
+      const costsByCurrency =
+        departureAssignments.reduce(
+          (totals, assignment) => {
+            const amount = Number(
+              assignment.cost || 0
+            );
+
+            if (
+              !Number.isFinite(amount) ||
+              amount <= 0
+            ) {
+              return totals;
+            }
+
+            const currency = String(
+              assignment.currency || "EUR"
+            )
+              .trim()
+              .toUpperCase();
+
+            totals[currency] =
+              (totals[currency] || 0) +
+              amount;
+
+            return totals;
+          },
+          {}
+        );
+
+  const costEntries = Object.entries(
+        costsByCurrency
+      ).sort(
+        ([firstCurrency], [secondCurrency]) =>
+          firstCurrency.localeCompare(
+            secondCurrency
+          )
+      );
+
+      const eurOperationsCost =
+        costsByCurrency.EUR || 0;
+
+      const contributionEur =
+        bookedRevenueEur -
+        eurOperationsCost;
+
+      return {
+        id: departure.id,
+        title: departure.title,
+        startDate: departure.start_date,
+        assignments:
+          departureAssignments.length,
+        committedBookings:
+          committedDepartureReservations.length,
+        bookedRevenueEur,
+        eurOperationsCost,
+        contributionEur,
+        missingServices,
+        unconfirmedServices,
+        readinessState,
+        costEntries,
+      };
+    })
+    .sort(
+      (first, second) =>
+        new Date(first.startDate || 0) -
+        new Date(second.startDate || 0)
+    );
+
+const readyDepartures =
+  operationsPerformance.filter(
+    departure =>
+      departure.readinessState === "ready"
+  ).length;
+
+const plannedDepartures =
+  operationsPerformance.filter(
+    departure =>
+      departure.readinessState === "planned"
+  ).length;
+
+const actionRequiredDepartures =
+  operationsPerformance.filter(
+    departure =>
+      departure.readinessState ===
+      "action_required"
+  ).length;
+ 
+  const reportServiceName = service =>
+  service.replace(
+    /\b\w/g,
+    character => character.toUpperCase()
+  );
+
+const operationsStatusDetail = departure => {
+  if (
+    departure.readinessState === "ready"
+  ) {
+    
+    return "Core services confirmed";
+  }
+
+  if (
+    departure.readinessState === "planned"
+  ) {
+    
+    return `Awaiting confirmation: ${departure.unconfirmedServices
+      .map(reportServiceName)
+      .join(", ")}`;
+  }
+
+  return `Missing: ${departure.missingServices
+    .map(reportServiceName)
+    .join(", ")}`;
+};
+const receivablesPerformance =
+  committedReservations
+    .map(reservation => {
+      const reservationPayments =
+        paidTransactions.filter(
+          payment =>
+            payment.reservation_id ===
+            reservation.id
+        );
+
+      const paidEur =
+        reservationPayments.reduce(
+          (total, payment) => {
+            const currency = String(
+              payment.currency || "EUR"
+            )
+              .trim()
+              .toUpperCase();
+
+            if (currency !== "EUR") {
+              return total;
+            }
+
+            const amount = Number(
+              payment.amount || 0
+            );
+
+            if (!Number.isFinite(amount)) {
+              return total;
+            }
+
+            const isRefund =
+              String(
+                payment.payment_type || ""
+              ).toLowerCase() === "refund";
+
+            return total +
+              (isRefund ? -amount : amount);
+          },
+          0
+        );
+
+      const nonEurPaymentsByCurrency =
+        reservationPayments.reduce(
+          (totals, payment) => {
+            const currency = String(
+              payment.currency || "EUR"
+            )
+              .trim()
+              .toUpperCase();
+
+            if (currency === "EUR") {
+              return totals;
+            }
+
+            const amount = Number(
+              payment.amount || 0
+            );
+
+            if (!Number.isFinite(amount)) {
+              return totals;
+            }
+
+            const isRefund =
+              String(
+                payment.payment_type || ""
+              ).toLowerCase() === "refund";
+
+            totals[currency] =
+              (totals[currency] || 0) +
+              (isRefund ? -amount : amount);
+
+            return totals;
+          },
+          {}
+        );
+
+      const totalEur = Number(
+        reservation.total || 0
+      );
+
+      const safeTotalEur =
+        Number.isFinite(totalEur)
+          ? totalEur
+          : 0;
+
+      const balanceEur = Math.max(
+        0,
+        safeTotalEur - paidEur
+      );
+
+      const overpaymentEur = Math.max(
+        0,
+        paidEur - safeTotalEur
+      );
+
+      const issuedInvoice = reportingInvoices.find(
+          invoice => invoice.reservation_id === reservation.id &&
+            String( invoice.status || "" ).toLowerCase() === "issued"
+        );
+
+      return {
+        id: reservation.id,
+        customer:
+          reservation.customer ||
+          data.customers.find(
+            customer =>
+              customer.id ===
+              reservation.customer_id
+          )?.name ||
+          "Unnamed customer",
+        journey:
+          reservation.journey ||
+          "Unassigned journey",
+        status: reservation.status,
+        totalEur: safeTotalEur,
+        paidEur,
+        balanceEur,
+        overpaymentEur,
+        invoiceNumber:
+          issuedInvoice?.invoice_number ||
+          null,
+        nonEurPaymentEntries:
+          Object.entries(
+            nonEurPaymentsByCurrency
+          ).sort(
+            (
+              [firstCurrency],
+              [secondCurrency]
+            ) =>
+              firstCurrency.localeCompare(
+                secondCurrency
+              )
+          ),
+      };
+    })
+    .sort(
+      (first, second) =>
+        second.balanceEur -
+          first.balanceEur ||
+        first.customer.localeCompare(
+          second.customer
+        )
+    );
+
+const totalReceivableEur =
+  receivablesPerformance.reduce(
+    (total, reservation) =>
+      total + reservation.balanceEur,
+    0
+  );
+
+const fullyPaidReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      reservation.balanceEur === 0 &&
+      reservation.overpaymentEur === 0
+  ).length;
+
+const invoicedReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      Boolean(reservation.invoiceNumber)
+  ).length;
+
+  const outstandingReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      reservation.balanceEur > 0
+  ).length;
+
+const overpaidReservations =
+  receivablesPerformance.filter(
+    reservation =>
+      reservation.overpaymentEur > 0
+  ).length;
+
+const totalOverpaymentEur =
+  receivablesPerformance.reduce(
+    (total, reservation) =>
+      total + reservation.overpaymentEur,
+    0
+  );
+  
+  const reportPeriodLabel = reportPeriodInvalid
+  ? "Invalid reporting period"
+  : !hasReportPeriod
+    ? "All departure dates"
+    : reportStartDate && reportEndDate
+      ? `${reportStartDate} to ${reportEndDate}`
+      : reportStartDate
+        ? `From ${reportStartDate}`
+        : `Up to ${reportEndDate}`;
+  
+  const executiveSnapshot = {
+  reservations: pipelineBookings,
+  travellers: pipelineTravellers,
+  netCash: netCashReceived,
+  occupancy: overallOccupancy,
+  availableSeats: totalAvailableSeats
+};
+  
+  return <div id="reports-top" className="cc-dashboard">
+  <section className="cc-welcome">
+    <div>
+      <span>EXECUTIVE REPORTING</span> 
+      <h2> From activity.<br/>To management insight.
+      </h2>
+      <p>
+        Live performance reporting across bookings, customers, departures and payments.
+      </p>
+      <div className="cc-report-actions">
+  <button
+    type="button"
+    className="cc-primary"
+    disabled={reportPeriodInvalid}
+    title={
+      reportPeriodInvalid
+        ? "The end date cannot be earlier than the start date"
+        : `Print report: ${reportPeriodLabel}`
+    }
+    onClick={() =>
+      printManagementReport({
+        reportPeriod: {
+          label: reportPeriodLabel,
+          startDate: reportStartDate,
+          endDate: reportEndDate,
+        },
+        executiveSnapshot,
+        financial: {
+          bookedRevenue,
+          netCashReceived,
+          refunds,
+          totalReceivableEur,
+          invoicedReservations,
+        },
+        nonEurCashEntries,
+        receivables:
+          receivablesPerformance,
+        capacity: capacityPerformance,
+        operations:
+          operationsPerformance,
+        company:
+          data.company_settings?.[0] || {},
+      })
+    }
+  >
+    Print Management Report
+  </button>
+
+  <button
+    type="button"
+    className="cc-primary"
+    disabled={reportPeriodInvalid}
+    title={
+      reportPeriodInvalid
+        ? "The end date cannot be earlier than the start date"
+        : `Export report: ${reportPeriodLabel}`
+    }
+    onClick={() =>
+      exportManagementReport({
+        reportPeriod: {
+          label: reportPeriodLabel,
+          startDate: reportStartDate,
+          endDate: reportEndDate,
+        },
+        executiveSnapshot,
+        financial: {
+          bookedRevenue,
+          netCashReceived,
+          refunds,
+          totalReceivableEur,
+          invoicedReservations,
+        },
+        nonEurCashEntries,
+        receivables:
+          receivablesPerformance,
+        capacity: capacityPerformance,
+        operations:
+          operationsPerformance,
+      })
+    }
+  >
+    Export Management Data
+  </button>
+</div>
+    </div>
+    
+    <div className="cc-orbit">
+      <span>LIVE</span>
+      <strong>{reportingReservations.length}</strong>
+      <small>reservations</small>
+    </div>
+  </section>
+  <section className="cc-panel cc-report-period">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Reporting period
+      </span>
+      <h3>Select Departure Dates</h3>
+    </div>
+
+    <span>{reportPeriodLabel}</span>
+  </div>
+
+  <div className="cc-report-period-controls">
+    <label>
+      <span>Start date</span>
+      <input
+        type="date"
+        value={reportStartDate}
+        onChange={event =>
+          setReportStartDate(
+            event.target.value
+          )
+        }
+      />
+    </label>
+
+    <label>
+      <span>End date</span>
+      <input
+        type="date"
+        value={reportEndDate}
+        onChange={event =>
+          setReportEndDate(
+            event.target.value
+          )
+        }
+      />
+    </label>
+
+    <button
+      type="button"
+      className="cc-primary"
+      disabled={!hasReportPeriod}
+      onClick={() => {
+        setReportStartDate("");
+        setReportEndDate("");
+      }}
+    >
+      Reset to All Dates
+    </button>
+  </div>
+
+  {reportPeriodInvalid && (
+    <div className="cc-report-period-error">
+      The end date cannot be earlier than the
+      start date.
+    </div>
+  )}
+</section>
+    <section className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Executive snapshot</span>
+      <h3>Business at a Glance</h3>
+    </div>
+    <span>Live operational overview</span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Active Reservations</span>
+      <strong>{executiveSnapshot.reservations}</strong>
+      <small>Current booking pipeline</small>
+    </article>
+
+    <article>
+      <span>Travellers</span>
+      <strong>{executiveSnapshot.travellers}</strong>
+      <small>Across active reservations</small>
+    </article>
+
+    <article>
+  <span>Net Cash — EUR</span>
+  <strong>
+    {reportMoney(executiveSnapshot.netCash, "EUR"   )}
+  </strong>
+  <small>
+    EUR received less EUR refunds
+  </small>
+</article>
+
+    <article>
+      <span>Occupancy</span>
+      <strong>{executiveSnapshot.occupancy}%</strong>
+      <small>Confirmed seats across departures</small>
+    </article>
+
+    <article>
+      <span>Available Seats</span>
+      <strong>{executiveSnapshot.availableSeats}</strong>
+      <small>Remaining sellable capacity</small>
+    </article>
+  </div>
+</section>
+
+<nav
+  className="cc-panel"
+  aria-label="Report sections"
+>
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Report navigator
+      </span>
+      <h3>Explore Performance</h3>
+    </div>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <a href="#report-financial">
+        <strong>Financial</strong>
+        <small>
+          Revenue, cash & refunds
+        </small>
+      </a>
+    </article>
+   
+    <article>
+  <a href="#report-receivables">
+    <strong>Receivables</strong>
+    <small>
+      Balances, payments & invoices
+    </small>
+  </a>
+  </article>
+   
+    <article>
+      <a href="#report-pipeline">
+        <strong>Pipeline</strong>
+        <small>
+          Reservations & travellers
+        </small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-journeys">
+        <strong>Journeys</strong>
+        <small>
+          Journey performance
+        </small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-customers">
+        <strong>Customers</strong>
+        <small>
+          Value & booking activity
+        </small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-capacity">
+        <strong>Capacity</strong>
+        <small>
+          Seats & occupancy
+        </small>
+      </a>
+    </article>
+
+    <article>
+      <a href="#report-operations">
+        <strong>Operations</strong>
+        <small>
+          Readiness, assignments & costs
+        </small>
+      </a>
+    </article>
+  </div>
+</nav>
+  <section
+  id="report-financial"
+  className="cc-stat-grid"
+>
+  <article>
+    <span>Booked Revenue — EUR</span>
+    <strong>
+      {reportMoney(bookedRevenue, "EUR")}
+    </strong>
+    <small>
+      Committed reservation value
+    </small>
+  </article>
+
+  <article>
+    <span>Net Cash Received — EUR</span>
+    <strong>
+      {reportMoney(netCashReceived, "EUR")}
+    </strong>
+    <small>
+      Paid EUR transactions less EUR refunds
+    </small>
+  </article>
+
+  <article>
+    <span>Refunds — EUR</span>
+    <strong>
+      {reportMoney(refunds, "EUR")}
+    </strong>
+    <small>
+      Completed EUR refund transactions
+    </small>
+  </article>
+
+  <article>
+    <span>Outstanding Value — EUR</span>
+    <strong>
+      {reportMoney(outstandingValue, "EUR")}
+    </strong>
+    <small>
+      EUR committed value not yet received
+    </small>
+  </article>
+
+  {nonEurCashEntries.map(
+    ([currency, total]) => (
+      <article key={currency}>
+        <span>
+          Net Cash Received — {currency}
+        </span>
+        <strong>
+          {reportMoney(total, currency)}
+        </strong>
+        <small>
+          Reported separately — no currency
+          conversion
+        </small>
+      </article>
+    )
+  )}
+</section>
+
+<section
+  id="report-receivables"
+  className="cc-panel"
+>
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Credit control
+      </span>
+      <h3>Receivables & Invoices</h3>
+    </div>
+
+    <span>
+      {receivablesPerformance.length} committed{" "}
+      {receivablesPerformance.length === 1
+        ? "reservation"
+        : "reservations"}
+      {" · "}
+      <a href="#reports-top">
+        ↑ Back to Reports
+      </a>
+    </span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Outstanding — EUR</span>
+      <strong>
+        {reportMoney(
+          totalReceivableEur,
+          "EUR"
+        )}
+      </strong>
+      <small>
+        Unpaid committed reservation value
+      </small>
+    </article>
+
+    <article>
+      <span>Balances Due</span>
+      <strong>
+        {outstandingReservations}
+      </strong>
+      <small>
+        Reservations requiring payment
+      </small>
+    </article>
+
+    <article>
+      <span>Fully Paid</span>
+      <strong>
+        {fullyPaidReservations}
+      </strong>
+      <small>
+        EUR balance settled
+      </small>
+    </article>
+
+    <article>
+      <span>Tax Invoices Issued</span>
+      <strong>
+        {invoicedReservations}
+      </strong>
+      <small>
+        Official issued invoices
+      </small>
+    </article>
+
+    <article>
+      <span>Overpayments — EUR</span>
+      <strong>
+        {reportMoney(
+          totalOverpaymentEur,
+          "EUR"
+        )}
+      </strong>
+      <small>
+        {overpaidReservations}{" "}
+        {overpaidReservations === 1
+          ? "reservation"
+          : "reservations"}
+      </small>
+    </article>
+  </div>
+
+  {receivablesPerformance.length ? (
+    <div className="cc-activity">
+      {receivablesPerformance.map(
+        reservation => (
+          <div key={reservation.id}>
+            <span className="cc-dot"></span>
+
+            <div>
+              <strong>
+                {reservation.customer}
+              </strong>
+
+              <span>
+                {reservation.journey}
+                {" · "}
+                {reservation.status}
+              </span>
+
+              <span>
+                Booking:{" "}
+                {reportMoney(
+                  reservation.totalEur,
+                  "EUR"
+                )}
+                {" · "}
+                Paid:{" "}
+                {reportMoney(
+                  reservation.paidEur,
+                  "EUR"
+                )}
+                {" · "}
+                Tax Invoice:{" "}
+                {reservation.invoiceNumber ||
+                  "Not issued"}
+              </span>
+
+              {reservation
+                .nonEurPaymentEntries
+                .length > 0 && (
+                <span>
+                  Additional payments:{" "}
+                  {reservation.nonEurPaymentEntries
+                    .map(
+                      ([currency, total]) =>
+                        reportMoney(
+                          total,
+                          currency
+                        )
+                    )
+                    .join(" + ")}
+                  {" — "}
+                  not applied to EUR balance
+                </span>
+              )}
+            </div>
+
+            <em
+              className={`cc-status ${
+                reservation.balanceEur > 0
+                  ? "pending"
+                  : reservation.overpaymentEur >
+                      0
+                    ? "planned"
+                    : "active"
+              }`}
+            >
+              {reservation.balanceEur > 0
+                ? "Outstanding"
+                : reservation.overpaymentEur >
+                    0
+                  ? "Overpaid"
+                  : "Paid"}
+            </em>
+
+            <b>
+              {reservation.balanceEur > 0
+                ? `Balance ${reportMoney(
+                    reservation.balanceEur,
+                    "EUR"
+                  )}`
+                : reservation.overpaymentEur >
+                    0
+                  ? `Credit ${reportMoney(
+                      reservation.overpaymentEur,
+                      "EUR"
+                    )}`
+                  : "Paid in full"}
+            </b>
+          </div>
+        )
+      )}
+    </div>
+  ) : (
+    <div className="cc-empty">
+      No committed reservations require
+      receivables reporting.
+    </div>
+  )}
+</section>
+
+   <section id="report-pipeline" className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Sales pipeline</span>
+      <h3>Reservation Pipeline</h3>
+    </div>
+   <span>
+  {pipelineBookings} active booking{pipelineBookings === 1 ? "" : "s"}
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
+  </div>
+
+  <div className="cc-activity">
+    {reservationPipeline.map(stage => (
+      <div key={stage.status}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{stage.status}</strong>
+          <span>
+            {stage.bookings} booking{stage.bookings === 1 ? "" : "s"} ·{" "}
+            {stage.travellers} traveller{stage.travellers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <b>{stage.bookings}</b>
+      </div>
+    ))}
+  </div>
+
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Pipeline total</span>
+      <h3>{pipelineTravellers} traveller{pipelineTravellers === 1 ? "" : "s"}</h3>
+    </div>
+  </div>
+</section>
+
+<section id="report-journeys" className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Journey performance</span>
+      <h3>Performance by Journey</h3>
+    </div>
+    <span>
+  {journeyPerformance.length} journey{journeyPerformance.length === 1 ? "" : "s"}
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
+  </div>
+
+  <div className="cc-activity">
+    {journeyPerformance.map(item => (
+      <div key={item.journey}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{item.journey}</strong>
+          <span>
+            {item.bookings} booking{item.bookings === 1 ? "" : "s"} ·{" "}
+            {item.travellers} traveller{item.travellers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <b>{money(item.bookedValue)}</b>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section id="report-customers" className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Customer performance</span>
+      <h3>Customer Value & Activity</h3>
+    </div>
+    <span>
+  {customerPerformance.length} customer{customerPerformance.length === 1 ? "" : "s"}
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
+  </div>
+
+  <div className="cc-activity">
+    {customerPerformance.map(customer => (
+      <div key={customer.id}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{customer.name}</strong>
+          <span>
+            {customer.bookings} booking{customer.bookings === 1 ? "" : "s"} ·{" "}
+            {customer.travellers} traveller{customer.travellers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <b> {customer.lifetimeValueEntries.length ? customer.lifetimeValueEntries
+        .map(([currency, total]) =>
+          reportMoney(total, currency)
+        )
+        .join(" + ")
+    : reportMoney(0, "EUR")}
+</b>
+      </div>
+    ))}
+  </div>
+</section>  
+  
+  <section id="report-capacity" className="cc-panel">
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">Capacity & occupancy</span>
+      <h3>Departure Capacity Performance</h3>
+    </div>
+    <span> 
+     
+      {overallOccupancy}% overall occupancy
+  {" · "}
+  <a href="#reports-top">↑ Back to Reports</a>
+</span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Total Capacity</span>
+      <strong>{totalCapacity}</strong>
+      <small>Seats across active departures</small>
+    </article>
+
+    <article>
+      <span>Booked Seats</span>
+      <strong>{totalBookedSeats}</strong>
+      <small>Confirmed inventory</small>
+    </article>
+
+    <article>
+      <span>Held Seats</span>
+      <strong>{totalHeldSeats}</strong>
+      <small>Temporarily reserved inventory</small>
+    </article>
+
+    <article>
+      <span>Available Seats</span>
+      <strong>{totalAvailableSeats}</strong>
+      <small>Remaining sellable capacity</small>
+    </article>
+  </div>
+
+  <div className="cc-activity">
+    {capacityPerformance.map(departure => (
+      <div key={departure.id}>
+        <span className="cc-dot"></span>
+
+        <div>
+          <strong>{departure.title}</strong>
+          <span>
+            {departure.booked} booked ·{" "}
+            {departure.held} held ·{" "}
+            {departure.available} available ·{" "}
+            {departure.capacity} capacity
+          </span>
+        </div>
+
+        <b>{departure.occupancy}%</b>
+      </div>
+    ))}
+  </div>
+
+  </section> 
+  <section
+  id="report-operations"
+  className="cc-panel"
+>
+  <div className="cc-panel-head">
+    <div>
+      <span className="cc-eyebrow">
+        Operations control
+      </span>
+      <h3>
+        Departure Readiness & Costs
+      </h3>
+    </div>
+
+    <span>
+      {readyDepartures} of{" "}
+      {operationsPerformance.length} ready
+      {" · "}
+      <a href="#reports-top">
+        ↑ Back to Reports
+      </a>
+    </span>
+  </div>
+
+  <div className="cc-stat-grid">
+    <article>
+      <span>Ready</span>
+      <strong>{readyDepartures}</strong>
+      <small>
+        Core services confirmed
+      </small>
+    </article>
+
+    <article>
+      <span>Planned</span>
+      <strong>{plannedDepartures}</strong>
+      <small>
+        Awaiting service confirmation
+      </small>
+    </article>
+
+    <article>
+      <span>Action Required</span>
+      <strong>
+        {actionRequiredDepartures}
+      </strong>
+      <small>
+        Missing core services
+      </small>
+    </article>
+  </div>
+
+  {operationsPerformance.length ? (
+   <div className="cc-activity cc-operations-performance">
+      {operationsPerformance.map(
+        departure => (
+          <div key={departure.id}>
+            <span className="cc-dot"></span>
+
+            <div>
+              <strong>
+                {departure.title}
+                {" — "}
+                {departure.startDate}
+              </strong>
+
+              <span>
+                {departure.assignments}{" "}
+                {departure.assignments === 1
+                  ? "assignment"
+                  : "assignments"}
+                {" · "}
+                {operationsStatusDetail(
+                  departure
+                )}
+              </span>
+            </div>
+
+            <div className="cc-operations-financials">
+                 <em
+                  className={`cc-status ${
+                  departure.readinessState ===
+                  "ready"
+                    ? "active"
+                    : departure.readinessState ===
+                        "planned"
+                      ? "planned"
+                      : "pending"
+                }`}
+              >
+                {departure.readinessState ===
+                "ready"
+                  ? "Ready"
+                  : departure.readinessState ===
+                      "planned"
+                    ? "Planned"
+                    : "Action Required"}
+              </em>
+
+                           <span>
+                Booked revenue — EUR:{" "}
+                {reportMoney(
+                  departure.bookedRevenueEur,
+                  "EUR"
+                )}
+              </span>
+
+              <span>
+                Operations cost — EUR:{" "}
+                {reportMoney(
+                  departure.eurOperationsCost,
+                  "EUR"
+                )}
+              </span>
+
+              <b>
+                Contribution — EUR:{" "}
+                {reportMoney(
+                  departure.contributionEur,
+                  "EUR"
+                )}
+              </b>
+
+              {departure.costEntries.some(
+                ([currency]) =>
+                  currency !== "EUR"
+              ) && (
+                <small>
+                  Additional operational costs:{" "}
+                  {departure.costEntries
+                    .filter(
+                      ([currency]) =>
+                        currency !== "EUR"
+                    )
+                    .map(
+                      ([currency, total]) =>
+                        reportMoney(
+                          total,
+                          currency
+                        )
+                    )
+                    .join(" + ")}
+                  {" — "}
+                  excluded from EUR contribution
+                </small>
+              )}
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  ) : (
+    <div className="cc-empty">
+      No active departures require Operations
+      reporting.
+    </div>
+  )}
+</section>
+  </div>;
+}
+function Settings({ data, reload, flash }) {
+const company = data.company_settings?.[0] || {};
+const [editing, setEditing] = useState(false);
+const [saving, setSaving] = useState(false);
+const [form, setForm] = useState(company);
+useEffect(() => {
+  if (!editing) setForm(company);
+}, [data.company_settings, editing]);
+
+ const saveSettings = async e => {
+  e.preventDefault();
+  setSaving(true);
+
+  try {
+    const response = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(form)
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      flash(payload.error || "Settings save failed.");
+      return;
+    }
+
+    await reload();
+    setEditing(false);
+    flash("Company settings updated.");
+  } catch {
+    flash("Settings save failed.");
+  } finally {
+    setSaving(false);
+  }
+}; 
+  return <div className="cc-dashboard">
+    <section className="cc-welcome">
+      <div>
+        <span>COMMAND CENTRE SETTINGS</span>
+        <h2>Control the details.<br/>Protect the experience.</h2>
+        <p>
+          Manage Imbondeiro Travel's operational preferences, website defaults
+          and administrative configuration from one controlled workspace.
+        </p>
+      </div>
+
+      <div className="cc-orbit">
+        <span>PHASE 5</span>
+        <strong>⚙</strong>
+        <small>settings</small>
+      </div>
+    </section>
+
+    <section className="cc-panel">
+      <div className="cc-panel-head">
+        <div>
+          <span className="cc-eyebrow">Configuration centre</span>
+          <h3>Settings Overview</h3>
+        </div>
+        <span>Controlled administration</span>
+      </div>
+
+      <div className="cc-stat-grid">
+        <article>
+          <span>Company Profile</span>
+          <strong>{company.company_name || "Company"}</strong>
+          <small>Company identity & contact details</small>
+        </article>
+
+        <article>
+          <span>Brand & Website</span>
+          <strong>{company.website || "Not configured"}</strong>
+          <small>Public experience & defaults</small>
+        </article>
+
+        <article>
+          <span>Booking Defaults</span>
+          <strong>{company.default_currency || "Not configured"}</strong>
+          <small>Currency & operational defaults</small>
+        </article>
+
+        <article>
+          <span>Users & Access</span>
+          <strong>Admin</strong>
+          <small>Command Centre permissions</small>
+        </article>
+      </div>
+    </section>
+      <section className="cc-panel">
+      <div className="cc-panel-head">
+  <div>
+    <span className="cc-eyebrow">Company profile</span>
+    <h3>Imbondeiro Travel Details</h3>
+  </div>
+
+  <div className="cc-row-actions">
+    {!editing ? (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+      >
+        Edit Company Profile
+      </button>
+    ) : (
+      <button
+        type="button"
+        onClick={() => {
+          setForm(company);
+          setEditing(false);
+        }}
+      >
+        Cancel
+      </button>
+    )}
+  </div>
+</div>
+
+   <div className="cc-stat-grid">
+  <article>
+    <span>Company Name</span>
+    {editing ? (
+      <input
+        value={form.company_name || ""}
+        onChange={e => setForm({ ...form, company_name: e.target.value })}
+      />
+    ) : (
+      <strong>{company.company_name || "Not configured"}</strong>
+    )}
+    <small>Official company identity</small>
+  </article>
+
+  <article>
+    <span>Tagline</span>
+    {editing ? (
+      <input
+        value={form.tagline || ""}
+        onChange={e => setForm({ ...form, tagline: e.target.value })}
+      />
+    ) : (
+      <strong>{company.tagline || "Not configured"}</strong>
+    )}
+    <small>Primary brand statement</small>
+  </article>
+
+  <article>
+    <span>Website</span>
+    {editing ? (
+      <input
+        value={form.website || ""}
+        onChange={e => setForm({ ...form, website: e.target.value })}
+      />
+    ) : (
+      <strong>{company.website || "Not configured"}</strong>
+    )}
+    <small>Official public website</small>
+  </article>
+
+  <article>
+    <span>General Email</span>
+    {editing ? (
+      <input
+        type="email"
+        value={form.general_email || ""}
+        onChange={e => setForm({ ...form, general_email: e.target.value })}
+      />
+    ) : (
+      <strong>{company.general_email || "Not configured"}</strong>
+    )}
+    <small>Primary company email</small>
+  </article>
+</div>   
+
+   <div className="cc-stat-grid">
+  <article>
+    <span>Angola</span>
+    {editing ? (
+      <input
+        value={form.phone_angola || ""}
+        onChange={e => setForm({ ...form, phone_angola: e.target.value })}
+        placeholder="Optional"
+      />
+    ) : (
+      <strong>{company.phone_angola || "Not configured"}</strong>
+    )}
+    <small>Angola contact number</small>
+  </article>
+
+  <article>
+    <span>Portugal</span>
+    {editing ? (
+      <input
+        value={form.phone_portugal || ""}
+        onChange={e => setForm({ ...form, phone_portugal: e.target.value })}
+      />
+    ) : (
+      <strong>{company.phone_portugal || "Not configured"}</strong>
+    )}
+    <small>Portugal contact number</small>
+  </article>
+
+  <article>
+    <span>South Africa</span>
+    {editing ? (
+      <input
+        value={form.phone_south_africa || ""}
+        onChange={e => setForm({ ...form, phone_south_africa: e.target.value })}
+      />
+    ) : (
+      <strong>{company.phone_south_africa || "Not configured"}</strong>
+    )}
+    <small>South Africa contact number</small>
+  </article>
+</div> 
+
+     <div className="cc-stat-grid">
+  <article>
+    <span>Default Currency</span>
+    {editing ? (
+      <select
+        value={form.default_currency || ""}
+        onChange={e => setForm({ ...form, default_currency: e.target.value })}
+      >
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+        <option value="AOA">AOA</option>
+        <option value="ZAR">ZAR</option>
+      </select>
+    ) : (
+      <strong>{company.default_currency || "Not configured"}</strong>
+    )}
+    <small>Booking currency</small>
+  </article>
+
+  <article>
+    <span>Default Language</span>
+    {editing ? (
+      <select
+        value={form.default_language || ""}
+        onChange={e => setForm({ ...form, default_language: e.target.value })}
+      >
+        <option value="English">English</option>
+        <option value="Portuguese">Portuguese</option>
+      </select>
+    ) : (
+      <strong>{company.default_language || "Not configured"}</strong>
+    )}
+    <small>Primary operating language</small>
+  </article>
+</div>
+
+  {editing && (
+  <div className="cc-row-actions">
+    <button
+      type="button"
+      className="cc-primary"
+      onClick={saveSettings}
+      disabled={saving}
+    >
+      {saving ? "Saving..." : "Save Changes"}
+    </button>
+  </div>
+)}
+        
+</section>
+<BrandAssets
+  company={company}
+  reload={reload}
+  flash={flash}
+/>
+
+<BillingSettings
+  company={company}
+  reload={reload}
+  flash={flash}
+/>
+  </div>;
+}
+
+function Manager({ section, meta, rows, tours, departures, reservations, payments = [], invoices = [], company = {}, reload, query, onNew, onEdit, onDelete }) {
+ const filtered = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
+ const printPaymentReceipt = payment => {
+ const reservation = reservations.find(
+    item => item.id === payment.reservation_id
+  );
+const isRefund =
+  String(payment.payment_type || "").toLowerCase() === "refund";
+
+const documentTitle = isRefund
+  ? "Refund Receipt"
+  : "Payment Receipt";
+
+const partyLabel = isRefund
+  ? "Refunded to"
+  : "Received from";
+
+const amountLabel = isRefund
+  ? "Amount refunded"
+  : "Amount received";
+
+const documentStatus = isRefund
+  ? "Refunded"
+  : payment.status || "Recorded";
+  
+  const escapeHtml = value =>
+    String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  const formatDate = value => {
+    if (!value) return "Not recorded";
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? String(value)
+      : date.toLocaleString("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+  };
+
+  const receiptNumber =
+    payment.reference ||
+    `PAY-${String(payment.id || "").slice(0, 8).toUpperCase()}`;
+
+  const receiptWindow = window.open(
+    "",
+    "_blank",
+    "width=900,height=850"
+  );
+
+  if (!receiptWindow) {
+    window.alert(
+      "The receipt window was blocked. Please allow pop-ups for this website and try again."
+    );
+    return;
+  }
+
+  receiptWindow.document.write(`
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>${escapeHtml(documentTitle)} ${escapeHtml(receiptNumber)}</title>
+
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            margin: 0;
+            background: #ece9e1;
+            color: #132a23;
+            font-family: Arial, sans-serif;
+          }
+
+          .receipt {
+            width: min(794px, calc(100% - 32px));
+            min-height: 1050px;
+            margin: 24px auto;
+            background: #fffdf8;
+            border-top: 10px solid #0b3027;
+            padding: 56px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, .12);
+          }
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            padding-bottom: 34px;
+            border-bottom: 1px solid #d9cfb8;
+          }
+
+          .brand {
+            color: #0b3027;
+            font-family: Georgia, serif;
+            font-size: 31px;
+            letter-spacing: .08em;
+          }
+
+          .tagline {
+            margin-top: 7px;
+            color: #a67f2d;
+            font-family: Georgia, serif;
+            font-style: italic;
+          }
+
+          .document-title {
+            text-align: right;
+          }
+
+          .document-title h1 {
+            margin: 0 0 8px;
+            font-family: Georgia, serif;
+            font-size: 34px;
+            font-weight: 500;
+          }
+
+          .document-title span,
+          .label {
+            color: #746c5d;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+          }
+
+          .status {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #dce9df;
+            color: #1c593b;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+          }
+
+          .customer {
+            margin: 36px 0;
+            padding: 25px;
+            background: #f3efe5;
+            border-left: 4px solid #bd963f;
+          }
+
+          .customer strong {
+            display: block;
+            margin-top: 8px;
+            font-family: Georgia, serif;
+            font-size: 25px;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+
+          th,
+          td {
+            padding: 16px 10px;
+            border-bottom: 1px solid #ded8ca;
+            text-align: left;
+            vertical-align: top;
+          }
+
+          th {
+            width: 38%;
+            color: #746c5d;
+            font-size: 11px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+          }
+
+          .amount {
+            margin-top: 38px;
+            padding: 24px;
+            background: #0b3027;
+            color: white;
+            text-align: right;
+          }
+
+          .amount span {
+            display: block;
+            color: #dfc98f;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+          }
+
+          .amount strong {
+            display: block;
+            margin-top: 8px;
+            font-family: Georgia, serif;
+            font-size: 38px;
+          }
+
+          .notes {
+            margin-top: 32px;
+            line-height: 1.6;
+          }
+
+          .footer {
+            margin-top: 70px;
+            padding-top: 24px;
+            border-top: 1px solid #d9cfb8;
+            color: #746c5d;
+            font-size: 11px;
+            line-height: 1.7;
+          }
+
+          .actions {
+            width: min(794px, calc(100% - 32px));
+            margin: 0 auto 30px;
+            text-align: right;
+          }
+
+          button {
+            border: 0;
+            border-radius: 7px;
+            padding: 13px 20px;
+            background: #0b3027;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+          }
+
+          @media print {
+            body {
+              background: white;
+            }
+
+            .receipt {
+              width: 100%;
+              min-height: auto;
+              margin: 0;
+              box-shadow: none;
+            }
+
+            .actions {
+              display: none;
+            }
+
+            @page {
+              size: A4;
+              margin: 0;
+            }
+          }
+        @media print {
+  html,
+  body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    background: white;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .receipt {
+    width: 210mm;
+    height: 297mm;
+    min-height: 0;
+    margin: 0;
+    padding: 12mm 14mm 10mm;
+    border-top-width: 3mm;
+    box-shadow: none;
+    overflow: hidden;
+    page-break-after: avoid;
+    break-after: avoid-page;
+  }
+
+  .header {
+    padding-bottom: 18px;
+  }
+
+  .brand {
+    font-size: 26px;
+  }
+
+  .document-title h1 {
+    font-size: 29px;
+  }
+
+  .status {
+    margin-top: 18px;
+    padding: 6px 12px;
+  }
+
+  .customer {
+    margin: 18px 0;
+    padding: 17px 20px;
+  }
+
+  .customer strong {
+    font-size: 22px;
+  }
+
+  table {
+    margin-top: 10px;
+  }
+
+  th,
+  td {
+    padding: 9px 8px;
+  }
+
+  .amount {
+    margin-top: 18px;
+    padding: 15px 20px;
+  }
+
+  .amount strong {
+    font-size: 31px;
+  }
+
+  .notes {
+    margin-top: 16px;
+  }
+
+  .notes p {
+    margin: 7px 0;
+  }
+
+  .footer {
+    margin-top: 25px;
+    padding-top: 16px;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+        </style>
+      </head>
+
+      <body>
+        <main class="receipt">
+          <header class="header">
+            <div>
+              <div class="brand">IMBONDEIRO TRAVEL</div>
+              <div class="tagline">Your Lifetime Experience</div>
+            </div>
+
+            <div class="document-title">
+              <h1>${escapeHtml(documentTitle)}</h1>
+              <span>${escapeHtml(receiptNumber)}</span>
+            </div>
+          </header>
+
+          <div class="status">
+            ${escapeHtml(documentStatus)}
+          </div>
+
+          <section class="customer">
+            <span class="label">${escapeHtml(partyLabel)}</span>
+            <strong>
+              ${escapeHtml(reservation?.customer || "Customer not specified")}
+            </strong>
+            <div>
+              ${escapeHtml(reservation?.journey || "Journey not specified")}
+            </div>
+          </section>
+
+          <table>
+            <tbody>
+              <tr>
+                <th>Payment type</th>
+                <td>${escapeHtml(payment.payment_type || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Payment method</th>
+                <td>${escapeHtml(payment.payment_method || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Payment date</th>
+                <td>${escapeHtml(formatDate(payment.paid_at))}</td>
+              </tr>
+
+              <tr>
+                <th>Reference</th>
+                <td>${escapeHtml(payment.reference || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Journey</th>
+                <td>${escapeHtml(reservation?.journey || "—")}</td>
+              </tr>
+
+              <tr>
+                <th>Reservation status</th>
+                <td>${escapeHtml(reservation?.status || "—")}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <section class="amount">
+            <span>${escapeHtml(amountLabel)}</span>
+            <strong>
+              ${escapeHtml(payment.currency || "EUR")}
+              ${escapeHtml(Number(payment.amount || 0).toFixed(2))}
+            </strong>
+          </section>
+
+          ${
+            payment.notes
+              ? `
+                <section class="notes">
+                  <span class="label">Notes</span>
+                  <p>${escapeHtml(payment.notes)}</p>
+                </section>
+              `
+              : ""
+          }
+
+          <footer class="footer">
+            <strong>Imbondeiro Travel</strong><br>
+            www.imbondeirotravel.com · imbondeirotravel@gmail.com<br>
+            Portugal: +351 936 347 702 · South Africa: +27 79 446 7370<br><br>
+            This document confirms that the payment shown above was
+            recorded by Imbondeiro Travel. It is a payment receipt and
+            not a tax invoice.
+          </footer>
+        </main>
+
+        <div class="actions">
+          <button onclick="window.print()">
+            Print / Save as PDF
+          </button>
+        </div>
+      </body>
+    </html>
+  `);
+
+  receiptWindow.document.close();
+};
+const billingDetailsComplete = [
+  company.legal_company_name,
+  company.issuing_country,
+  company.registered_address,
+  company.tax_registration_number,
+  company.invoice_prefix,
+].every(value => String(value || "").trim());
+
+const taxInvoicesEnabled =
+  billingDetailsComplete &&
+  company.tax_invoice_enabled === true;
+
+const findIssuedInvoice = reservationId =>
+  invoices.find(
+    invoice =>
+      invoice.reservation_id === reservationId &&
+      String(invoice.status || "").toLowerCase() === "issued"
+  );
+const isReservationFinanciallyProtected =
+  reservationId => {
+    const hasPaidTransaction = payments.some(
+      payment =>
+        payment.reservation_id === reservationId &&
+        String(payment.status || "").toLowerCase() ===
+          "paid"
+    );
+
+    const hasTaxInvoice = invoices.some(
+      invoice =>
+        invoice.reservation_id === reservationId
+    );
+
+    return hasPaidTransaction || hasTaxInvoice;
+  };
+
+const isRelationshipProtected = (
+  currentSection,
+  recordId
+) => {
+  if (currentSection === "customers") {
+    return reservations.some(
+      reservation =>
+        reservation.customer_id === recordId
+    );
+  }
+
+  if (currentSection === "departures") {
+    return reservations.some(
+      reservation =>
+        reservation.departure_id === recordId
+    );
+  }
+
+  if (currentSection === "tours") {
+    return departures.some(
+      departure =>
+        departure.tour_id === recordId
+    );
+  }
+
+  return false;
+};
+  
+const issueTaxInvoice = async reservation => {
+  const existingInvoice = findIssuedInvoice(reservation.id);
+
+  if (existingInvoice) {
+  printTaxInvoice(
+    existingInvoice,
+    company
+  );
+  return;
+}
+ 
+     
+  if (!taxInvoicesEnabled) {
+    window.alert(
+      "Tax Invoice issuance is locked. Complete and activate Billing & Tax Identity in Settings first."
+    );
+    return;
+  }
+ 
+  const confirmed = window.confirm(
+    "Issue an official Tax Invoice for this reservation?\n\nOnce issued, its number and financial details cannot be edited or deleted."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch("/api/admin/invoices", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reservation_id: reservation.id,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "The Tax Invoice could not be issued."
+      );
+    }
+
+    if (reload) {
+      await reload();
+    }
+
+    window.alert(
+      result.existing
+        ? `Tax Invoice ${result.record?.invoice_number || ""} already exists.`
+        : `Tax Invoice ${result.record?.invoice_number || ""} was issued successfully.`
+    );
+  } catch (error) {
+    window.alert(
+      error.message || "The Tax Invoice could not be issued."
+    );
+  }
+};
+  
+  return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : section === "payments" ? "Track deposits, balances, payment status and transaction history." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })(): field === "reservation_id" ? (() => { const reservation = reservations.find(r => r.id===row[field]); return reservation ? `${reservation.customer} — ${reservation.journey}` : "—"; })() : section === "media" && field === "reference" && row.type === "Image" ? <div style={{display:"flex",alignItems:"center",gap:"10px"}}><a href={row[field]} target="_blank" rel="noreferrer"><img src={row[field]} alt={row.name||"Media preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a><span>{row[field]||"—"}</span></div> : section === "media" && field === "reference" && row.type === "YouTube" ? (()=>{const videoId=getYouTubeId(row[field]);return <div style={{display:"flex",alignItems:"center",gap:"10px"}}>{videoId&&<a href={row[field]} target="_blank" rel="noreferrer"><img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={row.name||"YouTube preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a>}<span>{row[field]||"—"}</span></div>;})() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td>
+  <div className="cc-row-actions">
+  {section === "payments" &&
+    String(row.status || "").toLowerCase() === "paid" && (
+      <button
+        type="button"
+        onClick={() => printPaymentReceipt(row)}
+      >
+        Receipt
+      </button>
+    )}
+    
+{section === "reservations" && (
+  <button
+    type="button"
+    onClick={() =>
+    printProFormaInvoice({
+      reservation: row,
+      departures,
+      payments,
+      company,
+      })
+    }
+  >
+    Pro Forma
+  </button>
+)}
+   {section === "reservations" && (
+  <button
+    type="button"
+    title="Preview a non-fiscal test Tax Invoice"
+    onClick={() =>
+       previewTaxInvoice({
+         reservation: row,
+         departures,
+         company,
+          })
+          }
+         >
+     Tax Preview
+    </button>
+)} 
+    
+{section === "reservations" && (() => {
+  const issuedInvoice = findIssuedInvoice(row.id);
+  const hasValidTotal =
+    Number(row.total || 0) > 0;
+
+  const invoiceLocked =
+    !issuedInvoice &&
+    (!taxInvoicesEnabled || !hasValidTotal);
+
+  return (
+    <button
+      type="button"
+      disabled={invoiceLocked}
+      title={
+        issuedInvoice
+          ? `Open Tax Invoice ${issuedInvoice.invoice_number}`
+          : !hasValidTotal
+            ? "Enter a reservation total greater than zero before issuing a Tax Invoice"
+            : !taxInvoicesEnabled
+              ? "Complete and activate Billing & Tax Identity in Settings"
+              : "Issue an official Tax Invoice"
+      }
+      onClick={() =>
+  issuedInvoice
+    ? printTaxInvoice(
+        issuedInvoice,
+        company
+      )
+       : issueTaxInvoice(row)
+      }
+    >
+      {issuedInvoice
+        ? "Tax Invoice"
+        : !hasValidTotal
+          ? "Set Total First"
+          : !taxInvoicesEnabled
+            ? "Tax Invoice Locked"
+            : "Issue Tax Invoice"}
+    </button>
+  );
+})()}
+    
+ {!(
+  section === "payments" &&
+  String(row.status || "").toLowerCase() === "paid"
+) && (
+  <button
+    type="button"
+    onClick={() => onEdit(row)}
+  >
+    Edit
+  </button>
+)}
+
+{(
+  section === "payments" &&
+  String(row.status || "").toLowerCase() === "paid"
+) ||
+(
+  section === "reservations" &&
+  isReservationFinanciallyProtected(row.id)
+) ||
+(
+ ["customers", "departures", "tours"].includes(section) &&
+  isRelationshipProtected(section, row.id)
+) ? (
+  <button
+    type="button"
+    disabled
+    title={
+      section === "reservations"
+        ? "Reservations with Paid transactions or Tax Invoices are protected from deletion"
+        : section === "customers"
+          ? "Customers with reservation history are protected from deletion"
+          : section === "departures"
+  ? "Departures with linked reservations are protected from deletion"
+  : section === "tours"
+    ? "Tours with linked departures are protected from deletion"
+    : "Paid financial records are protected from deletion"
+    }
+  >
+    Protected
+  </button>
+) : (
+  <button
+    type="button"
+    className="danger"
+    onClick={() => onDelete(row.id)}
+  >
+    Delete
+  </button>
+)} 
+</div></td></tr>)}</tbody></table>{!filtered.length && <div className="cc-empty">No matching records found.</div>}</div><div className="cc-manager-foot"><span>{filtered.length} record{filtered.length===1?"":"s"}</span><span>Changes are saved to the live website database.</span></div></section>;
+}
+
+function RecordModal({ section, meta, initial, tours, departures, customers, reservations, payments, invoices = [], operationsResources = [], onClose, onSave, }) {
   const blank = Object.fromEntries(meta.fields.map(f=>[f,""]));
-  const [record, setRecord] = useState({ ...blank, ...initial });
-  const numeric = ["price","maximum_guests","reserved_guests","held_guests","travellers","total"];
-  const submit = e => { e.preventDefault(); onSave(section, record); };
-  return <div className="cc-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><form className="cc-modal" onSubmit={submit}><div className="cc-modal-head"><div><span className="cc-eyebrow">No-code editor</span><h2>{initial.id?"Edit":"Add"} {meta.singular}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="cc-form-grid">{meta.fields.map(field=><label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="status"?<select value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{["Draft","Published","Open","Limited Availability","Sold Out","Cancelled","Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Active","Inactive"].map(s=><option key={s}>{s}</option>)}</select>:field==="notes"?<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input required={["title","tour","customer","name"].includes(field)} type={["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"} value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div><div className="cc-modal-actions"><button type="button" onClick={onClose}>Cancel</button><button className="cc-primary" type="submit">Save {meta.singular}</button></div></form></div>;
+  if ( ["payments", "departure_assignments"].includes( section )) { blank.currency = "EUR";}
+  const reservationIsFinanciallyProtected =
+  section === "reservations" &&
+  Boolean(initial.id) &&
+  (
+    (payments || []).some(
+      payment =>
+        payment.reservation_id === initial.id &&
+        String(payment.status || "").toLowerCase() ===
+          "paid"
+    ) ||
+    invoices.some(
+      invoice =>
+        invoice.reservation_id === initial.id
+    )
+  );
+
+const protectedReservationFields = new Set([
+  "customer",
+  "customer_id",
+  "departure_id",
+  "journey",
+  "travellers",
+  "total",
+]);
+  const [saveError, setSaveError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [record, setRecord] = useState(() => {
+  const nextRecord = { ...blank, ...initial };
+
+  const dateTimeFields = section === "payments"? ["paid_at"]
+    : section === "departure_assignments"
+      ? ["assigned_from", "assigned_until"]
+      : [];
+
+dateTimeFields.forEach(field => {
+  if (!nextRecord[field]) return;
+
+  const dateValue = new Date(nextRecord[field]);
+
+  if (!Number.isNaN(dateValue.getTime())) {
+    const localDateValue = new Date(
+      dateValue.getTime() -
+        dateValue.getTimezoneOffset() * 60000
+    );
+
+    nextRecord[field] = localDateValue
+      .toISOString()
+      .slice(0, 16);
+  }
+});
+    
+  return nextRecord;
+});
+  const [mediaAssets, setMediaAssets] = useState([]);
+  const [mediaAssetsLoading, setMediaAssetsLoading] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaUploadError, setMediaUploadError] = useState("");
+  
+  useEffect(() => {
+  if (!["media", "tours"].includes(section)) return;
+
+  const controller = new AbortController();
+
+  async function loadMediaAssets() {
+    setMediaAssetsLoading(true);
+
+    try {
+      const response = await fetch("/api/admin/media-assets", {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      setMediaAssets(payload.assets || []);
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Media assets could not be loaded.", error);
+      }
+    } finally {
+      setMediaAssetsLoading(false);
+    }
+  }
+
+  loadMediaAssets();
+
+  return () => controller.abort();
+}, [section]);
+ async function uploadMediaFile(event) {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  setMediaUploading(true);
+  setMediaUploadError("");
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/admin/media-assets", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || "Upload failed.");
+    }
+
+    const asset = payload.asset;
+
+    setMediaAssets(current => [
+      asset,
+      ...current.filter(item => item.reference !== asset.reference),
+    ]);
+
+    const displayName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replaceAll("-", " ")
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, letter => letter.toUpperCase());
+
+    setRecord(current => ({
+      ...current,
+      name: current.name || displayName,
+      reference: asset.reference,
+      type: asset.type === "video" ? "Video" : "Image",
+    }));
+  } catch (error) {
+    setMediaUploadError(error.message || "Upload failed.");
+  } finally {
+    setMediaUploading(false);
+    event.target.value = "";
+  }
+}
+  const numeric = [
+  "price",
+  "days",
+  "sort_order",
+  "maximum_guests",
+  "reserved_guests",
+  "held_guests",
+  "travellers",
+  "total",
+  "amount",
+ "capacity",
+ "cost"
+];
+ const submit = async e => {
+  e.preventDefault();
+  setSaveError("");
+  setSaving(true);
+
+  try {
+    const { _source, ...payload } = record;
+
+    numeric.forEach(field => {
+      if (
+        payload[field] === "" ||
+        payload[field] === null
+      ) {
+        delete payload[field];
+      } else if (payload[field] !== undefined) {
+        payload[field] = Number(payload[field]);
+      }
+    });
+
+    if (section === "payments") {
+      payload.paid_at = payload.paid_at
+        ? new Date(payload.paid_at).toISOString()
+        : null;
+    }
+ if (section === "departure_assignments") {
+  ["assigned_from", "assigned_until"].forEach(
+    field => {
+      payload[field] = payload[field]
+        ? new Date(payload[field]).toISOString()
+        : null;
+    }
+  );
+}
+  await onSave(section, payload);
+  } catch (error) {
+    setSaveError(
+      error.message || "The record could not be saved."
+    );
+  } finally {
+    setSaving(false);
+  }
+};
+
+ const customerBookings = section === "customers" && initial.id ? (reservations || []).filter(r => r.customer_id === initial.id) : [];
+  const customerPayments = section === "customers" && initial.id ? (payments || []).filter(p => p.customer_id === initial.id) : [];
+  const customerPaymentHistory = customerPayments.map(p => ({ payment: p, reservation: (reservations || []).find(r => r.id === p.reservation_id) }));
+  const reservationPayments =
+  section === "reservations" && initial.id
+    ? (payments || []).filter(
+        payment => payment.reservation_id === initial.id
+      )
+    : [];
+
+const paidReservationPayments = reservationPayments.filter(
+  payment => payment.status === "Paid"
+);
+
+const reservationGrossPaid = paidReservationPayments
+  .filter(payment => payment.payment_type !== "Refund")
+  .reduce(
+    (sum, payment) => sum + Number(payment.amount || 0),
+    0
+  );
+
+const reservationRefunded = paidReservationPayments
+  .filter(payment => payment.payment_type === "Refund")
+  .reduce(
+    (sum, payment) => sum + Number(payment.amount || 0),
+    0
+  );
+
+const reservationNetPaid =
+  reservationGrossPaid - reservationRefunded;
+
+const reservationTotal = Number(record.total || 0);
+
+const reservationOutstanding = Math.max(
+  0,
+  reservationTotal - reservationNetPaid
+);
+  const customerTravellers = customerBookings.reduce((sum, r) => sum + Number(r.travellers || 0), 0);
+ const customerValue = customerPayments.filter(p => p.status === "Paid").reduce((sum, p) => sum + (p.payment_type === "Refund" ? -Number(p.amount || 0) : Number(p.amount || 0)), 0);
+  const upcomingJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") >= new Date()).sort((a, b) => new Date(a.departure.start_date) -new Date(b.departure.start_date));
+  const nextJourney = upcomingJourneys[0] || null;
+  const laterJourneys = upcomingJourneys.slice(1);
+  const pastJourneys = customerBookings.map(r => ({ reservation: r, departure: (departures || []).find(d => d.id === r.departure_id) })).filter(item => item.departure?.start_date && new Date(item.departure.start_date + "T12:00:00") < new Date()).sort((a, b) => new Date(b.departure.start_date) - new Date(a.departure.start_date));
+  return <div className="cc-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><form className="cc-modal" onSubmit={submit}><div className="cc-modal-head"><div><span className="cc-eyebrow">No-code editor</span><h2>{initial.id?"Edit":"Add"} {meta.singular}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="cc-form-grid">
+ 
+    {section === "media" && (
+     <>
+    <label className="full">
+      Upload New Media
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+        disabled={mediaUploading}
+        onChange={uploadMediaFile}
+      />
+
+      {mediaUploading && (
+        <span>Uploading media…</span>
+      )}
+
+      {mediaUploadError && (
+        <span role="alert">{mediaUploadError}</span>
+      )}
+    </label>
+
+    <label className="full">
+      Choose Existing Media
+      <select
+        value={
+          record.reference
+            ? mediaAssets.find(
+                asset => asset.reference === record.reference
+              )?.path || ""
+            : ""
+        }
+        disabled={mediaAssetsLoading || mediaUploading}
+        onChange={e => {
+          const asset = mediaAssets.find(
+            item => item.path === e.target.value
+          );
+
+          if (!asset) return;
+
+          setRecord(current => ({
+            ...current,
+            name: asset.name
+              .replace(/\.[^/.]+$/, "")
+              .replaceAll("-", " ")
+              .replaceAll("_", " ")
+              .replace(/\b\w/g, letter => letter.toUpperCase()),
+            reference: asset.reference,
+            type:
+              asset.type === "video"
+                ? "Video"
+                : asset.type === "image"
+                ? "Image"
+                : current.type,
+          }));
+        }}
+      >
+        <option value="">
+          {mediaAssetsLoading
+            ? "Loading media..."
+            : "Select an existing file"}
+        </option>
+
+        {mediaAssets.map(asset => (
+          <option key={asset.path} value={asset.path}>
+            {asset.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  </>
+)}
+
+ {section === "tours" && (
+  <>
+    <label className="full">
+      Choose Tour Image
+      <select
+        value={
+          record.image
+            ? mediaAssets.find(a => a.reference === record.image)?.path || ""
+            : ""
+        }
+        disabled={mediaAssetsLoading}
+        onChange={e => {
+          const asset = mediaAssets.find(
+            item => item.path === e.target.value
+          );
+
+          setRecord(current => ({
+            ...current,
+            image: asset?.reference || ""
+          }));
+        }}
+      >
+        <option value="">
+          {mediaAssetsLoading
+            ? "Loading images..."
+            : "Select an existing image"}
+        </option>
+
+        {mediaAssets
+          .filter(asset => asset.type === "image")
+           .map(asset => (
+            <option key={asset.path} value={asset.path}>
+              {asset.name}
+            </option>
+          ))}
+      </select>
+    </label>
+
+    <label className="full">
+     Optional Hero Video
+      <select
+        value={
+          record.hero_video_url
+            ? mediaAssets.find(
+                a => a.reference === record.hero_video_url
+              )?.path || ""
+            : ""
+        }
+        disabled={mediaAssetsLoading}
+        onChange={e => {
+          const asset = mediaAssets.find(
+            item => item.path === e.target.value
+          );
+
+          setRecord(current => ({
+            ...current,
+            hero_video_url: asset?.reference || ""
+          }));
+        }}
+      >
+        <option value="">
+          {mediaAssetsLoading
+            ? "Loading videos..."
+            : "None — use tour image"}
+        </option>
+
+        {mediaAssets
+          .filter(asset => asset.type === "video")
+            .map(asset => (
+            <option key={asset.path} value={asset.path}>
+              {asset.name}
+            </option>
+          ))}
+      </select>
+    </label>
+  </>
+)}
+  {meta.fields.filter(field => section !== "tours" || !["image", "hero_video_url"].includes(field)).map(field => <label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required disabled={reservationIsFinanciallyProtected} value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["draft","published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
+?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}>
+  <option value="">Choose usage</option>
+  {["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
+    <option key={usage} value={usage}>{usage}</option>
+  )}
+</select>
+
+:field==="content_key" && section==="media"
+?<select
+  value={record[field]||""}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="">No relationship</option>
+
+  <optgroup label="Homepage">
+    <option value="homepage.hero">Homepage — Hero</option>
+  </optgroup>
+
+  <optgroup label="Tours">
+    {(tours||[]).map(t=>(
+      <option
+        key={t.id}
+        value={`tour.${t.slug || t.id}`}
+      >
+        Tour — {t.title}
+      </option>
+    ))}
+  </optgroup>
+</select>
+
+:["notes", "summary", "description"].includes(field)?
+<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} required={["title","tour","customer","name"].includes(field)} 
+    type={["paid_at","assigned_from","assigned_until"].includes(field)?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"}
+    value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
+  <div className="cc-panel">
+    <div className="cc-panel-head">
+      <div>
+        <span className="cc-eyebrow">
+          Payment summary
+        </span>
+        <h3>Reservation balance</h3>
+      </div>
+
+      <span>
+        {reservationPayments.length} payment
+        {reservationPayments.length === 1 ? "" : "s"}
+      </span>
+    </div>
+
+    <div className="cc-stat-grid">
+      <article>
+        <span>Booking total</span>
+        <strong>{money(reservationTotal)}</strong>
+      </article>
+
+      <article>
+        <span>Gross paid</span>
+        <strong>{money(reservationGrossPaid)}</strong>
+      </article>
+
+      <article>
+        <span>Refunded</span>
+        <strong>{money(reservationRefunded)}</strong>
+      </article>
+
+      <article>
+        <span>Net paid</span>
+        <strong>{money(reservationNetPaid)}</strong>
+      </article>
+
+      <article>
+        <span>Outstanding</span>
+        <strong>{money(reservationOutstanding)}</strong>
+      </article>
+    </div>
+
+    <div className="cc-activity">
+      {reservationPayments.length ? (
+        reservationPayments.map(payment => (
+          <div key={payment.id}>
+            <span className="cc-dot"></span>
+
+            <div>
+              <strong>
+                {payment.payment_type}
+              </strong>
+              <span>
+                {payment.payment_method || "Method not recorded"}
+                {payment.reference
+                  ? ` · ${payment.reference}`
+                  : ""}
+              </span>
+            </div>
+
+            <em
+              className={`cc-status ${String(
+                payment.status || ""
+              )
+                .toLowerCase()
+                .replaceAll(" ", "-")}`}
+            >
+              {payment.status}
+            </em>
+
+            <b>
+              {payment.payment_type === "Refund"
+                ? `−${money(payment.amount)}`
+                : money(payment.amount)}
+            </b>
+          </div>
+        ))
+      ) : (
+        <div>No payments recorded for this reservation.</div>
+      )}
+    </div>
+  </div>
+)}{section==="reservations" && initial.id && ["Enquiry","On Hold","Quoted"].includes(record.status) && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Recommended next action</span><h3>{record.status==="Enquiry"?"Respond to enquiry":record.status==="On Hold"?"Confirm or release hold":record.status==="Quoted"?"Follow up on quote":"Follow-up"}</h3></div></div><p>{record.status==="Enquiry"?"Contact the customer and prepare their proposal. Once the proposal has been sent, change the reservation status to Quoted.":record.status==="On Hold"?"Confirm the booking or release the hold so the reserved seats can return to availability.":record.status==="Quoted"?"Follow up with the customer. Once the deposit is received, change the reservation status to Deposit Paid.":"Review this reservation and update its status when the follow-up is complete."}</p></div>}{section==="customers" && initial.id && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Customer journey history</span><h3>Booking history</h3></div><span>{customerBookings.length} booking{customerBookings.length===1?"":"s"}</span></div>{customerPaymentHistory.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Financial history</span><h3>Payment history</h3></div><span>{customerPaymentHistory.length} payment{customerPaymentHistory.length===1?"":"s"}</span></div><div className="cc-activity">{customerPaymentHistory.map(item=><div key={item.payment.id}><span className="cc-dot"></span><div><strong>{item.reservation?.journey||"Journey not specified"} · {item.payment.payment_type}</strong><span>{item.payment.payment_method||"Payment method not specified"}{item.payment.reference?` · ${item.payment.reference}`:""}</span></div><em className={`cc-status ${String(item.payment.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.payment.status}</em><b>{money(item.payment.amount)}</b></div>)}</div></div>}<div className="cc-stat-grid"><article><span>Total bookings</span><strong>{customerBookings.length}</strong></article><article><span>Total travellers</span><strong>{customerTravellers}</strong></article><article><span>Lifetime value</span><strong>{money(customerValue)}</strong></article></div>{nextJourney && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Next journey</span><h3>{nextJourney.departure.title}</h3></div><span>{new Date(nextJourney.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})}</span></div><div className="cc-activity"><div><span className="cc-dot"></span><div><strong>{nextJourney.reservation.journey||nextJourney.departure.title}</strong><span>{nextJourney.reservation.travellers||0} traveller{Number(nextJourney.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(nextJourney.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{nextJourney.reservation.status}</em><b>{nextJourney.reservation.total?money(nextJourney.reservation.total):"€0"}</b></div></div></div>}{laterJourneys.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Upcoming travel</span><h3>Later journeys</h3></div><span>{laterJourneys.length} journey{laterJourneys.length===1?"":"s"}</span></div><div className="cc-activity">{laterJourneys.map(item=><div key={item.reservation.id}><span className="cc-dot"></span><div><strong>{item.departure.title}</strong><span>{new Date(item.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})} · {item.reservation.travellers||0} traveller{Number(item.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(item.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.reservation.status}</em><b>{item.reservation.total?money(item.reservation.total):"€0"}</b></div>)}</div></div>}<div className="cc-activity">{customerBookings.length?customerBookings.map(r=><div key={r.id}><span className="cc-dot"></span><div><strong>{r.journey||"Journey not specified"}</strong><span>{r.travellers||0} traveller{Number(r.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(r.status||"").toLowerCase().replaceAll(" ","-")}`}>{r.status}</em><b>{r.total?money(r.total):"€0"}</b></div>):<div>No bookings linked to this customer yet.</div>}</div>{pastJourneys.length > 0 && <div className="cc-panel"><div className="cc-panel-head"><div><span className="cc-eyebrow">Travel history</span><h3>Past journeys</h3></div><span>{pastJourneys.length} journey{pastJourneys.length===1?"":"s"}</span></div><div className="cc-activity">{pastJourneys.map(item=><div key={item.reservation.id}><span className="cc-dot"></span><div><strong>{item.departure.title}</strong><span>{new Date(item.departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})} · {item.reservation.travellers||0} traveller{Number(item.reservation.travellers)!==1?"s":""}</span></div><em className={`cc-status ${String(item.reservation.status||"").toLowerCase().replaceAll(" ","-")}`}>{item.reservation.status}</em><b>{item.reservation.total?money(item.reservation.total):"€0"}</b></div>)}</div></div>}</div>}
+{saveError && (
+  <div className="cc-error" role="alert">
+    {saveError}
+  </div>
+)}
+
+<div className="cc-modal-actions">
+  <button
+    type="button"
+    onClick={onClose}
+    disabled={saving}
+  >
+    Cancel
+  </button>
+
+  <button
+    className="cc-primary"
+    type="submit"
+    disabled={saving}
+  >
+    {saving ? "Saving..." : `Save ${meta.singular}`}
+  </button>
+</div>    
+  </form></div>;
 }
 
 function ComingSoon({ type }) {

@@ -7,13 +7,13 @@ const SCENE_MS = 17000;
 const FADE_MS = 700;
 const SIGNATURE_MS = 1200;
 
-const scenes = [
+const fallbackScenes = [
   {
     id: "wonder",
     type: "video",
     word: "WONDER",
     place: "Kalandula Falls · Malanje",
-    src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls.mp4",
+    src: "https://wbjkwafduitelgjhjfzd.supabase.co/storage/v1/object/public/journey-media/launch-v1/kalandula-falls-iphone-test.mp4",
     title: "Kalandula Falls, Angola",
     fit: "cover",
   },
@@ -36,6 +36,23 @@ const scenes = [
   fit: "cover",
 },
 ];
+function extractYouTubeId(reference = "") {
+  try {
+    const url = new URL(reference);
+
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (url.pathname.includes("/embed/")) {
+      return url.pathname.split("/embed/")[1]?.split("/")[0] || "";
+    }
+
+    return url.searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+}
 
 function youtubeBackgroundUrl(id, start = 0, end = 0) {
   const params = new URLSearchParams({
@@ -66,7 +83,8 @@ export default function HeroEngine() {
   const timerRef = useRef(null);
   const transitionRef = useRef(null);
   const signatureRef = useRef(null);
-
+  const [mediaScenes, setMediaScenes] = useState([]);
+  
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => setReduced(mq.matches);
@@ -74,7 +92,76 @@ export default function HeroEngine() {
     mq.addEventListener?.("change", sync);
     return () => mq.removeEventListener?.("change", sync);
   }, []);
+useEffect(() => {
+  const controller = new AbortController();
 
+  async function loadHomepageHeroMedia() {
+    try {
+      const response = await fetch("/api/public/media", {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return;
+
+    const data = await response.json();
+const items = Array.isArray(data?.media) ? data.media : [];
+
+const loadedScenes = items
+  .map((item) => {
+    if (!item?.reference) return null;
+
+    if (item.type === "Video") {
+      return {
+        id: `media-${item.id}`,
+        type: "video",
+        word: item.hero_word || "WONDER",
+        place: item.hero_place || item.name || "Angola",
+        src: item.reference,
+        title: item.name || "Angola",
+        fit: "cover",
+      };
+    }
+
+    if (item.type === "YouTube") {
+      const youtubeId = extractYouTubeId(item.reference);
+
+      if (!youtubeId) return null;
+
+      return {
+        id: `media-${item.id}`,
+        type: "youtube",
+        word: item.hero_word || "CULTURE",
+        place: item.hero_place || item.name || "Angola",
+        youtubeId,
+        start: 25,
+        title: item.name || "Angola",
+        fit: "contain",
+      };
+    }
+
+    return null;
+  })
+  .filter(Boolean);
+
+setMediaScenes(loadedScenes);  
+  
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Homepage hero media could not be loaded.", error);
+      }
+    }
+  }
+
+  loadHomepageHeroMedia();
+
+  return () => controller.abort();
+}, []);
+  
+ const scenes = mediaScenes.length > 0
+  ? mediaScenes
+  : fallbackScenes;
+  
   useEffect(() => {
     clearTimeout(timerRef.current);
     clearTimeout(signatureRef.current);
@@ -123,7 +210,7 @@ export default function HeroEngine() {
       <div className={`hero-media ${fading ? "is-fading" : ""}`} aria-hidden="true">
         <div className="hero-video-fallback" />
         {!reduced && scene.type === "video" && (
-          <video key={scene.src} className={`hero-local-video hero-fit-${scene.fit || "cover"}`} autoPlay muted loop playsInline preload="metadata">
+        <video key={scene.src} className={`hero-local-video hero-fit-${scene.fit || "cover"}`} autoPlay muted loop playsInline preload="auto">
             <source src={scene.src} type="video/mp4" />
           </video>
         )}
@@ -145,7 +232,7 @@ export default function HeroEngine() {
       <div className="hero-copy">
         <p className="chapter">{t("chapter")}</p>
         <p className="hero-word" key={scene.word}>{scene.word}</p>
-        <h1>{t("headline1")}<br />{t("headline2")}<br /><em>{t("headline3")}</em></h1>
+        <h1>{t("headline1")}<br />{t("headline2")}</h1>
         <p className="hero-lede">{t("heroLede")}</p>
         <div className="hero-actions">
           <a className="btn gold" href="#contact">{t("plan")}</a>
