@@ -1697,3 +1697,47 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .cc-session-menu button:hover {
   background: rgba(255, 255, 255, 0.09) !important;
 }
+
+/* Keep the Command Centre sidebar usable at every screen height */
+.cc-sidebar {
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cc-sidebar > .cc-brand {
+  flex: 0 0 auto;
+}
+
+.cc-sidebar > nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(190, 151, 75, 0.7) transparent;
+}
+
+.cc-sidebar > .cc-profile {
+  flex: 0 0 auto;
+}
+
+.cc-sidebar > nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cc-sidebar > nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cc-sidebar > nav::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(190, 151, 75, 0.65);
+}
+
+.cc-sidebar > nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(190, 151, 75, 0.9);
+}
