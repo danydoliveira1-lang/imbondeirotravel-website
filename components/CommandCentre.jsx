@@ -256,12 +256,67 @@ export default function CommandCentre() {
   }
 };
   const flash = message => { setNotice(message); setTimeout(() => setNotice(""), 2600); };
+  const endSession = async ({ restart = false } = {}) => {
+  try {
+    const response = await fetch("/api/admin/logout", {
+      method: "POST",
+    });
 
+    if (!response.ok) {
+      flash("The session could not be ended. Please try again.");
+      return;
+    }
+
+    setModal(null);
+    setQuery("");
+    setActive("dashboard");
+    setSignedIn(false);
+
+    if (restart) {
+      window.location.replace("/admin/");
+    }
+  } catch {
+    flash("The session could not be ended. Please try again.");
+  }
+};
+  
   return <div className="cc-shell">
     <aside className="cc-sidebar">
       <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
       <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{[].includes(key) && <small>Soon</small>}</button>)}</nav> 
-      <div className="cc-profile"><div className="cc-avatar">DN</div><div><strong>Daniela</strong><span>Administrator</span></div><button title="Sign out" onClick={async () => { await fetch("/api/admin/logout",{method:"POST"}); setSignedIn(false); }}>↪</button></div>
+      <div className="cc-profile"> <div className="cc-avatar">DN</div>
+
+       <div className="cc-profile-details">
+       <strong>Daniela</strong>
+       <span>Administrator</span>
+       </div>
+
+        <div className="cc-session-actions">
+        <button
+         type="button"
+         title="Sign out securely"
+        onClick={() => endSession()}
+        >
+        Sign out
+        </button>
+
+          <button
+          type="button"
+           title="End and restart this session"
+           onClick={() => {
+           if (
+            window.confirm(
+            "Restart your Command Centre session?\n\nYou will be signed out and returned to the secure login screen."
+             )
+              ) {
+          endSession({ restart: true });
+            }
+          }}
+        >
+      Restart
+    </button>
+  </div>
+</div>
     </aside>
 
     <main className="cc-main">
