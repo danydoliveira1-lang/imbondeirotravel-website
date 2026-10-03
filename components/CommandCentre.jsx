@@ -355,7 +355,14 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const submit = async e => { e.preventDefault(); if (!email || !password) return setError("Enter your email and password."); setError(""); const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}); const body=await r.json(); if(!r.ok) return setError(body.error||"Sign in failed."); await onLogin(); };
-  return <div className="cc-login"><div className="cc-login-art"><div className="cc-login-copy"><span>PROJECT IMBONDEIRO · PHASE 5.1</span><h1>The operational heart of every remarkable journey.</h1><p>Manage tours, departures, reservations, customers and media—without touching code.</p></div></div><form className="cc-login-card" onSubmit={submit}><div className="cc-login-logo">♧</div><span className="cc-eyebrow">Secure staff access</span><h2>Imbondeiro Command Centre</h2><p>Welcome back. Sign in to continue.</p><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your Command Centre password" /></label>{error && <div className="cc-error">{error}</div>}<button className="cc-primary" type="submit">Enter Command Centre <span>→</span></button><small>Phase 5.1B live mode. Credentials are protected by a secure server session.</small></form></div>;
+  return <div className="cc-login"><div className="cc-login-art"><div className="cc-login-copy"><span>PROJECT IMBONDEIRO · PHASE 5.1</span><h1>The operational heart of every remarkable journey.</h1><p>Manage tours, departures, reservations, customers and media—without touching code.</p></div></div><form className="cc-login-card" onSubmit={submit}>
+    <div className="cc-login-logo">
+  <img
+    src="/assets/imbondeiro-logo-seashell-gold.png"
+    alt="Imbondeiro Travel"
+  />
+</div>
+    <span className="cc-eyebrow">Secure staff access</span><h2>Imbondeiro Command Centre</h2><p>Welcome back. Sign in to continue.</p><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your Command Centre password" /></label>{error && <div className="cc-error">{error}</div>}<button className="cc-primary" type="submit">Enter Command Centre <span>→</span></button><small>Phase 5.1B live mode. Credentials are protected by a secure server session.</small></form></div>;
 }
 
 function Dashboard({ stats, data, open, navigate }) {
