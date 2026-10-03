@@ -1741,3 +1741,20 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .cc-sidebar > nav::-webkit-scrollbar-thumb:hover {
   background: rgba(190, 151, 75, 0.9);
 }
+/* Imbondeiro logo on the Command Centre sign-in page */
+.cc-login-logo {
+  width: 190px;
+  height: auto;
+  margin: 0 0 22px;
+  display: block;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.cc-login-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
