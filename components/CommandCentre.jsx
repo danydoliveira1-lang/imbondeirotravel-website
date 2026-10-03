@@ -2839,6 +2839,22 @@ dateTimeFields.forEach(field => {
  const submit = async e => {
   e.preventDefault();
   setSaveError("");
+
+  const isCancellingReservation =
+    section === "reservations" &&
+    Boolean(initial.id) &&
+    initial.status !== "Cancelled" &&
+    record.status === "Cancelled";
+
+  if (
+    isCancellingReservation &&
+    !window.confirm(
+      "Cancel this reservation?\n\nThe booking will be removed from active capacity, revenue and follow-up calculations. Its financial and audit history will be retained."
+    )
+  ) {
+    return;
+  }
+
   setSaving(true);
 
   try {
