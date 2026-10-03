@@ -156,7 +156,8 @@ export default function CommandCentre() {
   const [modal, setModal] = useState(null);
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
-
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  
   async function loadData() {
     const response = await fetch("/api/admin/data", { cache: "no-store" });
     if (!response.ok) throw new Error((await response.json()).error || "Unable to load live data.");
@@ -284,39 +285,52 @@ export default function CommandCentre() {
     <aside className="cc-sidebar">
       <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
       <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{[].includes(key) && <small>Soon</small>}</button>)}</nav> 
-      <div className="cc-profile"> <div className="cc-avatar">DN</div>
+    <div className={`cc-profile ${profileMenuOpen ? "open" : ""}`}>
+  <button
+    type="button"
+    className="cc-profile-toggle"
+    aria-expanded={profileMenuOpen}
+    aria-controls="cc-session-menu"
+    onClick={() => setProfileMenuOpen(open => !open)}
+  >
+    <span className="cc-avatar">DN</span>
 
-       <div className="cc-profile-details">
-       <strong>Daniela</strong>
-       <span>Administrator</span>
-       </div>
+    <span className="cc-profile-details">
+      <strong>Daniela</strong>
+      <span>Administrator</span>
+    </span>
 
-        <div className="cc-session-actions">
-        <button
-         type="button"
-         title="Sign out securely"
+    <span className="cc-profile-arrow" aria-hidden="true">
+      {profileMenuOpen ? "⌃" : "⌄"}
+    </span>
+  </button>
+
+  {profileMenuOpen && (
+    <div className="cc-session-menu" id="cc-session-menu">
+      <button
+        type="button"
         onClick={() => endSession()}
-        >
+      >
         Sign out
-        </button>
+      </button>
 
-          <button
-          type="button"
-           title="End and restart this session"
-           onClick={() => {
-           if (
+      <button
+        type="button"
+        onClick={() => {
+          if (
             window.confirm(
-            "Restart your Command Centre session?\n\nYou will be signed out and returned to the secure login screen."
-             )
-              ) {
-          endSession({ restart: true });
-            }
-          }}
-        >
-      Restart
-    </button>
-  </div>
-</div>
+              "Restart your Command Centre session?\n\nYou will be signed out and returned to the secure login screen."
+            )
+          ) {
+            endSession({ restart: true });
+          }
+        }}
+      >
+        Restart session
+      </button>
+    </div>
+  )}
+</div> 
     </aside>
 
     <main className="cc-main">
