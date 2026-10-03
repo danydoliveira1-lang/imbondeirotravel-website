@@ -156,7 +156,8 @@ export default function CommandCentre() {
   const [modal, setModal] = useState(null);
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
-
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  
   async function loadData() {
     const response = await fetch("/api/admin/data", { cache: "no-store" });
     if (!response.ok) throw new Error((await response.json()).error || "Unable to load live data.");
@@ -256,12 +257,80 @@ export default function CommandCentre() {
   }
 };
   const flash = message => { setNotice(message); setTimeout(() => setNotice(""), 2600); };
+  const endSession = async ({ restart = false } = {}) => {
+  try {
+    const response = await fetch("/api/admin/logout", {
+      method: "POST",
+    });
 
+    if (!response.ok) {
+      flash("The session could not be ended. Please try again.");
+      return;
+    }
+
+    setModal(null);
+    setQuery("");
+    setActive("dashboard");
+    setSignedIn(false);
+
+    if (restart) {
+      window.location.replace("/admin/");
+    }
+  } catch {
+    flash("The session could not be ended. Please try again.");
+  }
+};
+  
   return <div className="cc-shell">
     <aside className="cc-sidebar">
       <div className="cc-brand"><div className="cc-tree">♧</div><div><strong>IMBONDEIRO</strong><span>COMMAND CENTRE</span></div></div>
       <nav>{nav.map(([key, icon, label]) => <button key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><i>{icon}</i>{label}{[].includes(key) && <small>Soon</small>}</button>)}</nav> 
-      <div className="cc-profile"><div className="cc-avatar">DN</div><div><strong>Daniela</strong><span>Administrator</span></div><button title="Sign out" onClick={async () => { await fetch("/api/admin/logout",{method:"POST"}); setSignedIn(false); }}>↪</button></div>
+    <div className={`cc-profile ${profileMenuOpen ? "open" : ""}`}>
+  <button
+    type="button"
+    className="cc-profile-toggle"
+    aria-expanded={profileMenuOpen}
+    aria-controls="cc-session-menu"
+    onClick={() => setProfileMenuOpen(open => !open)}
+  >
+    <span className="cc-avatar">DN</span>
+
+    <span className="cc-profile-details">
+      <strong>Daniela</strong>
+      <span>Administrator</span>
+    </span>
+
+    <span className="cc-profile-arrow" aria-hidden="true">
+      {profileMenuOpen ? "⌃" : "⌄"}
+    </span>
+  </button>
+
+  {profileMenuOpen && (
+    <div className="cc-session-menu" id="cc-session-menu">
+      <button
+        type="button"
+        onClick={() => endSession()}
+      >
+        Sign out
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (
+            window.confirm(
+              "Restart your Command Centre session?\n\nYou will be signed out and returned to the secure login screen."
+            )
+          ) {
+            endSession({ restart: true });
+          }
+        }}
+      >
+        Restart session
+      </button>
+    </div>
+  )}
+</div> 
     </aside>
 
     <main className="cc-main">
@@ -286,7 +355,14 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const submit = async e => { e.preventDefault(); if (!email || !password) return setError("Enter your email and password."); setError(""); const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}); const body=await r.json(); if(!r.ok) return setError(body.error||"Sign in failed."); await onLogin(); };
-  return <div className="cc-login"><div className="cc-login-art"><div className="cc-login-copy"><span>PROJECT IMBONDEIRO · PHASE 5.1</span><h1>The operational heart of every remarkable journey.</h1><p>Manage tours, departures, reservations, customers and media—without touching code.</p></div></div><form className="cc-login-card" onSubmit={submit}><div className="cc-login-logo">♧</div><span className="cc-eyebrow">Secure staff access</span><h2>Imbondeiro Command Centre</h2><p>Welcome back. Sign in to continue.</p><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your Command Centre password" /></label>{error && <div className="cc-error">{error}</div>}<button className="cc-primary" type="submit">Enter Command Centre <span>→</span></button><small>Phase 5.1B live mode. Credentials are protected by a secure server session.</small></form></div>;
+  return <div className="cc-login"><div className="cc-login-art"><div className="cc-login-copy"><span>PROJECT IMBONDEIRO · PHASE 5.1</span><h1>The operational heart of every remarkable journey.</h1><p>Manage tours, departures, reservations, customers and media—without touching code.</p></div></div><form className="cc-login-card" onSubmit={submit}>
+    <div className="cc-login-logo">
+  <img
+    src="/assets/imbondeiro-logo-seashell-gold.png"
+    alt="Imbondeiro Travel"
+  />
+</div>
+    <span className="cc-eyebrow">Secure staff access</span><h2>Imbondeiro Command Centre</h2><p>Welcome back. Sign in to continue.</p><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your Command Centre password" /></label>{error && <div className="cc-error">{error}</div>}<button className="cc-primary" type="submit">Enter Command Centre <span>→</span></button><small>Phase 5.1B live mode. Credentials are protected by a secure server session.</small></form></div>;
 }
 
 function Dashboard({ stats, data, open, navigate }) {
