@@ -43,7 +43,7 @@ const seed = {
   audit_logs: [],
 };
 
- const nav = [
+const nav = [
   ["dashboard", "⌂", "Dashboard"],
   ["tours", "◉", "Tours"],
   ["departures", "□", "Departures"],
@@ -53,6 +53,7 @@ const seed = {
   ["payments", "€", "Payments"],
   ["operations", "↗", "Operations"],
   ["reports", "⌁", "Reports"],
+  ["automation", "⚡", "Automation Centre"],
   ["audit_log", "◷", "Audit Log"],
   ["settings", "⚙", "Settings"],
 ];
@@ -334,12 +335,21 @@ export default function CommandCentre() {
     </aside>
 
     <main className="cc-main">
-      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span><h1>{active === "dashboard" ? "Good afternoon, Daniela" : moduleMeta[active]?.title || titleCase(active)}</h1></div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title={`${notificationCount} reservation item${notificationCount === 1 ? "" : "s"} need attention`} onClick={() => setActive("reservations")}>♢<b>{notificationCount}</b></button></div></header>
+      <header className="cc-topbar"><div><span className="cc-eyebrow">Project Imbondeiro · Phase 5.1B</span>
+        <h1>
+  {active === "dashboard"
+    ? "Good afternoon, Daniela"
+    : active === "automation"
+      ? "Automation Centre"
+      : moduleMeta[active]?.title || titleCase(active)}
+       </h1>
+      </div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title={`${notificationCount} reservation item${notificationCount === 1 ? "" : "s"} need attention`} onClick={() => setActive("reservations")}>♢<b>{notificationCount}</b></button></div></header>
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
       {active === "operations" && ( <OperationsDesk data={data} reload={loadData} flash={flash} />)}
       {active === "reports" && ( <Reports data={data} />)}
+      {active === "automation" && ( <AutomationCentre data={data} reload={loadData} flash={flash} /> )}
       {active === "audit_log" && (  <AuditLog entries={data.audit_logs || []}  /> )}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} invoices={data.invoices} company={data.company_settings?.[0]} reload={loadData} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
       {active === "payments" && ( <InvoiceRegister invoices={data.invoices} reload={loadData} flash={flash}/>)}
@@ -349,7 +359,308 @@ export default function CommandCentre() {
             customers={data.customers} reservations={data.reservations} payments={data.payments} invoices={data.invoices} operationsResources={data.operations_resources} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
 }
+function AutomationCentre({ data, reload, flash }) {
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState("");
 
+  const rules = data.automation_rules || [];
+  const tasks = data.automation_tasks || [];
+  const runs = data.automation_runs || [];
+
+  const activeTasks = tasks
+    .filter(task =>
+      !["completed", "cancelled", "resolved"].includes(
+        String(task.status || "").toLowerCase()
+      )
+    )
+    .sort((a, b) => {
+      const priorityOrder = {
+        critical: 0,
+        high: 1,
+        medium: 2,
+        low: 3,
+      };
+
+      const priorityDifference =
+        (priorityOrder[String(a.priority || "").toLowerCase()] ?? 4) -
+        (priorityOrder[String(b.priority || "").toLowerCase()] ?? 4);
+
+      if (priorityDifference !== 0) return priorityDifference;
+
+      return new Date(a.due_at || 0) - new Date(b.due_at || 0);
+    });
+
+  const enabledRules = rules.filter(
+    rule => rule.enabled !== false && rule.is_active !== false
+  );
+
+  const formatDateTime = value => {
+    if (!value) return "Not scheduled";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "Date unavailable";
+
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const runAutomation = async () => {
+    setRunning(true);
+    setRunError("");
+
+    try {
+      const response = await fetch("/api/admin/automation/run", {
+        method: "POST",
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          body.error || "The automation engine could not be run."
+        );
+      }
+
+      await reload();
+
+      const result = body.result || {};
+
+      flash(
+        `Automation completed: ${result.tasksCreated || 0} created, ${
+          result.tasksUpdated || 0
+        } updated and ${result.tasksResolved || 0} resolved.`
+      );
+    } catch (error) {
+      setRunError(
+        error.message || "The automation engine could not be run."
+      );
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <div className="cc-dashboard">
+      <section className="cc-welcome">
+        <div>
+          <span>COMMAND CENTRE AUTOMATION</span>
+
+          <h2>
+            Intelligent follow-up.
+            <br />
+            Human decisions remain in control.
+          </h2>
+
+          <p>
+            Monitor reservation follow-ups, expiring holds and operational
+            attention without automatically contacting customers or changing
+            booking statuses.
+          </p>
+        </div>
+
+        <div className="cc-orbit">
+          <span>ACTIVE</span>
+          <strong>{activeTasks.length}</strong>
+          <small>open tasks</small>
+        </div>
+      </section>
+
+      <section className="cc-stat-grid">
+        <article>
+          <span>Enabled rules</span>
+          <strong>{enabledRules.length}</strong>
+          <small>Currently monitoring</small>
+        </article>
+
+        <article>
+          <span>Active tasks</span>
+          <strong>{activeTasks.length}</strong>
+          <small>Require team attention</small>
+        </article>
+
+        <article>
+          <span>Critical or high</span>
+          <strong>
+            {
+              activeTasks.filter(task =>
+                ["critical", "high"].includes(
+                  String(task.priority || "").toLowerCase()
+                )
+              ).length
+            }
+          </strong>
+          <small>Priority actions</small>
+        </article>
+
+        <article>
+          <span>Recorded runs</span>
+          <strong>{runs.length}</strong>
+          <small>Automation history</small>
+        </article>
+      </section>
+
+      <section className="cc-panel">
+        <div className="cc-panel-head">
+          <div>
+            <span className="cc-eyebrow">Manual control</span>
+            <h3>Automation Engine</h3>
+          </div>
+
+          <button
+            type="button"
+            className="cc-primary"
+            disabled={running}
+            onClick={runAutomation}
+          >
+            {running ? "Running…" : "Run Automation Now"}
+          </button>
+        </div>
+
+        <p>
+          Running the engine evaluates enabled rules and creates or updates
+          internal tasks. It does not send customer communications, cancel
+          reservations or change reservation statuses.
+        </p>
+
+        {runError && <div className="cc-error">{runError}</div>}
+      </section>
+
+      <section className="cc-panel">
+        <div className="cc-panel-head">
+          <div>
+            <span className="cc-eyebrow">Team action queue</span>
+            <h3>Open Automation Tasks</h3>
+          </div>
+
+          <span>
+            {activeTasks.length} task{activeTasks.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <div className="cc-activity">
+          {activeTasks.map(task => (
+            <div key={task.id}>
+              <span className="cc-dot"></span>
+
+              <div>
+                <strong>
+                  {task.title || task.task_type || "Automation task"}
+                </strong>
+
+                <span>
+                  {task.description || task.message || "Follow-up required"}
+                  {" · "}
+                  Due {formatDateTime(task.due_at)}
+                </span>
+              </div>
+
+              <em
+                className={`cc-status ${String(
+                  task.priority || "medium"
+                ).toLowerCase()}`}
+              >
+                {String(task.priority || "Medium").toUpperCase()}
+              </em>
+
+              <b>{task.status || "Open"}</b>
+            </div>
+          ))}
+
+          {activeTasks.length === 0 && (
+            <p>No open automation tasks. The action queue is clear.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="cc-grid-two">
+        <div className="cc-panel">
+          <div className="cc-panel-head">
+            <div>
+              <span className="cc-eyebrow">Monitoring logic</span>
+              <h3>Enabled Rules</h3>
+            </div>
+          </div>
+
+          <div className="cc-activity">
+            {enabledRules.map(rule => (
+              <div key={rule.id}>
+                <span className="cc-dot"></span>
+
+                <div>
+                  <strong>
+                    {rule.name || rule.title || titleCase(rule.rule_key || "")}
+                  </strong>
+
+                  <span>
+                    {rule.description || "Internal monitoring rule"}
+                    {rule.delay_hours !== undefined &&
+                      ` · ${rule.delay_hours}h threshold`}
+                  </span>
+                </div>
+
+                <em className="cc-status confirmed">ACTIVE</em>
+              </div>
+            ))}
+
+            {enabledRules.length === 0 && (
+              <p>No automation rules are currently enabled.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="cc-panel">
+          <div className="cc-panel-head">
+            <div>
+              <span className="cc-eyebrow">System history</span>
+              <h3>Recent Runs</h3>
+            </div>
+          </div>
+
+          <div className="cc-activity">
+            {runs.slice(0, 5).map(run => (
+              <div key={run.id}>
+                <span className="cc-dot"></span>
+
+                <div>
+                  <strong>
+                    {String(run.status || "Recorded").replace(
+                      /\b\w/g,
+                      character => character.toUpperCase()
+                    )}
+                  </strong>
+
+                  <span>
+                    {formatDateTime(
+                      run.completed_at || run.started_at || run.created_at
+                    )}
+                  </span>
+                </div>
+
+                <em
+                  className={`cc-status ${
+                    String(run.status || "").toLowerCase() === "completed"
+                      ? "confirmed"
+                      : "on-hold"
+                  }`}
+                >
+                  {run.status || "Recorded"}
+                </em>
+              </div>
+            ))}
+
+            {runs.length === 0 && <p>No automation runs recorded yet.</p>}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
 function Login({ onLogin }) {
   const [email, setEmail] = useState("daniela@imbondeirotravel.com");
   const [password, setPassword] = useState("");
