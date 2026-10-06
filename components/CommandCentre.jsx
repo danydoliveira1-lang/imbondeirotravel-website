@@ -222,8 +222,10 @@ export default function CommandCentre() {
 
   setModal(null);
   flash(
-    `${moduleMeta[section].singular} saved to the live website.`
-  );
+  section === "automation_tasks"
+    ? "Automation task updated."
+    : `${moduleMeta[section]?.singular || "Record"} saved to the live website.`
+);
 
   return payload.record;
 };
@@ -349,7 +351,49 @@ export default function CommandCentre() {
       {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
       {active === "operations" && ( <OperationsDesk data={data} reload={loadData} flash={flash} />)}
       {active === "reports" && ( <Reports data={data} />)}
-      {active === "automation" && ( <AutomationCentre data={data} reload={loadData} flash={flash} /> )}
+      {active === "automation" && ( <AutomationCentre data={data} reload={loadData} flash={flash} openReservation={task => {
+      const reservationId =
+        task.entity_id ||
+        task.reservation_id ||
+        task.record_id;
+
+      const reservation = (data.reservations || []).find(
+        item => item.id === reservationId
+      );
+
+      if (!reservation) {
+        flash("The related reservation could not be found.");
+        return;
+      }
+
+      setActive("reservations");
+      setModal({
+        section: "reservations",
+        record: {
+          ...reservation,
+          _source: "automation",
+        },
+      });
+    }}
+    resolveTask={async task => {
+      if (
+        !window.confirm(
+          "Mark this automation task as resolved?\n\nUse this only after the required follow-up has been completed."
+        )
+      ) {
+        return;
+      }
+
+      await saveRecord("automation_tasks", {
+        ...task,
+        status: "completed",
+        completed_at: new Date().toISOString(),
+      });
+
+      await loadData();
+    }}
+  />
+)}
       {active === "audit_log" && (  <AuditLog entries={data.audit_logs || []}  /> )}
       {moduleMeta[active] && <Manager section={active} meta={moduleMeta[active]} rows={data[active]} tours={data.tours} departures={data.departures} reservations={data.reservations} payments={data.payments} invoices={data.invoices} company={data.company_settings?.[0]} reload={loadData} query={query} onNew={() => setModal({ section: active, record: {} })} onEdit={record => setModal({ section: active, record })} onDelete={id => deleteRecord(active, id)} />}
       {active === "payments" && ( <InvoiceRegister invoices={data.invoices} reload={loadData} flash={flash}/>)}
@@ -359,7 +403,7 @@ export default function CommandCentre() {
             customers={data.customers} reservations={data.reservations} payments={data.payments} invoices={data.invoices} operationsResources={data.operations_resources} onClose={() => setModal(null)} onSave={saveRecord} />}
   </div>;
 }
-function AutomationCentre({ data, reload, flash }) {
+function AutomationCentre({ data, reload, flash, openReservation, resolveTask,}) {
   const [running, setRunning] = useState(false);
   const [runError, setRunError] = useState("");
 
@@ -568,7 +612,21 @@ function AutomationCentre({ data, reload, flash }) {
                 {String(task.priority || "Medium").toUpperCase()}
               </em>
 
-              <b>{task.status || "Open"}</b>
+             <div className="cc-automation-actions">
+       <button
+        type="button"
+      onClick={() => openReservation(task)}
+  >
+    Open reservation
+  </button>
+
+  <button
+    type="button"
+    onClick={() => resolveTask(task)}
+  >
+    Mark resolved
+  </button>
+</div>
             </div>
           ))}
 
