@@ -1746,6 +1746,57 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .cc-sidebar > nav::-webkit-scrollbar-thumb:hover {
   background: #be974b;
 }
+/* Compact Automation Centre task controls */
+.cc-automation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cc-automation-actions button {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  border: 1px solid rgba(17, 27, 24, 0.22) !important;
+  border-radius: 5px;
+  background: transparent !important;
+  color: #111b18;
+  font-size: 10px !important;
+  font-weight: 700;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cc-automation-actions button:hover {
+  border-color: #9a742c !important;
+  background: rgba(190, 151, 75, 0.1) !important;
+}
+
+.cc-automation-actions button:last-child {
+  border-color: #18382f !important;
+  background: #18382f !important;
+  color: #f5f0e7;
+}
+
+.cc-automation-actions button:last-child:hover {
+  background: #245044 !important;
+}
+
+@media (max-width: 900px) {
+  .cc-automation-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cc-automation-actions button {
+    width: 100% !important;
+  }
+}
 /* Imbondeiro logo on the Command Centre sign-in page */
 .cc-login-logo {
   width: 190px;
