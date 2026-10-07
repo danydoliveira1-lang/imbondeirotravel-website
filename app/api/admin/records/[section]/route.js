@@ -9,6 +9,7 @@ const editableSections = new Set([
   "customers",
   "media",
   "payments",
+  "explorer_destinations",
   "operations_resources",
   "departure_assignments",
 ]);

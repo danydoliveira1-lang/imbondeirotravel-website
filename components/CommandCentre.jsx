@@ -46,6 +46,7 @@ const seed = {
 const nav = [
   ["dashboard", "⌂", "Dashboard"],
   ["tours", "◉", "Tours"],
+  ["explorer_destinations", "◌", "Destination Explorer"],
   ["departures", "□", "Departures"],
   ["reservations", "◇", "Reservations"],
   ["customers", "◎", "Customers"],
@@ -76,6 +77,38 @@ const moduleMeta = {
     "sort_order"
   ]
 },
+    explorer_destinations: {
+    title: "Africa & Middle East Explorer",
+    singular: "Destination",
+    fields: [
+      "name",
+      "slug",
+      "country_code",
+      "explorer_region",
+      "subregion",
+      "capital",
+      "destination_type",
+      "parent_country_code",
+      "launch_status",
+      "supplier_status",
+      "summary",
+      "description",
+      "hero_image",
+      "hero_video_url",
+      "best_months",
+      "practical_information",
+      "entry_information_notice",
+      "currency",
+      "map_latitude",
+      "map_longitude",
+      "enquiry_enabled",
+      "published",
+      "featured",
+      "seo_title",
+      "seo_description",
+      "sort_order"
+    ]
+  },
   departures: { title: "Departure Manager", singular: "Departure", fields: ["tour_id", "title", "location", "start_date", "end_date", "maximum_guests", "reserved_guests", "held_guests", "status", "featured", "image", "duration", "travel_style", "guide"] },
   reservations: { title: "Reservation Manager", singular: "Reservation", fields: ["customer", "departure_id", "journey", "travellers", "status", "total", "consultant"] },
   customers: { title: "Customer CRM", singular: "Customer", fields: ["name", "email", "phone", "language", "preference", "notes"] },
@@ -2989,7 +3022,24 @@ const issueTaxInvoice = async reservation => {
   }
 };
   
-  return <section className="cc-manager"><div className="cc-manager-head"><div><p>{section === "tours" ? "Create and publish journeys without changing code." : section === "departures" ? "Control dates, capacity and live seat availability." : section === "reservations" ? "Move every booking through the complete reservation lifecycle." : section === "customers" ? "Build richer traveller profiles and personalised service." : section === "payments" ? "Track deposits, balances, payment status and transaction history." : "Manage videos, images, documents and brand assets."}</p></div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })(): field === "reservation_id" ? (() => { const reservation = reservations.find(r => r.id===row[field]); return reservation ? `${reservation.customer} — ${reservation.journey}` : "—"; })() : section === "media" && field === "reference" && row.type === "Image" ? <div style={{display:"flex",alignItems:"center",gap:"10px"}}><a href={row[field]} target="_blank" rel="noreferrer"><img src={row[field]} alt={row.name||"Media preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a><span>{row[field]||"—"}</span></div> : section === "media" && field === "reference" && row.type === "YouTube" ? (()=>{const videoId=getYouTubeId(row[field]);return <div style={{display:"flex",alignItems:"center",gap:"10px"}}>{videoId&&<a href={row[field]} target="_blank" rel="noreferrer"><img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={row.name||"YouTube preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a>}<span>{row[field]||"—"}</span></div>;})() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td>
+  return <section className="cc-manager"><div className="cc-manager-head">
+    <div>
+      <p>
+       {section === "tours"
+    ? "Create and publish journeys without changing code."
+    : section === "departures"
+      ? "Control dates, capacity and live seat availability."
+      : section === "reservations"
+        ? "Move every booking through the complete reservation lifecycle."
+        : section === "customers"
+          ? "Build richer traveller profiles and personalised service."
+          : section === "payments"
+            ? "Track deposits, balances, payment status and transaction history."
+            : section === "explorer_destinations"
+              ? "Manage destinations, supplier readiness, launch visibility and enquiry availability."
+              : "Manage videos, images, documents and brand assets."}
+</p>
+  </div><button className="cc-primary" onClick={onNew}>＋ Add {meta.singular}</button></div><div className="cc-table-wrap"><table className="cc-table"><thead><tr>{meta.fields.slice(0,6).map(f=><th key={f}>{titleCase(f)}</th>)}<th>Actions</th></tr></thead><tbody>{filtered.map(row=><tr key={row.id}>{meta.fields.slice(0,6).map(field=><td key={field}>{field === "tour_id" ? (tours.find(t=>t.id===row[field])?.title || "—") : field === "departure_id" ? (() => { const departure = departures.find(d => d.id === row[field]); return departure ? `${departure.title} — ${new Date(departure.start_date + "T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}` : "—"; })(): field === "reservation_id" ? (() => { const reservation = reservations.find(r => r.id===row[field]); return reservation ? `${reservation.customer} — ${reservation.journey}` : "—"; })() : section === "media" && field === "reference" && row.type === "Image" ? <div style={{display:"flex",alignItems:"center",gap:"10px"}}><a href={row[field]} target="_blank" rel="noreferrer"><img src={row[field]} alt={row.name||"Media preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a><span>{row[field]||"—"}</span></div> : section === "media" && field === "reference" && row.type === "YouTube" ? (()=>{const videoId=getYouTubeId(row[field]);return <div style={{display:"flex",alignItems:"center",gap:"10px"}}>{videoId&&<a href={row[field]} target="_blank" rel="noreferrer"><img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={row.name||"YouTube preview"} style={{width:"54px",height:"38px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e0e5e3",cursor:"pointer"}} onError={e=>{e.currentTarget.style.display="none";}}/></a>}<span>{row[field]||"—"}</span></div>;})() : field === "price" || field === "total" ? money(row[field]) : field === "status" ? <em className={`cc-status ${String(row[field]).toLowerCase().replaceAll(" ","-")}`}>{row[field]}</em> : field === "date" ? new Date(row[field]+"T12:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : String(row[field] ?? "—")}</td>)}<td>
   <div className="cc-row-actions">
   {section === "payments" &&
     String(row.status || "").toLowerCase() === "paid" && (
@@ -3279,8 +3329,11 @@ dateTimeFields.forEach(field => {
   "total",
   "amount",
  "capacity",
- "cost"
+ "cost",
+ "map_latitude",
+ "map_longitude",
 ];
+  
  const submit = async e => {
   e.preventDefault();
   setSaveError("");
@@ -3305,16 +3358,35 @@ dateTimeFields.forEach(field => {
   try {
     const { _source, ...payload } = record;
 
-    numeric.forEach(field => {
-      if (
-        payload[field] === "" ||
-        payload[field] === null
-      ) {
-        delete payload[field];
-      } else if (payload[field] !== undefined) {
-        payload[field] = Number(payload[field]);
-      }
-    });
+if (section === "explorer_destinations") {
+  payload.destination_type =
+    payload.destination_type || "country";
+
+  payload.launch_status =
+    payload.launch_status || "coming_soon";
+
+  payload.supplier_status =
+    payload.supplier_status || "not_started";
+
+  [
+    "enquiry_enabled",
+    "published",
+    "featured"
+  ].forEach(field => {
+    payload[field] = Boolean(payload[field]);
+  });
+}
+
+numeric.forEach(field => {
+  if (
+    payload[field] === "" ||
+    payload[field] === null
+  ) {
+    delete payload[field];
+  } else if (payload[field] !== undefined) {
+    payload[field] = Number(payload[field]);
+  }
+});
 
     if (section === "payments") {
       payload.paid_at = payload.paid_at
@@ -3533,10 +3605,74 @@ const reservationOutstanding = Math.max(
     </label>
   </>
 )}
-  {meta.fields.filter(field => section !== "tours" || !["image", "hero_video_url"].includes(field)).map(field => <label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required disabled={reservationIsFinanciallyProtected} value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["draft","published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Cancelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
+ {meta.fields
+  .filter(
+    field =>
+      section !== "tours" ||
+      !["image", "hero_video_url"].includes(field)
+  )
+  .map(field => <label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required disabled={reservationIsFinanciallyProtected} value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>
+  :field==="explorer_region" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||""}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="">Choose region</option>
+  <option value="Africa">Africa</option>
+  <option value="Middle East">Middle East</option>
+</select>
+
+:field==="destination_type" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||"country"}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="country">Country</option>
+  <option value="island">Island</option>
+  <option value="city">City</option>
+  <option value="region">Region</option>
+</select>
+
+:field==="launch_status" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||"coming_soon"}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="live">Live</option>
+  <option value="tailor_made">Tailor Made</option>
+  <option value="coming_soon">Coming Soon</option>
+  <option value="paused">Paused</option>
+</select>
+
+:field==="supplier_status" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||"not_started"}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="not_started">Not Started</option>
+  <option value="developing">Developing</option>
+  <option value="contracted">Contracted</option>
+  <option value="ready">Ready</option>
+</select>
+
+:section==="explorer_destinations" &&
+["enquiry_enabled","published","featured"].includes(field)?
+<input
+  type="checkbox"
+  checked={Boolean(record[field])}
+  onChange={e=>setRecord({
+    ...record,
+    [field]:e.target.checked
+  })}
+/>
+  :field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["draft","published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Cancelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
 ?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}>
-  <option value="">Choose usage</option>
-  {["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
+  <option value="">Choose usage</option>{
+  ["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
     <option key={usage} value={usage}>{usage}</option>
   )}
 </select>
@@ -3564,10 +3700,52 @@ const reservationOutstanding = Math.max(
   </optgroup>
 </select>
 
-:["notes", "summary", "description"].includes(field)?
-<textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} required={["title","tour","customer","name"].includes(field)} 
-    type={["paid_at","assigned_from","assigned_until"].includes(field)?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"}
-    value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
+:[
+  "notes",
+  "summary",
+  "description",
+  "practical_information",
+  "entry_information_notice",
+  "seo_description"
+].includes(field)?
+<textarea
+  value={record[field]||""}
+  onChange={e=>setRecord({
+    ...record,
+    [field]:e.target.value
+  })}
+  rows="4"
+/>
+:
+<input
+  disabled={
+    reservationIsFinanciallyProtected &&
+    protectedReservationFields.has(field)
+  }
+  required={
+    ["title","tour","customer","name"].includes(field)
+  }
+  type={
+    ["paid_at","assigned_from","assigned_until"].includes(field)
+      ? "datetime-local"
+      : ["date","start_date","end_date"].includes(field)
+        ? "date"
+        : numeric.includes(field)
+          ? "number"
+          : "text"
+  }
+  value={record[field]??""}
+  onChange={e=>setRecord({
+    ...record,
+    [field]:numeric.includes(field)
+      ? e.target.value === ""
+        ? ""
+        : Number(e.target.value)
+      : e.target.value
+  })}
+/>
+}</label>)}</div>
+    {section === "reservations" && initial.id && (
   <div className="cc-panel">
     <div className="cc-panel-head">
       <div>
