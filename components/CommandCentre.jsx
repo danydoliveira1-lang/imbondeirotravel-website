@@ -3569,7 +3569,65 @@ const reservationOutstanding = Math.max(
     </label>
   </>
 )}
-  meta.fields.filter(field => section !== "tours" || !["image", "hero_video_url"].includes(field)).map(field => <label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required disabled={reservationIsFinanciallyProtected} value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["draft","published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Cancelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
+  meta.fields.filter(field => section !== "tours" || !["image", "hero_video_url"].includes(field)).map(field => <label key={field} className={["notes","reference"].includes(field)?"full":""}>{titleCase(field)}{field==="customer" && section==="reservations"?<select required disabled={reservationIsFinanciallyProtected} value={record[field]||""} onChange={e=>{const customer=(customers||[]).find(c=>c.name===e.target.value);setRecord({...record,customer:e.target.value,customer_id:customer?.id||""});}}><option value="">Choose customer</option>{(customers||[]).map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select>:field==="tour_id"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose tour</option>{(tours||[]).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select>:field==="reservation_id" && section==="payments"?<select required value={record[field]||""} onChange={e=>{const reservation=(reservations||[]).find(r=>r.id===e.target.value);setRecord({...record,reservation_id:e.target.value,customer_id:reservation?.customer_id||""});}}><option value="">Choose reservation</option>{(reservations||[]).map(r=><option key={r.id} value={r.id}>{r.customer} — {r.journey} — {r.status}</option>)}</select>:field==="departure_id"?<select required disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose departure</option>{(departures||[]).map(d=><option key={d.id} value={d.id}>{d.title} — {d.start_date}</option>)}</select>:field==="payment_type" && section==="payments"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose payment type</option>{["Deposit","Balance","Full Payment","Refund"].map(type=><option key={type} value={type}>{type}</option>)}</select>
+  :field==="explorer_region" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||""}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="">Choose region</option>
+  <option value="Africa">Africa</option>
+  <option value="Middle East">Middle East</option>
+</select>
+
+:field==="destination_type" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||"country"}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="country">Country</option>
+  <option value="island">Island</option>
+  <option value="city">City</option>
+  <option value="region">Region</option>
+</select>
+
+:field==="launch_status" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||"coming_soon"}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="live">Live</option>
+  <option value="tailor_made">Tailor Made</option>
+  <option value="coming_soon">Coming Soon</option>
+  <option value="paused">Paused</option>
+</select>
+
+:field==="supplier_status" && section==="explorer_destinations"?
+<select
+  required
+  value={record[field]||"not_started"}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+>
+  <option value="not_started">Not Started</option>
+  <option value="developing">Developing</option>
+  <option value="contracted">Contracted</option>
+  <option value="ready">Ready</option>
+</select>
+
+:section==="explorer_destinations" &&
+["enquiry_enabled","published","featured"].includes(field)?
+<input
+  type="checkbox"
+  checked={Boolean(record[field])}
+  onChange={e=>setRecord({
+    ...record,
+    [field]:e.target.checked
+  })}
+/>
+  :field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["draft","published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Cancelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
 ?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}>
   <option value="">Choose usage</option>{
   {["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
@@ -3600,7 +3658,7 @@ const reservationOutstanding = Math.max(
   </optgroup>
 </select>
 
-:["notes", "summary", "description"].includes(field)?
+::[ "notes", "summary","description", "practical_information", "entry_information_notice", "seo_description" ].includes(field)?
 <textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} required={["title","tour","customer","name"].includes(field)} 
     type={["paid_at","assigned_from","assigned_until"].includes(field)?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"}
     value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
