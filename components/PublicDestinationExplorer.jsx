@@ -182,91 +182,93 @@ export default function PublicDestinationExplorer() {
           <p className={styles.message}>{error}</p>
         )}
 
-        {!loading &&
-          !error &&
-          visibleDestinations.map(destination => (
-            <article
-              className={styles.card}
-              key={destination.id}
-            >
-              {destination.hero_image ? (
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url("${destination.hero_image}")`,
-                  }}
-                >
-                  <span className={styles.badge}>
-                    {statusLabel(destination.launch_status)}
-                  </span>
-                </div>
-              ) : (
-                <div className={styles.fallback}>
-                  <span aria-hidden="true">
-                    {destination.name?.charAt(0) || "I"}
-                  </span>
+       {!loading &&
+  !error &&
+  visibleDestinations.map(destination => {
+    const destinationUrl = `/explorer/${encodeURIComponent(
+      destination.slug
+    )}`;
 
-                  <span className={styles.badge}>
-                    {statusLabel(destination.launch_status)}
-                  </span>
-                </div>
-              )}
-
-              <div className={styles.content}>
-                <span className={styles.location}>
-                  {destination.subregion ||
-                    destination.explorer_region}
-                  {destination.capital
-                    ? ` · ${destination.capital}`
-                    : ""}
-                </span>
-
-                <h3>{destination.name}</h3>
-
-                <p>
-                  {destination.summary ||
-                    `Discover ${destination.name} through a journey shaped around your interests, pace and travel style.`}
-                </p>
-
-                <div className={styles.action}>
-                  {destination.enquiry_enabled ? (
-                    <a
-                      href={`/?destination=${encodeURIComponent(
-                        destination.slug
-                      )}#contact`}
-                    >
-                      Start planning <span>→</span>
-                    </a>
-                  ) : (
-                    <span className={styles.unavailable}>
-                      Journey details coming soon
-                    </span>
-                  )}
-                </div>
-              </div>
-            </article>
-          ))}
-
-        {!loading &&
-          !error &&
-          filteredDestinations.length === 0 && (
-            <p className={styles.message}>
-              No destinations match your search.
-            </p>
-          )}
-      </div>
-
-      {visibleCount < filteredDestinations.length && (
-        <button
-          type="button"
-          className={styles.loadMore}
-          onClick={() =>
-            setVisibleCount(count => count + PAGE_SIZE)
-          }
+    return (
+      <article
+        className={styles.card}
+        key={destination.id}
+      >
+        <a
+          className={styles.cardMediaLink}
+          href={destinationUrl}
+          aria-label={`Discover ${destination.name}`}
         >
-          Load more destinations
-        </button>
-      )}
-    </section>
-  );
-}
+          {destination.hero_image ? (
+            <div
+              className={styles.image}
+              style={{
+                backgroundImage: `url("${destination.hero_image}")`,
+              }}
+            >
+              <span className={styles.badge}>
+                {statusLabel(destination.launch_status)}
+              </span>
+            </div>
+          ) : (
+            <div className={styles.fallback}>
+              <span aria-hidden="true">
+                {destination.name?.charAt(0) || "I"}
+              </span>
+
+              <span className={styles.badge}>
+                {statusLabel(destination.launch_status)}
+              </span>
+            </div>
+          )}
+        </a>
+
+        <div className={styles.content}>
+          <span className={styles.location}>
+            {destination.subregion ||
+              destination.explorer_region}
+            {destination.capital
+              ? ` · ${destination.capital}`
+              : ""}
+          </span>
+
+          <h3>
+            <a
+              className={styles.titleLink}
+              href={destinationUrl}
+            >
+              {destination.name}
+            </a>
+          </h3>
+
+          <p>
+            {destination.summary ||
+              `Discover ${destination.name} through a journey shaped around your interests, pace and travel style.`}
+          </p>
+
+          <div className={styles.action}>
+            <a
+              className={styles.discoverLink}
+              href={destinationUrl}
+            >
+              Discover destination <span>→</span>
+            </a>
+
+            {destination.enquiry_enabled ? (
+              <a
+                href={`/?destination=${encodeURIComponent(
+                  destination.slug
+                )}#contact`}
+              >
+                Start planning <span>→</span>
+              </a>
+            ) : (
+              <span className={styles.unavailable}>
+                Journey details coming soon
+              </span>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  })}
