@@ -265,3 +265,44 @@
     flex: 1;
   }
 }
+.cardMediaLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.titleLink:hover {
+  color: #96722f;
+}
+
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 22px;
+}
+
+.discoverLink {
+  color: #1b3028 !important;
+  font-weight: 600;
+}
+
+.discoverLink:hover {
+  color: #96722f !important;
+}
+
+.cardMediaLink .image,
+.cardMediaLink .fallback {
+  transition: transform 300ms ease;
+}
+
+.cardMediaLink:hover .image,
+.cardMediaLink:hover .fallback {
+  transform: scale(1.015);
+}
