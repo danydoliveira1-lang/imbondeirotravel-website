@@ -1,0 +1,415 @@
+.section {
+  padding: clamp(72px, 10vw, 132px) clamp(20px, 5vw, 76px);
+  overflow: hidden;
+  background: #13231e;
+  color: #f5efe5;
+}
+
+.inner {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  align-items: end;
+  gap: clamp(36px, 7vw, 100px);
+  margin-bottom: clamp(44px, 7vw, 84px);
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  color: #cfaa61;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.header h2 {
+  max-width: 850px;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3rem, 6.6vw, 7.2rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+}
+
+.headerText {
+  margin: 0;
+  color: rgba(245, 239, 229, 0.7);
+  font-size: 0.96rem;
+  line-height: 1.8;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.control {
+  min-height: 42px;
+  padding: 10px 17px;
+  border: 1px solid rgba(245, 239, 229, 0.24);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(245, 239, 229, 0.72);
+  font: inherit;
+  font-size: 0.69rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.control:hover {
+  border-color: rgba(207, 170, 97, 0.85);
+  color: #f5efe5;
+}
+
+.controlActive {
+  border-color: #cda85e;
+  background: #cda85e;
+  color: #13231e;
+}
+
+.mapFrame {
+  position: relative;
+  width: 100%;
+  min-height: 670px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 239, 229, 0.13);
+  border-radius: 2px;
+  background:
+    radial-gradient(
+      circle at 62% 32%,
+      rgba(196, 157, 78, 0.14),
+      transparent 31%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.012)
+    );
+}
+
+.mapFrame::before,
+.mapFrame::after {
+  position: absolute;
+  z-index: 0;
+  color: rgba(245, 239, 229, 0.05);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(5rem, 13vw, 12rem);
+  letter-spacing: -0.06em;
+  pointer-events: none;
+}
+
+.mapFrame::before {
+  content: "AFRICA";
+  left: 5%;
+  bottom: 2%;
+}
+
+.mapFrame::after {
+  content: "MIDDLE EAST";
+  top: 3%;
+  right: 4%;
+  font-size: clamp(3rem, 8vw, 7.5rem);
+}
+
+.mapGraphic {
+  position: absolute;
+  inset: 4% 5%;
+  z-index: 1;
+  width: 90%;
+  height: 92%;
+}
+
+.land {
+  fill: rgba(245, 239, 229, 0.055);
+  stroke: rgba(207, 170, 97, 0.52);
+  stroke-width: 1.3;
+  vector-effect: non-scaling-stroke;
+}
+
+.landDetail {
+  fill: none;
+  stroke: rgba(245, 239, 229, 0.08);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.marker {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+}
+
+.markerButton {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.markerButton::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.18;
+  animation: mapPulse 2.8s ease-out infinite;
+}
+
+.markerDot {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #13231e;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 1px currentColor;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.markerButton:hover .markerDot,
+.markerButton:focus-visible .markerDot {
+  transform: scale(1.5);
+  box-shadow:
+    0 0 0 1px currentColor,
+    0 0 18px currentColor;
+}
+
+.bookable {
+  color: #e2bd6e;
+}
+
+.tailorMade {
+  color: #80a591;
+}
+
+.comingSoon {
+  color: #9daaa4;
+}
+
+.featured .markerDot {
+  width: 13px;
+  height: 13px;
+  box-shadow:
+    0 0 0 2px #13231e,
+    0 0 0 3px #e2bd6e,
+    0 0 22px rgba(226, 189, 110, 0.8);
+}
+
+.tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 14px);
+  z-index: 8;
+  width: max-content;
+  max-width: 220px;
+  padding: 12px 14px;
+  border: 1px solid rgba(207, 170, 97, 0.45);
+  background: #f4efe5;
+  color: #17251f;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 7px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.marker:hover .tooltip,
+.marker:focus-within .tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.tooltip strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.02rem;
+  font-weight: 400;
+}
+
+.tooltip span {
+  display: block;
+  margin-top: 4px;
+  color: #69756f;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 28px;
+  margin-top: 22px;
+  color: rgba(245, 239, 229, 0.65);
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.legendHome {
+  margin-left: auto;
+  color: #d9b568;
+}
+
+.mobileDestinations {
+  display: none;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 30px;
+  color: rgba(245, 239, 229, 0.66);
+  text-align: center;
+}
+
+@keyframes mapPulse {
+  0% {
+    opacity: 0.28;
+    transform: scale(0.65);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@media (max-width: 920px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .headerText {
+    max-width: 680px;
+  }
+
+  .mapFrame {
+    min-height: 590px;
+  }
+
+  .legendHome {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .section {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .mapFrame {
+    min-height: 470px;
+  }
+
+  .mapFrame::before {
+    font-size: 4rem;
+  }
+
+  .mapFrame::after {
+    font-size: 2.8rem;
+  }
+
+  .markerButton {
+    width: 22px;
+    height: 22px;
+  }
+
+  .markerDot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .tooltip {
+    display: none;
+  }
+
+  .mobileDestinations {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 28px;
+    background: rgba(245, 239, 229, 0.12);
+    border: 1px solid rgba(245, 239, 229, 0.12);
+  }
+
+  .mobileDestination {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 82px;
+    padding: 16px;
+    background: #13231e;
+    color: #f5efe5;
+    text-decoration: none;
+  }
+
+  .mobileDestination strong {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .mobileDestination span {
+    color: rgba(245, 239, 229, 0.53);
+    font-size: 0.62rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 420px) {
+  .mapFrame {
+    min-height: 420px;
+  }
+
+  .mobileDestinations {
+    grid-template-columns: 1fr;
+  }
+}
