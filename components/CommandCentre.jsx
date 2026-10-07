@@ -3359,6 +3359,15 @@ dateTimeFields.forEach(field => {
     const { _source, ...payload } = record;
 
 if (section === "explorer_destinations") {
+  payload.destination_type =
+    payload.destination_type || "country";
+
+  payload.launch_status =
+    payload.launch_status || "coming_soon";
+
+  payload.supplier_status =
+    payload.supplier_status || "not_started";
+
   [
     "enquiry_enabled",
     "published",
