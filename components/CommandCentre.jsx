@@ -3312,7 +3312,7 @@ dateTimeFields.forEach(field => {
   "total",
   "amount",
  "capacity",
- "cost"
+ "cost",
  "map_latitude",
  "map_longitude",
 ];
@@ -3630,7 +3630,7 @@ const reservationOutstanding = Math.max(
   :field==="status"?<select required value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose status</option>{(section==="tours"?["draft","published"]:section==="departures"?["scheduled","sold_out","cancelled","completed"]:section==="reservations"?["Enquiry","On Hold","Quoted","Deposit Paid","Confirmed","Travelled","Cancelled"]:section==="payments"?["Pending","Paid","Refunded","Cancelled"]:section==="media"?["Active","Inactive"]:[]).map(s=><option key={s} value={s}>{s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select>:field==="type" && section==="media"?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}><option value="">Choose media type</option>{["Image","Video","YouTube","Document","Brand Asset"].map(type=><option key={type} value={type}>{type}</option>)}</select>:field==="usage" && section==="media"
 ?<select required value={record[field]||""} onChange={e=>setRecord({...record,[field]:e.target.value})}>
   <option value="">Choose usage</option>{
-  {["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
+  ["Hero","Tour","Destination","Gallery","Website","Brochure","Brand","Other"].map(usage=>
     <option key={usage} value={usage}>{usage}</option>
   )}
 </select>
@@ -3658,7 +3658,20 @@ const reservationOutstanding = Math.max(
   </optgroup>
 </select>
 
-::[ "notes", "summary","description", "practical_information", "entry_information_notice", "seo_description" ].includes(field)?
+:[
+  "notes",
+  "summary",
+  "description",
+  "practical_information",
+  "entry_information_notice",
+  "seo_description"
+].includes(field)?
+<textarea
+  value={record[field]||""}
+  onChange={e=>setRecord({...record,[field]:e.target.value})}
+  rows="4"
+/>
+:<input
 <textarea value={record[field]} onChange={e=>setRecord({...record,[field]:e.target.value})} rows="4"/>:<input disabled={reservationIsFinanciallyProtected && protectedReservationFields.has(field)} required={["title","tour","customer","name"].includes(field)} 
     type={["paid_at","assigned_from","assigned_until"].includes(field)?"datetime-local":["date","start_date","end_date"].includes(field)?"date":numeric.includes(field)?"number":"text"}
     value={record[field]} onChange={e=>setRecord({...record,[field]:numeric.includes(field)?Number(e.target.value):e.target.value})}/>}</label>)}</div>{section === "reservations" && initial.id && (
