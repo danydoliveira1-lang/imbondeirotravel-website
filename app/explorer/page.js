@@ -1,4 +1,9 @@
 import PublicDestinationExplorer from "../../components/PublicDestinationExplorer";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import { JourneyProvider } from "../../components/JourneyContext";
+import { LanguageProvider } from "../../components/LanguageContext";
+import { CurrencyProvider } from "../../components/CurrencyContext";
 
 export const metadata = {
   title: "Africa & Middle East Explorer | Imbondeiro Travel",
@@ -8,8 +13,20 @@ export const metadata = {
 
 export default function ExplorerPage() {
   return (
-    <main>
-      <PublicDestinationExplorer />
-    </main>
+    <LanguageProvider>
+      <CurrencyProvider>
+        <JourneyProvider>
+          <>
+            <Header />
+
+            <main id="main-content">
+              <PublicDestinationExplorer />
+            </main>
+
+            <Footer />
+          </>
+        </JourneyProvider>
+      </CurrencyProvider>
+    </LanguageProvider>
   );
 }
