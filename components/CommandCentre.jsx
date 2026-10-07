@@ -3358,16 +3358,26 @@ dateTimeFields.forEach(field => {
   try {
     const { _source, ...payload } = record;
 
-    numeric.forEach(field => {
-      if (
-        payload[field] === "" ||
-        payload[field] === null
-      ) {
-        delete payload[field];
-      } else if (payload[field] !== undefined) {
-        payload[field] = Number(payload[field]);
-      }
-    });
+if (section === "explorer_destinations") {
+  [
+    "enquiry_enabled",
+    "published",
+    "featured"
+  ].forEach(field => {
+    payload[field] = Boolean(payload[field]);
+  });
+}
+
+numeric.forEach(field => {
+  if (
+    payload[field] === "" ||
+    payload[field] === null
+  ) {
+    delete payload[field];
+  } else if (payload[field] !== undefined) {
+    payload[field] = Number(payload[field]);
+  }
+});
 
     if (section === "payments") {
       payload.paid_at = payload.paid_at
