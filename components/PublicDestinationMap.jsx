@@ -92,6 +92,115 @@ const MAP_BOUNDS = {
   minimumLatitude: -36,
   maximumLatitude: 43,
 };
+const SVG_WIDTH = 1000;
+const SVG_HEIGHT = 650;
+
+const AFRICA_OUTLINE = [
+  [28.5, -17.5],
+  [32.5, -13.0],
+  [35.8, -9.5],
+  [35.9, -5.5],
+  [35.0, -1.5],
+  [37.0, 3.0],
+  [37.0, 9.5],
+  [33.0, 11.5],
+  [32.0, 15.0],
+  [31.5, 25.0],
+  [31.2, 32.5],
+  [29.5, 34.8],
+  [23.0, 35.5],
+  [18.0, 37.5],
+  [15.0, 40.0],
+  [12.5, 42.5],
+  [11.5, 51.2],
+  [8.0, 49.0],
+  [4.0, 44.0],
+  [0.0, 42.0],
+  [-4.0, 41.0],
+  [-10.0, 40.0],
+  [-15.0, 36.0],
+  [-20.0, 35.0],
+  [-26.0, 32.0],
+  [-33.0, 28.0],
+  [-35.0, 22.0],
+  [-34.8, 18.0],
+  [-28.0, 15.0],
+  [-21.0, 12.0],
+  [-15.0, 12.0],
+  [-10.0, 13.0],
+  [-5.0, 12.0],
+  [-1.0, 9.0],
+  [1.5, 8.0],
+  [4.0, 9.0],
+  [5.0, 5.0],
+  [5.0, 1.0],
+  [5.0, -5.0],
+  [7.0, -10.0],
+  [10.0, -14.0],
+  [14.0, -16.0],
+  [20.0, -17.0],
+  [28.5, -17.5],
+];
+
+const MIDDLE_EAST_OUTLINE = [
+  [42.0, 26.0],
+  [42.0, 36.0],
+  [41.0, 45.0],
+  [39.0, 51.0],
+  [38.0, 58.0],
+  [35.0, 63.0],
+  [29.0, 61.0],
+  [25.0, 58.0],
+  [22.0, 56.0],
+  [17.0, 55.0],
+  [13.0, 52.0],
+  [12.0, 46.0],
+  [16.0, 43.0],
+  [20.0, 39.0],
+  [27.0, 35.0],
+  [31.0, 30.0],
+  [35.0, 27.0],
+  [42.0, 26.0],
+];
+
+const MADAGASCAR_OUTLINE = [
+  [-11.8, 49.2],
+  [-14.5, 50.1],
+  [-19.0, 49.3],
+  [-23.8, 47.3],
+  [-25.5, 45.3],
+  [-22.0, 43.5],
+  [-17.5, 44.0],
+  [-13.5, 46.0],
+  [-11.8, 49.2],
+];
+
+function projectOutline(outline) {
+  const longitudeRange =
+    MAP_BOUNDS.maximumLongitude -
+    MAP_BOUNDS.minimumLongitude;
+
+  const latitudeRange =
+    MAP_BOUNDS.maximumLatitude -
+    MAP_BOUNDS.minimumLatitude;
+
+  return outline
+    .map(([latitude, longitude]) => {
+      const horizontal =
+        (longitude - MAP_BOUNDS.minimumLongitude) /
+        longitudeRange;
+
+      const vertical =
+        (MAP_BOUNDS.maximumLatitude - latitude) /
+        latitudeRange;
+
+      const x = horizontal * SVG_WIDTH;
+      const y = vertical * SVG_HEIGHT;
+
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
 
 function destinationStatus(status) {
   const value = String(status || "").toLowerCase();
@@ -299,46 +408,48 @@ export default function PublicDestinationMap() {
         </div>
 
         <div className={styles.mapFrame}>
+        
           <svg
-            className={styles.mapGraphic}
-            viewBox="0 0 1000 650"
-            role="img"
-            aria-label="Editorial map of Africa and the Middle East"
-          >
-            <path
-              className={styles.land}
-              d="M178 79 L242 46 L323 44 L389 65 L437 103
-                 L454 146 L490 174 L473 214 L443 239
-                 L432 289 L405 321 L390 374 L359 431
-                 L328 493 L291 574 L257 604 L233 557
-                 L212 502 L180 459 L151 408 L132 352
-                 L105 304 L80 244 L94 194 L126 159
-                 L139 111 Z"
-            />
+  className={styles.mapGraphic}
+  viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+  role="img"
+  aria-label="Geographic map of Africa and the Middle East"
+>
+  <polygon
+    className={styles.land}
+    points={projectOutline(AFRICA_OUTLINE)}
+  />
 
-            <path
-              className={styles.land}
-              d="M453 121 L505 93 L563 78 L627 83 L678 106
-                 L729 101 L777 124 L828 121 L889 146
-                 L922 184 L895 211 L836 220 L798 246
-                 L741 238 L699 260 L649 242 L606 219
-                 L564 207 L520 181 L476 168 Z"
-            />
+  <polygon
+    className={styles.land}
+    points={projectOutline(MIDDLE_EAST_OUTLINE)}
+  />
 
-            <path
-              className={styles.land}
-              d="M499 315 L525 342 L536 392 L522 451
-                 L493 501 L470 471 L475 414 L462 365 Z"
-            />
+  <polygon
+    className={styles.land}
+    points={projectOutline(MADAGASCAR_OUTLINE)}
+  />
 
-            <path
-              className={styles.landDetail}
-              d="M106 190 C191 222 294 220 438 168
-                 M132 352 C227 337 324 339 432 289
-                 M257 604 C301 512 351 420 390 374
-                 M520 181 C625 163 730 171 895 211"
-            />
-          </svg>
+  <polyline
+    className={styles.landDetail}
+    points={projectOutline([
+      [0, -16],
+      [0, 9],
+      [0, 23],
+      [0, 42],
+    ])}
+  />
+
+  <polyline
+    className={styles.landDetail}
+    points={projectOutline([
+      [23.5, -17],
+      [23.5, 10],
+      [23.5, 35],
+      [23.5, 58],
+    ])}
+  />
+</svg>
 
           {loading && (
             <div className={styles.empty}>
