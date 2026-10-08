@@ -103,26 +103,8 @@
 
 .mapFrame::before,
 .mapFrame::after {
-  position: absolute;
-  z-index: 0;
-  color: rgba(245, 239, 229, 0.05);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(5rem, 13vw, 12rem);
-  letter-spacing: -0.06em;
-  pointer-events: none;
-}
-
-.mapFrame::before {
-  content: "AFRICA";
-  left: 5%;
-  bottom: 2%;
-}
-
-.mapFrame::after {
-  content: "MIDDLE EAST";
-  top: 3%;
-  right: 4%;
-  font-size: clamp(3rem, 8vw, 7.5rem);
+  display: none;
+  content: none;
 }
 
 .mapGraphic {
@@ -346,14 +328,6 @@
 
   .mapFrame {
     min-height: 470px;
-  }
-
-  .mapFrame::before {
-    font-size: 4rem;
-  }
-
-  .mapFrame::after {
-    font-size: 2.8rem;
   }
 
   .markerButton {
