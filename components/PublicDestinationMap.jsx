@@ -409,47 +409,57 @@ export default function PublicDestinationMap() {
 
         <div className={styles.mapFrame}>
         
-          <svg
+       <svg
   className={styles.mapGraphic}
   viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
   role="img"
   aria-label="Geographic map of Africa and the Middle East"
 >
-  <polygon
-    className={styles.land}
-    points={projectOutline(AFRICA_OUTLINE)}
-  />
+  {region !== "Middle East" && (
+    <>
+      <polygon
+        className={styles.land}
+        points={projectOutline(AFRICA_OUTLINE)}
+      />
 
-  <polygon
-    className={styles.land}
-    points={projectOutline(MIDDLE_EAST_OUTLINE)}
-  />
+      <polygon
+        className={styles.land}
+        points={projectOutline(MADAGASCAR_OUTLINE)}
+      />
+    </>
+  )}
 
-  <polygon
-    className={styles.land}
-    points={projectOutline(MADAGASCAR_OUTLINE)}
-  />
+  {region !== "Africa" && (
+    <polygon
+      className={styles.land}
+      points={projectOutline(MIDDLE_EAST_OUTLINE)}
+    />
+  )}
 
-  <polyline
-    className={styles.landDetail}
-    points={projectOutline([
-      [0, -16],
-      [0, 9],
-      [0, 23],
-      [0, 42],
-    ])}
-  />
+  {region === "All" && (
+    <>
+      <polyline
+        className={styles.landDetail}
+        points={projectOutline([
+          [0, -16],
+          [0, 9],
+          [0, 23],
+          [0, 42],
+        ])}
+      />
 
-  <polyline
-    className={styles.landDetail}
-    points={projectOutline([
-      [23.5, -17],
-      [23.5, 10],
-      [23.5, 35],
-      [23.5, 58],
-    ])}
-  />
-</svg>
+      <polyline
+        className={styles.landDetail}
+        points={projectOutline([
+          [23.5, -17],
+          [23.5, 10],
+          [23.5, 35],
+          [23.5, 58],
+        ])}
+      />
+    </>
+  )}
+</svg>   
 
           {loading && (
             <div className={styles.empty}>
