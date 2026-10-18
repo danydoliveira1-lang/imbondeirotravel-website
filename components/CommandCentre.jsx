@@ -2166,7 +2166,12 @@ function Settings({ data, reload, flash }) {
 const company = data.company_settings?.[0] || {};
 const [editing, setEditing] = useState(false);
 const [saving, setSaving] = useState(false);
+const [visibilitySaving, setVisibilitySaving] = useState(false);
 const [form, setForm] = useState(company);
+const websiteMode =
+  company.website_mode === "coming_soon"
+    ? "coming_soon"
+    : "live";
 useEffect(() => {
   if (!editing) setForm(company);
 }, [data.company_settings, editing]);
@@ -2200,6 +2205,55 @@ useEffect(() => {
     setSaving(false);
   }
 }; 
+
+const changeWebsiteMode = async nextMode => {
+  if (nextMode === websiteMode || visibilitySaving) return;
+
+  const confirmationMessage =
+    nextMode === "coming_soon"
+      ? "Switch the public website to Coming Soon mode?\n\nPublic pages will show the branded Coming Soon page. The Command Centre, APIs and automation will remain available."
+      : "Make the complete public website live again?\n\nVisitors will immediately regain access to all public pages.";
+
+  if (!window.confirm(confirmationMessage)) return;
+
+  setVisibilitySaving(true);
+
+  try {
+    const response = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...company,
+        website_mode: nextMode
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      flash(
+        payload.error ||
+          "Website visibility could not be changed."
+      );
+      return;
+    }
+
+    await reload();
+
+    flash(
+      nextMode === "coming_soon"
+        ? "Coming Soon mode is now active."
+        : "The complete website is now live."
+    );
+  } catch {
+    flash("Website visibility could not be changed.");
+  } finally {
+    setVisibilitySaving(false);
+  }
+};
+
   return <div className="cc-dashboard">
     <section className="cc-welcome">
       <div>
@@ -2253,6 +2307,75 @@ useEffect(() => {
         </article>
       </div>
     </section>
+
+    <section className="cc-panel">
+      <div className="cc-panel-head">
+        <div>
+          <span className="cc-eyebrow">Public website control</span>
+          <h3>Website Visibility</h3>
+        </div>
+
+        <em
+          className={`cc-status ${
+            websiteMode === "live" ? "confirmed" : "on-hold"
+          }`}
+        >
+          {websiteMode === "live" ? "WEBSITE LIVE" : "COMING SOON"}
+        </em>
+      </div>
+
+      <p>
+        Choose what visitors see on the public website. The Command Centre,
+        APIs and automation remain operational in both modes.
+      </p>
+
+      <div className="cc-stat-grid">
+        <article>
+          <span>Current public mode</span>
+          <strong>
+            {websiteMode === "live"
+              ? "Complete Website"
+              : "Coming Soon Page"}
+          </strong>
+          <small>
+            {websiteMode === "live"
+              ? "All public pages are available to visitors."
+              : "Public pages are temporarily protected by the launch page."}
+          </small>
+        </article>
+
+        <article>
+          <span>Internal systems</span>
+          <strong>Protected &amp; Available</strong>
+          <small>Command Centre, APIs and automation stay operational.</small>
+        </article>
+      </div>
+
+      <div className="cc-row-actions">
+        <button
+          type="button"
+          className={websiteMode === "live" ? "cc-primary" : ""}
+          disabled={visibilitySaving || websiteMode === "live"}
+          onClick={() => changeWebsiteMode("live")}
+        >
+          {visibilitySaving ? "Updating..." : "Make Website Live"}
+        </button>
+
+        <button
+          type="button"
+          className={
+            websiteMode === "coming_soon" ? "cc-primary" : ""
+          }
+          disabled={
+            visibilitySaving || websiteMode === "coming_soon"
+          }
+          onClick={() => changeWebsiteMode("coming_soon")}
+        >
+          {visibilitySaving ? "Updating..." : "Show Coming Soon"}
+        </button>
+      </div>
+    </section>
+
       <section className="cc-panel">
       <div className="cc-panel-head">
   <div>
