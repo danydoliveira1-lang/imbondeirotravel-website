@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
-export function middleware(request) {
+function showComingSoon(request) {
+  const comingSoonUrl = request.nextUrl.clone();
+  comingSoonUrl.pathname = "/coming-soon";
+
+  return NextResponse.rewrite(comingSoonUrl);
+}
+
+export async function middleware(request) {
   const { pathname } = request.nextUrl;
-
-  const comingSoonEnabled =
-    process.env.SITE_MODE === "coming_soon";
-
-  if (!comingSoonEnabled) {
-    return NextResponse.next();
-  }
 
   const protectedInternalRoute =
     pathname === "/admin" ||
@@ -36,10 +36,54 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  const comingSoonUrl = request.nextUrl.clone();
-  comingSoonUrl.pathname = "/coming-soon";
+  /*
+   * Vercel emergency override:
+   * SITE_MODE=coming_soon always hides public pages.
+   * SITE_MODE=live always keeps public pages visible.
+   * When unset, the Command Centre database setting controls it.
+   */
+  const environmentMode = process.env.SITE_MODE;
 
-  return NextResponse.rewrite(comingSoonUrl);
+  if (environmentMode === "coming_soon") {
+    return showComingSoon(request);
+  }
+
+  if (environmentMode === "live") {
+    return NextResponse.next();
+  }
+
+  try {
+    const modeUrl = new URL(
+      "/api/public/site-mode",
+      request.url
+    );
+
+    const response = await fetch(modeUrl, {
+      cache: "no-store",
+      headers: {
+        "x-imbondeiro-site-mode-check": "1",
+      },
+    });
+
+    if (!response.ok) {
+      return NextResponse.next();
+    }
+
+    const body = await response.json();
+
+    if (body.mode === "coming_soon") {
+      return showComingSoon(request);
+    }
+  } catch (error) {
+    console.error(
+      "Website visibility check failed:",
+      error
+    );
+  }
+
+  // Fail open: a temporary settings error must not
+  // unexpectedly hide the website.
+  return NextResponse.next();
 }
 
 export const config = {
