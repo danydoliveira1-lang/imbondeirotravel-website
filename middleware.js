@@ -7,55 +7,60 @@ function showComingSoon(request) {
   return NextResponse.rewrite(url);
 }
 
-export async function middleware(request) {
-  const { pathname } = request.nextUrl;
-
-  const internalRoute =
+function isExempt(pathname) {
+  return (
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname === "/api" ||
-    pathname.startsWith("/api/");
-
-  const comingSoonRoute =
+    pathname.startsWith("/api/") ||
     pathname === "/coming-soon" ||
-    pathname.startsWith("/coming-soon/");
-
-  const staticAsset =
+    pathname.startsWith("/coming-soon/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/assets/") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
-    /\.[a-zA-Z0-9]+$/.test(pathname);
+    /\.[a-zA-Z0-9]+$/.test(pathname)
+  );
+}
 
-  if (internalRoute || comingSoonRoute || staticAsset) {
-    return NextResponse.next();
-  }
+export async function middleware(request) {
+  if (isExempt(request.nextUrl.pathname)) return NextResponse.next();
 
-  // Emergency override. Keep SITE_MODE unset for Command Centre control.
-  const environmentMode = process.env.SITE_MODE;
-  if (environmentMode === "coming_soon") return showComingSoon(request);
-  if (environmentMode === "live") return NextResponse.next();
+  // Emergency override. Leave SITE_MODE unset for Command Centre control.
+  const override = process.env.SITE_MODE?.trim();
+  if (override === "coming_soon") return showComingSoon(request);
+  if (override === "live") return NextResponse.next();
 
   try {
-    const modeUrl = new URL("/api/public/site-mode", request.url);
-    const response = await fetch(modeUrl, {
-      cache: "no-store",
-      headers: { "x-imbondeiro-site-mode-check": "1" },
+    const base = process.env.SUPABASE_URL?.replace(/\/$/, "");
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!base || !key) throw new Error("Missing Supabase configuration");
+
+    const query = new URLSearchParams({
+      select: "website_mode",
+      id: "eq.imbondeiro-travel",
+      limit: "1",
     });
-
-    // A failed or unrecognised response must not reveal the public site.
-    if (!response.ok) return showComingSoon(request);
-
-    const body = await response.json();
-    if (body?.mode === "live") return NextResponse.next();
-    return showComingSoon(request);
+    const response = await fetch(`${base}/rest/v1/company_settings?${query}`, {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error(`Supabase status ${response.status}`);
+    const rows = await response.json();
+    const mode = rows?.[0]?.website_mode;
+    if (mode === "live") return NextResponse.next();
+    if (mode === "coming_soon") return showComingSoon(request);
+    throw new Error("Unrecognised or missing website mode");
   } catch (error) {
     console.error("Website visibility check failed:", error);
+    // Fail closed for public pages; admin and APIs remain accessible.
     return showComingSoon(request);
   }
 }
 
-export const config = {
-  matcher: "/:path*",
-};
+export const config = { matcher: "/:path*" };
