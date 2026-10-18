@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 
 function showComingSoon(request) {
-  const comingSoonUrl = request.nextUrl.clone();
-  comingSoonUrl.pathname = "/coming-soon";
-
-  return NextResponse.rewrite(comingSoonUrl);
+  const url = request.nextUrl.clone();
+  url.pathname = "/coming-soon";
+  url.search = "";
+  return NextResponse.rewrite(url);
 }
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  const protectedInternalRoute =
+  const internalRoute =
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname === "/api" ||
@@ -20,7 +20,7 @@ export async function middleware(request) {
     pathname === "/coming-soon" ||
     pathname.startsWith("/coming-soon/");
 
-  const requiredWebsiteAsset =
+  const staticAsset =
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/assets/") ||
     pathname === "/favicon.ico" ||
@@ -28,62 +28,32 @@ export async function middleware(request) {
     pathname === "/sitemap.xml" ||
     /\.[a-zA-Z0-9]+$/.test(pathname);
 
-  if (
-    protectedInternalRoute ||
-    comingSoonRoute ||
-    requiredWebsiteAsset
-  ) {
+  if (internalRoute || comingSoonRoute || staticAsset) {
     return NextResponse.next();
   }
 
-  /*
-   * Vercel emergency override:
-   * SITE_MODE=coming_soon always hides public pages.
-   * SITE_MODE=live always keeps public pages visible.
-   * When unset, the Command Centre database setting controls it.
-   */
+  // Emergency override. Keep SITE_MODE unset for Command Centre control.
   const environmentMode = process.env.SITE_MODE;
-
-  if (environmentMode === "coming_soon") {
-    return showComingSoon(request);
-  }
-
-  if (environmentMode === "live") {
-    return NextResponse.next();
-  }
+  if (environmentMode === "coming_soon") return showComingSoon(request);
+  if (environmentMode === "live") return NextResponse.next();
 
   try {
-    const modeUrl = new URL(
-      "/api/public/site-mode",
-      request.url
-    );
-
+    const modeUrl = new URL("/api/public/site-mode", request.url);
     const response = await fetch(modeUrl, {
       cache: "no-store",
-      headers: {
-        "x-imbondeiro-site-mode-check": "1",
-      },
+      headers: { "x-imbondeiro-site-mode-check": "1" },
     });
 
-    if (!response.ok) {
-      return NextResponse.next();
-    }
+    // A failed or unrecognised response must not reveal the public site.
+    if (!response.ok) return showComingSoon(request);
 
     const body = await response.json();
-
-    if (body.mode === "coming_soon") {
-      return showComingSoon(request);
-    }
+    if (body?.mode === "live") return NextResponse.next();
+    return showComingSoon(request);
   } catch (error) {
-    console.error(
-      "Website visibility check failed:",
-      error
-    );
+    console.error("Website visibility check failed:", error);
+    return showComingSoon(request);
   }
-
-  // Fail open: a temporary settings error must not
-  // unexpectedly hide the website.
-  return NextResponse.next();
 }
 
 export const config = {
