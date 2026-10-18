@@ -10,10 +10,42 @@ import { JourneyProvider } from "../components/JourneyContext";
 import { LanguageProvider } from "../components/LanguageContext";
 import { CurrencyProvider } from "../components/CurrencyContext";
 import Footer from "../components/Footer";
+import { supabaseRequest } from "../lib/supabaseRest";
+
+// Read the website visibility setting for every request, rather than
+// serving a previously cached homepage after an admin changes the mode.
+export const dynamic = "force-dynamic";
 
 const world=["South Africa","Zanzibar","Morocco","Seychelles","Portugal","France","Italy","Greece","Dubai","Maldives","Bali","Thailand","Brazil","New York","Caribbean"];
 
-export default function Page(){return <LanguageProvider><CurrencyProvider><JourneyProvider><><Header/><main id="main-content">
+function ComingSoon() {
+  return (
+    <main style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"48px 24px",background:"#f7f5ed",color:"#173c30",textAlign:"center"}}>
+      <div style={{maxWidth:680}}>
+        <p style={{letterSpacing:"0.22em",textTransform:"uppercase",fontSize:13}}>Imbondeiro Travel</p>
+        <h1 style={{fontFamily:"Georgia, serif",fontSize:"clamp(42px, 7vw, 76px)",fontWeight:400,lineHeight:1.12,margin:"24px 0"}}>A new journey is coming.</h1>
+        <p style={{fontSize:18,lineHeight:1.8}}>We are preparing something special. Soon, discover Angola and the world through thoughtfully crafted journeys.</p>
+        <p style={{marginTop:32,fontSize:14,letterSpacing:"0.12em",textTransform:"uppercase",color:"#987a3c"}}>Your Lifetime Experience</p>
+      </div>
+    </main>
+  );
+}
+
+export default async function Page(){
+  // Fail closed: if the database is unreachable, do not expose the full site.
+  let websiteMode = "coming_soon";
+  try {
+    const settings = await supabaseRequest("company_settings", {
+      query: "select=website_mode&id=eq.imbondeiro-travel&limit=1",
+    });
+    if (settings?.[0]?.website_mode === "live") websiteMode = "live";
+  } catch (error) {
+    console.error("Unable to read website visibility setting:", error);
+  }
+
+  if (websiteMode !== "live") return <ComingSoon />;
+
+  return <LanguageProvider><CurrencyProvider><JourneyProvider><><Header/><main id="main-content">
  <HeroEngine/>
  <section id="angola" className="meet section-pad"><div className="meet-image"><img src="/assets/kalandula-falls.jfif" alt="Kalandula Falls in Angola"/></div><div className="meet-copy"><p className="eyebrow">Meet Angola</p><h2>Some places are visited.<br/><em>Others are discovered.</em></h2><p className="lead">Angola is a land of extraordinary contrasts—Atlantic coastlines, dramatic mountain passes, powerful waterfalls, wildlife and vibrant traditions.</p><p>Every region reveals another chapter of a country still wonderfully undiscovered. Imbondeiro Travel introduces it with local knowledge, careful planning and genuine hospitality.</p><a className="text-link dark" href="#explorer">Explore the living map <span>→</span></a></div></section>
  <Explorer/>
@@ -25,4 +57,5 @@ export default function Page(){return <LanguageProvider><CurrencyProvider><Journ
  <section id="journal" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro light"><p className="eyebrow">Imbondeiro Journal</p><h2>Stories, perspectives and inspiration from Angola and beyond.</h2><p>Discover destination notes, cultural insights, travel inspiration and stories designed to deepen the journey before it begins.</p></div></section>
  <section id="about" className="about section-pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div><p className="eyebrow">The People Behind the Journey</p><h2>Rooted in Angola.<br/><em>Connected to the world.</em></h2></div><div><p className="lead">Imbondeiro Travel is a destination management and travel company creating meaningful journeys across Angola and carefully selected destinations worldwide.</p><div className="pillars"><article><h3>Mission</h3><p>To design meaningful journeys through exceptional service, local expertise and genuine hospitality.</p></article><article><h3>Vision</h3><p>To become Africa’s most trusted gateway to authentic travel experiences.</p></article><article><h3>Values</h3><p>Authenticity · Hospitality · Excellence · Discovery · Responsibility · Partnership</p></article></div></div></section>
  <section id="contact" className="contact section-pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="contact-copy"><p className="eyebrow">Craft Your Journey</p><h2>Where will your lifetime experience begin?</h2><p>When your collection feels right, click <strong>Craft My Journey</strong> in the Explorer. Your selections will arrive here ready for a personalised consultation.</p><p className="contact-direct"><a href="mailto:imbondeirotravel@gmail.com">imbondeirotravel@gmail.com</a></p></div><ContactForm/></section>
- </main><Footer/></></JourneyProvider></CurrencyProvider></LanguageProvider>}
+ </main><Footer/></></JourneyProvider></CurrencyProvider></LanguageProvider>;
+}
