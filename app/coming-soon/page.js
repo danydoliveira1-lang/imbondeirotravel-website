@@ -9,7 +9,7 @@ export const metadata = {
 export default function ComingSoonPage() {
   return (
     <main className={styles.page}>
-      <div className={styles.overlay} />
+      <div className={styles.overlay} aria-hidden="true" />
 
       <section className={styles.content}>
         <img
@@ -18,9 +18,7 @@ export default function ComingSoonPage() {
           alt="Imbondeiro Travel"
         />
 
-        <p className={styles.eyebrow}>
-          A NEW JOURNEY IS TAKING SHAPE
-        </p>
+        <p className={styles.eyebrow}>A NEW JOURNEY IS TAKING SHAPE</p>
 
         <h1>
           Africa and the Middle East,
@@ -29,17 +27,16 @@ export default function ComingSoonPage() {
         </h1>
 
         <p className={styles.introduction}>
-          We are refining the Imbondeiro Travel experience—a
-          thoughtful gateway to extraordinary journeys across
-          Angola, Africa and the Middle East.
+          We are refining the Imbondeiro Travel experience—a thoughtful
+          gateway to extraordinary journeys across Angola, Africa and the
+          Middle East.
         </p>
 
-        <div className={styles.divider} />
+        <div className={styles.divider} aria-hidden="true" />
 
         <p className={styles.contactText}>
-          Planning a journey or working with us as a travel partner?
-          Our team remains available while the new experience is
-          being prepared.
+          Planning a journey or working with us as a travel partner? Our team
+          remains available while the new experience is being prepared.
         </p>
 
         <a
