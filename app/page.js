@@ -11,51 +11,165 @@ import { LanguageProvider } from "../components/LanguageContext";
 import { CurrencyProvider } from "../components/CurrencyContext";
 import Footer from "../components/Footer";
 import { supabaseRequest } from "../lib/supabaseRest";
+import ComingSoonPage from "./coming-soon/page";
 
-// Read the website visibility setting for every request, rather than
-// serving a previously cached homepage after an admin changes the mode.
+// Always evaluate the current visibility setting for the homepage.
 export const dynamic = "force-dynamic";
 
-const world=["South Africa","Zanzibar","Morocco","Seychelles","Portugal","France","Italy","Greece","Dubai","Maldives","Bali","Thailand","Brazil","New York","Caribbean"];
+const world = [
+  "South Africa", "Zanzibar", "Morocco", "Seychelles", "Portugal",
+  "France", "Italy", "Greece", "Dubai", "Maldives", "Bali",
+  "Thailand", "Brazil", "New York", "Caribbean",
+];
 
-function ComingSoon() {
-  return (
-    <main style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"48px 24px",background:"#f7f5ed",color:"#173c30",textAlign:"center"}}>
-      <div style={{maxWidth:680}}>
-        <p style={{letterSpacing:"0.22em",textTransform:"uppercase",fontSize:13}}>Imbondeiro Travel</p>
-        <h1 style={{fontFamily:"Georgia, serif",fontSize:"clamp(42px, 7vw, 76px)",fontWeight:400,lineHeight:1.12,margin:"24px 0"}}>A new journey is coming.</h1>
-        <p style={{fontSize:18,lineHeight:1.8}}>We are preparing something special. Soon, discover Angola and the world through thoughtfully crafted journeys.</p>
-        <p style={{marginTop:32,fontSize:14,letterSpacing:"0.12em",textTransform:"uppercase",color:"#987a3c"}}>Your Lifetime Experience</p>
-      </div>
-    </main>
-  );
-}
+async function getWebsiteMode() {
+  // The emergency override must take precedence over the database setting.
+  const override = process.env.SITE_MODE?.trim();
+  if (override === "live" || override === "coming_soon") {
+    return override;
+  }
 
-export default async function Page(){
-  // Fail closed: if the database is unreachable, do not expose the full site.
-  let websiteMode = "coming_soon";
   try {
     const settings = await supabaseRequest("company_settings", {
       query: "select=website_mode&id=eq.imbondeiro-travel&limit=1",
     });
-    if (settings?.[0]?.website_mode === "live") websiteMode = "live";
+    const mode = settings?.[0]?.website_mode;
+    if (mode === "live" || mode === "coming_soon") return mode;
+    console.error("Website visibility setting is missing or invalid.");
   } catch (error) {
     console.error("Unable to read website visibility setting:", error);
   }
 
-  if (websiteMode !== "live") return <ComingSoon />;
+  // Match the middleware's protective fallback when no override is set.
+  return "coming_soon";
+}
 
-  return <LanguageProvider><CurrencyProvider><JourneyProvider><><Header/><main id="main-content">
- <HeroEngine/>
- <section id="angola" className="meet section-pad"><div className="meet-image"><img src="/assets/kalandula-falls.jfif" alt="Kalandula Falls in Angola"/></div><div className="meet-copy"><p className="eyebrow">Meet Angola</p><h2>Some places are visited.<br/><em>Others are discovered.</em></h2><p className="lead">Angola is a land of extraordinary contrasts—Atlantic coastlines, dramatic mountain passes, powerful waterfalls, wildlife and vibrant traditions.</p><p>Every region reveals another chapter of a country still wonderfully undiscovered. Imbondeiro Travel introduces it with local knowledge, careful planning and genuine hospitality.</p><a className="text-link dark" href="#explorer">Explore the living map <span>→</span></a></div></section>
- <Explorer/>
- <section id="experiences" className="section-pad experiences menu-reveal-section" aria-hidden="true"><HideChapterButton /><div className="section-intro"><p className="eyebrow">Experiences Worth Remembering</p><h2>Signature Angola journeys</h2><p>Thoughtfully curated beginnings for travellers seeking nature, culture, coast and connection. Add any journey to your personal collection and keep exploring. </p></div><PublicTours /></section>
- <SignatureDepartures/>
- <section id="world" className="world section-pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro light"><p className="eyebrow">Beyond Angola</p><h2>The World Collection</h2><p>Handpicked destinations for honeymoons, family journeys, cultural escapes and extraordinary celebrations.</p></div><div className="world-grid">{world.map((x,i)=>{const item={id:`world:${x.toLowerCase().replaceAll(' ','-')}`,title:x,category:"Worldwide",province:"The World Collection",kind:"world",days:0,image:"/assets/hero-kalandula.jpg"};return <article key={x}><span>{String(i+1).padStart(2,'0')}</span><h3>{x}</h3><p>Curated journeys, selected stays and personalised planning.</p><JourneyAddButton item={item}/></article>})}</div></section>
- <section id="services" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro light"><p className="eyebrow">Services</p><h2>Travel services shaped around every journey.</h2><p>From private travel and destination experiences to corporate support and tailored arrangements, Imbondeiro Travel coordinates every detail with care.</p></div></section>
- <section id="partners" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="partner-intro"><p className="eyebrow">DMC &amp; Partners</p><h2>Your trusted ground partner in Angola.</h2><p>Imbondeiro Travel supports tour operators, wholesalers, corporate partners and international travel organisations with reliable local coordination, destination services and on-the-ground delivery across Angola.</p></div></section>
- <section id="journal" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="section-intro light"><p className="eyebrow">Imbondeiro Journal</p><h2>Stories, perspectives and inspiration from Angola and beyond.</h2><p>Discover destination notes, cultural insights, travel inspiration and stories designed to deepen the journey before it begins.</p></div></section>
- <section id="about" className="about section-pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div><p className="eyebrow">The People Behind the Journey</p><h2>Rooted in Angola.<br/><em>Connected to the world.</em></h2></div><div><p className="lead">Imbondeiro Travel is a destination management and travel company creating meaningful journeys across Angola and carefully selected destinations worldwide.</p><div className="pillars"><article><h3>Mission</h3><p>To design meaningful journeys through exceptional service, local expertise and genuine hospitality.</p></article><article><h3>Vision</h3><p>To become Africa’s most trusted gateway to authentic travel experiences.</p></article><article><h3>Values</h3><p>Authenticity · Hospitality · Excellence · Discovery · Responsibility · Partnership</p></article></div></div></section>
- <section id="contact" className="contact section-pad menu-reveal-section" aria-hidden="true"><HideChapterButton/><div className="contact-copy"><p className="eyebrow">Craft Your Journey</p><h2>Where will your lifetime experience begin?</h2><p>When your collection feels right, click <strong>Craft My Journey</strong> in the Explorer. Your selections will arrive here ready for a personalised consultation.</p><p className="contact-direct"><a href="mailto:imbondeirotravel@gmail.com">imbondeirotravel@gmail.com</a></p></div><ContactForm/></section>
- </main><Footer/></></JourneyProvider></CurrencyProvider></LanguageProvider>;
+export default async function Page() {
+  const websiteMode = await getWebsiteMode();
+  if (websiteMode !== "live") return <ComingSoonPage />;
+
+  return (
+    <LanguageProvider>
+      <CurrencyProvider>
+        <JourneyProvider>
+          <Header />
+          <main id="main-content">
+            <HeroEngine />
+
+            <section id="angola" className="meet section-pad">
+              <div className="meet-image">
+                <img src="/assets/kalandula-falls.jfif" alt="Kalandula Falls in Angola" />
+              </div>
+              <div className="meet-copy">
+                <p className="eyebrow">Meet Angola</p>
+                <h2>Some places are visited.<br /><em>Others are discovered.</em></h2>
+                <p className="lead">Angola is a land of extraordinary contrasts—Atlantic coastlines, dramatic mountain passes, powerful waterfalls, wildlife and vibrant traditions.</p>
+                <p>Every region reveals another chapter of a country still wonderfully undiscovered. Imbondeiro Travel introduces it with local knowledge, careful planning and genuine hospitality.</p>
+                <a className="text-link dark" href="#explorer">Explore the living map <span>→</span></a>
+              </div>
+            </section>
+
+            <Explorer />
+
+            <section id="experiences" className="section-pad experiences menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div className="section-intro">
+                <p className="eyebrow">Experiences Worth Remembering</p>
+                <h2>Signature Angola journeys</h2>
+                <p>Thoughtfully curated beginnings for travellers seeking nature, culture, coast and connection. Add any journey to your personal collection and keep exploring. </p>
+              </div>
+              <PublicTours />
+            </section>
+
+            <SignatureDepartures />
+
+            <section id="world" className="world section-pad menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div className="section-intro light">
+                <p className="eyebrow">Beyond Angola</p>
+                <h2>The World Collection</h2>
+                <p>Handpicked destinations for honeymoons, family journeys, cultural escapes and extraordinary celebrations.</p>
+              </div>
+              <div className="world-grid">
+                {world.map((x, i) => {
+                  const item = {
+                    id: `world:${x.toLowerCase().replaceAll(" ", "-")}`,
+                    title: x,
+                    category: "Worldwide",
+                    province: "The World Collection",
+                    kind: "world",
+                    days: 0,
+                    image: "/assets/hero-kalandula.jpg",
+                  };
+                  return (
+                    <article key={x}>
+                      <span>{String(i + 1).padStart(2, "0")}</span>
+                      <h3>{x}</h3>
+                      <p>Curated journeys, selected stays and personalised planning.</p>
+                      <JourneyAddButton item={item} />
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section id="services" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div className="section-intro light">
+                <p className="eyebrow">Services</p>
+                <h2>Travel services shaped around every journey.</h2>
+                <p>From private travel and destination experiences to corporate support and tailored arrangements, Imbondeiro Travel coordinates every detail with care.</p>
+              </div>
+            </section>
+
+            <section id="partners" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div className="partner-intro">
+                <p className="eyebrow">DMC &amp; Partners</p>
+                <h2>Your trusted ground partner in Angola.</h2>
+                <p>Imbondeiro Travel supports tour operators, wholesalers, corporate partners and international travel organisations with reliable local coordination, destination services and on-the-ground delivery across Angola.</p>
+              </div>
+            </section>
+
+            <section id="journal" className="menu-only chapters section pad menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div className="section-intro light">
+                <p className="eyebrow">Imbondeiro Journal</p>
+                <h2>Stories, perspectives and inspiration from Angola and beyond.</h2>
+                <p>Discover destination notes, cultural insights, travel inspiration and stories designed to deepen the journey before it begins.</p>
+              </div>
+            </section>
+
+            <section id="about" className="about section-pad menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div>
+                <p className="eyebrow">The People Behind the Journey</p>
+                <h2>Rooted in Angola.<br /><em>Connected to the world.</em></h2>
+              </div>
+              <div>
+                <p className="lead">Imbondeiro Travel is a destination management and travel company creating meaningful journeys across Angola and carefully selected destinations worldwide.</p>
+                <div className="pillars">
+                  <article><h3>Mission</h3><p>To design meaningful journeys through exceptional service, local expertise and genuine hospitality.</p></article>
+                  <article><h3>Vision</h3><p>To become Africa’s most trusted gateway to authentic travel experiences.</p></article>
+                  <article><h3>Values</h3><p>Authenticity · Hospitality · Excellence · Discovery · Responsibility · Partnership</p></article>
+                </div>
+              </div>
+            </section>
+
+            <section id="contact" className="contact section-pad menu-reveal-section" aria-hidden="true">
+              <HideChapterButton />
+              <div className="contact-copy">
+                <p className="eyebrow">Craft Your Journey</p>
+                <h2>Where will your lifetime experience begin?</h2>
+                <p>When your collection feels right, click <strong>Craft My Journey</strong> in the Explorer. Your selections will arrive here ready for a personalised consultation.</p>
+                <p className="contact-direct"><a href="mailto:imbondeirotravel@gmail.com">imbondeirotravel@gmail.com</a></p>
+              </div>
+              <ContactForm />
+            </section>
+          </main>
+          <Footer />
+        </JourneyProvider>
+      </CurrencyProvider>
+    </LanguageProvider>
+  );
 }
