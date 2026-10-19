@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styles from "./PublicDestinationMap.module.css";
+import countryData from "../data/world-regions.json";
 
 const COUNTRY_COORDINATES = {
   DZ: [28.03, 1.66],
@@ -86,203 +87,81 @@ const SPECIAL_COORDINATES = {
   abu_dhabi: [24.45, 54.38],
 };
 
-const MAP_BOUNDS = {
-  minimumLongitude: -25,
-  maximumLongitude: 65,
-  minimumLatitude: -36,
-  maximumLatitude: 43,
-};
-const SVG_WIDTH = 1000;
-const SVG_HEIGHT = 650;
-
-const AFRICA_OUTLINE = [
-  [28.5, -17.5],
-  [32.5, -13.0],
-  [35.8, -9.5],
-  [35.9, -5.5],
-  [35.0, -1.5],
-  [37.0, 3.0],
-  [37.0, 9.5],
-  [33.0, 11.5],
-  [32.0, 15.0],
-  [31.5, 25.0],
-  [31.2, 32.5],
-  [29.5, 34.8],
-  [23.0, 35.5],
-  [18.0, 37.5],
-  [15.0, 40.0],
-  [12.5, 42.5],
-  [11.5, 51.2],
-  [8.0, 49.0],
-  [4.0, 44.0],
-  [0.0, 42.0],
-  [-4.0, 41.0],
-  [-10.0, 40.0],
-  [-15.0, 36.0],
-  [-20.0, 35.0],
-  [-26.0, 32.0],
-  [-33.0, 28.0],
-  [-35.0, 22.0],
-  [-34.8, 18.0],
-  [-28.0, 15.0],
-  [-21.0, 12.0],
-  [-15.0, 12.0],
-  [-10.0, 13.0],
-  [-5.0, 12.0],
-  [-1.0, 9.0],
-  [1.5, 8.0],
-  [4.0, 9.0],
-  [5.0, 5.0],
-  [5.0, 1.0],
-  [5.0, -5.0],
-  [7.0, -10.0],
-  [10.0, -14.0],
-  [14.0, -16.0],
-  [20.0, -17.0],
-  [28.5, -17.5],
-];
-
-const MIDDLE_EAST_OUTLINE = [
-  [42.0, 26.0],
-  [42.0, 36.0],
-  [41.0, 45.0],
-  [39.0, 51.0],
-  [38.0, 58.0],
-  [35.0, 63.0],
-  [29.0, 61.0],
-  [25.0, 58.0],
-  [22.0, 56.0],
-  [17.0, 55.0],
-  [13.0, 52.0],
-  [12.0, 46.0],
-  [16.0, 43.0],
-  [20.0, 39.0],
-  [27.0, 35.0],
-  [31.0, 30.0],
-  [35.0, 27.0],
-  [42.0, 26.0],
-];
-
-const MADAGASCAR_OUTLINE = [
-  [-11.8, 49.2],
-  [-14.5, 50.1],
-  [-19.0, 49.3],
-  [-23.8, 47.3],
-  [-25.5, 45.3],
-  [-22.0, 43.5],
-  [-17.5, 44.0],
-  [-13.5, 46.0],
-  [-11.8, 49.2],
-];
-
-function projectOutline(outline) {
-  const longitudeRange =
-    MAP_BOUNDS.maximumLongitude -
-    MAP_BOUNDS.minimumLongitude;
-
-  const latitudeRange =
-    MAP_BOUNDS.maximumLatitude -
-    MAP_BOUNDS.minimumLatitude;
-
-  return outline
-    .map(([latitude, longitude]) => {
-      const horizontal =
-        (longitude - MAP_BOUNDS.minimumLongitude) /
-        longitudeRange;
-
-      const vertical =
-        (MAP_BOUNDS.maximumLatitude - latitude) /
-        latitudeRange;
-
-      const x = horizontal * SVG_WIDTH;
-      const y = vertical * SVG_HEIGHT;
-
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-}
-
-function destinationStatus(status) {
-  const value = String(status || "").toLowerCase();
-
-  if (["bookable", "live"].includes(value)) {
-    return {
-      label: "Available to Plan",
-      className: styles.bookable,
-    };
-  }
-
-  if (value === "tailor_made") {
-    return {
-      label: "Tailor Made",
-      className: styles.tailorMade,
-    };
-  }
-
-  return {
-    label: "Coming Soon",
-    className: styles.comingSoon,
-  };
-}
+const VIEW_WIDTH = 1000;
+const VIEW_HEIGHT = 650;
+const REGION_OPTIONS = ["Africa", "Middle East", "All"];
+const MIDDLE_EAST_CODES = new Set(["ARM", "AZE", "BHR", "CYP", "GEO", "IRN", "IRQ", "ISR", "JOR", "KWT", "LBN", "OMN", "PSE", "QAT", "SAU", "SYR", "TUR", "ARE", "YEM", "EGY"]);
 
 function getCoordinates(destination) {
-  const special =
-    SPECIAL_COORDINATES[
-      String(destination.slug || "")
-        .toLowerCase()
-        .replaceAll("-", "_")
-    ];
-
-  if (special) {
-    return special;
+  const special = SPECIAL_COORDINATES[String(destination.slug || "").toLowerCase().replaceAll("-", "_")];
+  if (special) return special;
+  if (destination.map_latitude != null && destination.map_longitude != null && destination.map_latitude !== "" && destination.map_longitude !== "") {
+    const lat = Number(destination.map_latitude);
+    const lon = Number(destination.map_longitude);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
   }
-
-  const latitude = Number(destination.map_latitude);
-  const longitude = Number(destination.map_longitude);
-
-  if (
-    Number.isFinite(latitude) &&
-    Number.isFinite(longitude) &&
-    destination.map_latitude !== null &&
-    destination.map_longitude !== null
-  ) {
-    return [latitude, longitude];
-  }
-
-  return (
-    COUNTRY_COORDINATES[
-      String(
-        destination.parent_country_code ||
-          destination.country_code ||
-          ""
-      ).toUpperCase()
-    ] || null
-  );
+  return COUNTRY_COORDINATES[String(destination.parent_country_code || destination.country_code || "").toUpperCase()] || null;
 }
 
-function mapPosition(coordinates) {
-  const [latitude, longitude] = coordinates;
+function statusInfo(value) {
+  const status = String(value || "").toLowerCase();
+  if (["bookable", "live"].includes(status)) return { label: "Available to Plan", className: styles.bookable };
+  if (status === "tailor_made") return { label: "Tailor Made", className: styles.tailorMade };
+  return { label: "Coming Soon", className: styles.comingSoon };
+}
 
-  const longitudeRange =
-    MAP_BOUNDS.maximumLongitude -
-    MAP_BOUNDS.minimumLongitude;
+function forRegion(feature, region) {
+  if (region === "All") return true;
+  if (region === "Africa") return feature.region === "Africa";
+  return feature.region === "Middle East" || MIDDLE_EAST_CODES.has(feature.code);
+}
 
-  const latitudeRange =
-    MAP_BOUNDS.maximumLatitude -
-    MAP_BOUNDS.minimumLatitude;
+function coordinatesOf(geometry) {
+  if (geometry.type === "Polygon") return geometry.coordinates.flat(1);
+  return geometry.coordinates.flat(2);
+}
 
-  const horizontal =
-    (longitude - MAP_BOUNDS.minimumLongitude) /
-    longitudeRange;
+function createProjection(features, region) {
+  const coords = features.flatMap(feature => coordinatesOf(feature.geometry));
+  const longs = coords.map(point => point[0]);
+  const lats = coords.map(point => point[1]);
+  // Geographic aspect adjustment: longitude degrees narrow with latitude.
+  const minLon = Math.min(...longs), maxLon = Math.max(...longs);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const centerLat = (minLat + maxLat) / 2;
+  const longitudeFactor = Math.max(0.65, Math.cos(centerLat * Math.PI / 180));
+  const width = (maxLon - minLon) * longitudeFactor;
+  const height = maxLat - minLat;
+  const padding = region === "Middle East" ? 78 : 52;
+  const scale = Math.min((VIEW_WIDTH - padding * 2) / width, (VIEW_HEIGHT - padding * 2) / height);
+  const xOffset = (VIEW_WIDTH - width * scale) / 2;
+  const yOffset = (VIEW_HEIGHT - height * scale) / 2;
+  return ([lat, lon]) => [xOffset + (lon - minLon) * longitudeFactor * scale, yOffset + (maxLat - lat) * scale];
+}
 
-  const vertical =
-    (MAP_BOUNDS.maximumLatitude - latitude) /
-    latitudeRange;
+function polygonPath(rings, project) {
+  return rings.map(ring => ring.map(([lon, lat], i) => {
+    const [x, y] = project([lat, lon]);
+    return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ") + " Z").join(" ");
+}
 
-  return {
-    left: `${5 + Math.min(1, Math.max(0, horizontal)) * 90}%`,
-    top: `${4 + Math.min(1, Math.max(0, vertical)) * 92}%`,
-  };
+function countryPath(feature, project) {
+  const geometry = feature.geometry;
+  return geometry.type === "Polygon"
+    ? polygonPath(geometry.coordinates, project)
+    : geometry.coordinates.map(poly => polygonPath(poly, project)).join(" ");
+}
+
+function countryLabel(feature, project) {
+  // Bounding-box centre is an approximate label location; skip tiny territories.
+  const points = coordinatesOf(feature.geometry);
+  const minLon = Math.min(...points.map(p => p[0]));
+  const maxLon = Math.max(...points.map(p => p[0]));
+  const minLat = Math.min(...points.map(p => p[1]));
+  const maxLat = Math.max(...points.map(p => p[1]));
+  const [x, y] = project([(minLat + maxLat) / 2, (minLon + maxLon) / 2]);
+  return { x, y, size: (maxLon - minLon) * (maxLat - minLat) };
 }
 
 export default function PublicDestinationMap() {
@@ -293,299 +172,83 @@ export default function PublicDestinationMap() {
 
   useEffect(() => {
     const controller = new AbortController();
-
-    async function loadDestinations() {
+    async function load() {
       try {
         setLoading(true);
         setError("");
-
-        const response = await fetch(
-          "/api/public/destinations",
-          {
-            cache: "no-store",
-            signal: controller.signal,
-          }
-        );
-
+        const response = await fetch("/api/public/destinations", { cache: "no-store", signal: controller.signal });
         const body = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            body.error ||
-              "The destination map could not be loaded."
-          );
-        }
-
-        setDestinations(body.destinations || []);
-      } catch (requestError) {
-        if (requestError.name !== "AbortError") {
-          setError(
-            requestError.message ||
-              "The destination map is temporarily unavailable."
-          );
-        }
+        if (!response.ok) throw new Error(body.error || "The destination map could not be loaded.");
+        setDestinations(Array.isArray(body.destinations) ? body.destinations : []);
+      } catch (err) {
+        if (err.name !== "AbortError") setError(err.message || "The destination map is temporarily unavailable.");
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
-
-    loadDestinations();
-
+    load();
     return () => controller.abort();
   }, []);
 
-  const mappedDestinations = useMemo(() => {
-    return destinations
-      .filter(
-        destination =>
-          region === "All" ||
-          destination.explorer_region === region
-      )
-      .map(destination => ({
-        ...destination,
-        coordinates: getCoordinates(destination),
-      }))
-      .filter(destination => destination.coordinates)
-      .sort((first, second) => {
-        if (first.featured !== second.featured) {
-          return first.featured ? -1 : 1;
-        }
-
-        return String(first.name).localeCompare(
-          String(second.name)
-        );
-      });
-  }, [destinations, region]);
+  const selectedCountries = useMemo(() => countryData.features.filter(feature => forRegion(feature, region)), [region]);
+  const project = useMemo(() => createProjection(selectedCountries, region), [selectedCountries, region]);
+  const visibleDestinations = useMemo(() => destinations
+    .filter(destination => region === "All" || destination.explorer_region === region)
+    // The public endpoint is expected to return only intentionally published destinations.
+    .filter(destination => destination.published !== false && destination.status !== "draft")
+    .map(destination => ({ ...destination, coordinates: getCoordinates(destination) }))
+    .filter(destination => destination.coordinates)
+    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || String(a.name).localeCompare(String(b.name))), [destinations, region]);
 
   return (
-    <section
-      className={styles.section}
-      aria-labelledby="regional-map-title"
-    >
+    <section className={styles.section} aria-labelledby="regional-map-title">
       <div className={styles.inner}>
         <div className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>
-              The Imbondeiro World
-            </p>
-
-            <h2 id="regional-map-title">
-              Africa and the Middle East,
-              <br />
-              mapped for discovery.
-            </h2>
+            <p className={styles.eyebrow}>The Imbondeiro World</p>
+            <h2 id="regional-map-title">Africa and the Middle East,<br />mapped for discovery.</h2>
           </div>
-
-          <p className={styles.headerText}>
-            Move across the map to discover destinations
-            shaped by culture, landscape and thoughtful local
-            planning. Select a marker to open its destination
-            story.
-          </p>
+          <p className={styles.headerText}>Explore countries across the region. Only destinations in our curated collection carry pins. Select a pin to discover its journey.</p>
         </div>
-
-        <div
-          className={styles.controls}
-          aria-label="Map region"
-        >
-          {["All", "Africa", "Middle East"].map(option => (
-            <button
-              key={option}
-              type="button"
-              className={`${styles.control} ${
-                region === option
-                  ? styles.controlActive
-                  : ""
-              }`}
-              aria-pressed={region === option}
-              onClick={() => setRegion(option)}
-            >
-              {option}
-            </button>
-          ))}
+        <div className={styles.controls} aria-label="Map region">
+          {REGION_OPTIONS.map(option => <button key={option} type="button" className={`${styles.control} ${region === option ? styles.controlActive : ""}`} aria-pressed={region === option} onClick={() => setRegion(option)}>{option}</button>)}
         </div>
-
         <div className={styles.mapFrame}>
-        
-       <svg
-  className={styles.mapGraphic}
-  viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-  role="img"
-  aria-label="Geographic map of Africa and the Middle East"
->
-  {region !== "Middle East" && (
-    <>
-      <polygon
-        className={styles.land}
-        points={projectOutline(AFRICA_OUTLINE)}
-      />
-
-      <polygon
-        className={styles.land}
-        points={projectOutline(MADAGASCAR_OUTLINE)}
-      />
-    </>
-  )}
-
-  {region !== "Africa" && (
-    <polygon
-      className={styles.land}
-      points={projectOutline(MIDDLE_EAST_OUTLINE)}
-    />
-  )}
-
-  {region === "All" && (
-    <>
-      <polyline
-        className={styles.landDetail}
-        points={projectOutline([
-          [0, -16],
-          [0, 9],
-          [0, 23],
-          [0, 42],
-        ])}
-      />
-
-      <polyline
-        className={styles.landDetail}
-        points={projectOutline([
-          [23.5, -17],
-          [23.5, 10],
-          [23.5, 35],
-          [23.5, 58],
-        ])}
-      />
-    </>
-  )}
-</svg>   
-
-          {loading && (
-            <div className={styles.empty}>
-              Preparing the destination map…
-            </div>
-          )}
-
-          {error && (
-            <div className={styles.empty}>
-              {error}
-            </div>
-          )}
-
-          {!loading &&
-            !error &&
-            mappedDestinations.map(destination => {
-              const status = destinationStatus(
-                destination.launch_status
-              );
-
-              const position = mapPosition(
-                destination.coordinates
-              );
-
+          <svg className={styles.mapGraphic} viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} role="img" aria-label={`Map of ${region === "All" ? "Africa and the Middle East" : region} with country boundaries and selected destination pins`}>
+            {selectedCountries.map(feature => (
+              <path key={`${feature.region}-${feature.code}`} d={countryPath(feature, project)} className={`${styles.land} ${feature.code === "AGO" ? styles.homeCountry : ""}`} fillRule="evenodd">
+                <title>{feature.name}</title>
+              </path>
+            ))}
+            {selectedCountries.map(feature => {
+              const label = countryLabel(feature, project);
+              if (label.size < (region === "All" ? 20 : 8)) return null;
+              return <text key={`label-${feature.code}`} x={label.x} y={label.y} className={styles.countryLabel} textAnchor="middle" aria-hidden="true">{feature.name}</text>;
+            })}
+            {!loading && !error && visibleDestinations.map(destination => {
+              const [x, y] = project(destination.coordinates);
+              const status = statusInfo(destination.launch_status);
               return (
-                <div
-                  className={`${styles.marker} ${
-                    status.className
-                  } ${
-                    destination.featured
-                      ? styles.featured
-                      : ""
-                  }`}
-                  style={position}
-                  key={destination.id}
-                >
-                  <a
-                    className={styles.markerButton}
-                    href={`/explorer/${encodeURIComponent(
-                      destination.slug
-                    )}`}
-                    aria-label={`Open ${destination.name} — ${status.label}`}
-                  >
-                    <span
-                      className={styles.markerDot}
-                      aria-hidden="true"
-                    />
-                  </a>
-
-                  <div
-                    className={styles.tooltip}
-                    aria-hidden="true"
-                  >
-                    <strong>{destination.name}</strong>
-                    <span>
-                      {destination.explorer_region}
-                      {" · "}
-                      {status.label}
-                    </span>
-                  </div>
-                </div>
+                <a key={destination.id} href={`/explorer/${encodeURIComponent(destination.slug)}`} className={`${styles.mapPin} ${status.className} ${destination.featured ? styles.featured : ""}`} aria-label={`Open ${destination.name} — ${status.label}`}>
+                  <circle cx={x} cy={y} r={15} className={styles.pinHalo} />
+                  <circle cx={x} cy={y} r={destination.featured ? 7 : 5} className={styles.pinDot} />
+                  <title>{`${destination.name} · ${status.label}`}</title>
+                </a>
               );
             })}
-
-          {!loading &&
-            !error &&
-            mappedDestinations.length === 0 && (
-              <div className={styles.empty}>
-                No mapped destinations are currently
-                available in this region.
-              </div>
-            )}
+          </svg>
+          {loading && <div className={styles.empty}>Preparing the destination map…</div>}
+          {error && <div className={styles.empty}>{error}</div>}
+          {!loading && !error && visibleDestinations.length === 0 && <div className={styles.empty}>No mapped destinations are currently available in this region.</div>}
         </div>
-
-        <div
-          className={styles.legend}
-          aria-label="Map status legend"
-        >
-          <span
-            className={`${styles.legendItem} ${styles.bookable}`}
-          >
-            <i className={styles.legendDot} />
-            Available to Plan
-          </span>
-
-          <span
-            className={`${styles.legendItem} ${styles.tailorMade}`}
-          >
-            <i className={styles.legendDot} />
-            Tailor Made
-          </span>
-
-          <span
-            className={`${styles.legendItem} ${styles.comingSoon}`}
-          >
-            <i className={styles.legendDot} />
-            Coming Soon
-          </span>
-
-          <span className={styles.legendHome}>
-            Angola · Imbondeiro’s Home
-          </span>
+        <div className={styles.legend} aria-label="Map status legend">
+          <span className={`${styles.legendItem} ${styles.bookable}`}><i className={styles.legendDot} />Available to Plan</span>
+          <span className={`${styles.legendItem} ${styles.tailorMade}`}><i className={styles.legendDot} />Tailor Made</span>
+          <span className={`${styles.legendItem} ${styles.comingSoon}`}><i className={styles.legendDot} />Coming Soon</span>
+          <span className={styles.legendHome}>Angola · Imbondeiro's Home</span>
         </div>
-
-        <div
-          className={styles.mobileDestinations}
-          aria-label={`${region} destinations`}
-        >
-          {mappedDestinations.map(destination => {
-            const status = destinationStatus(
-              destination.launch_status
-            );
-
-            return (
-              <a
-                className={styles.mobileDestination}
-                href={`/explorer/${encodeURIComponent(
-                  destination.slug
-                )}`}
-                key={`mobile-${destination.id}`}
-              >
-                <strong>{destination.name}</strong>
-                <span>{status.label}</span>
-              </a>
-            );
-          })}
+        <div className={styles.mobileDestinations} aria-label={`${region} destinations`}>
+          {visibleDestinations.map(destination => <a key={`mobile-${destination.id}`} className={styles.mobileDestination} href={`/explorer/${encodeURIComponent(destination.slug)}`}><strong>{destination.name}</strong><span>{statusInfo(destination.launch_status).label}</span></a>)}
         </div>
       </div>
     </section>
