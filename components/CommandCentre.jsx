@@ -2225,9 +2225,8 @@ const changeWebsiteMode = async nextMode => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        ...company,
-        website_mode: nextMode
-      })
+       website_mode: nextMode
+         })
     });
 
     const payload = await response.json();
