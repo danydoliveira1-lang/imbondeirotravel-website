@@ -29,6 +29,7 @@ const allowedFields = [
   "tax_invoice_enabled",
   "website_logo_url",
   "document_logo_url",
+  "website_mode",
 ];
 
 const logoFields = [
@@ -45,7 +46,6 @@ function validLogoLocation(value) {
 
   try {
     const url = new URL(value);
-
     return url.protocol === "https:";
   } catch {
     return false;
@@ -53,8 +53,7 @@ function validLogoLocation(value) {
 }
 
 export async function PATCH(request) {
-  const actorEmail =
-    await getAuthenticatedAdminEmail();
+  const actorEmail = await getAuthenticatedAdminEmail();
 
   if (!actorEmail) {
     return NextResponse.json(
@@ -66,37 +65,43 @@ export async function PATCH(request) {
   try {
     const body = await request.json();
 
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { error: "Settings must be provided as a JSON object." },
+        { status: 400 }
+      );
+    }
+
     const payload = Object.fromEntries(
       allowedFields
         .filter(field =>
-          Object.prototype.hasOwnProperty.call(
-            body,
-            field
-          )
+          Object.prototype.hasOwnProperty.call(body, field)
         )
         .map(field => [field, body[field]])
     );
 
     if (!Object.keys(payload).length) {
       return NextResponse.json(
-        {
-          error:
-            "No approved settings were provided.",
-        },
+        { error: "No approved settings were provided." },
         { status: 400 }
       );
     }
 
-    for (const field of logoFields) {
+    if (Object.prototype.hasOwnProperty.call(payload, "website_mode")) {
       if (
-        Object.prototype.hasOwnProperty.call(
-          payload,
-          field
-        )
+        payload.website_mode !== "live" &&
+        payload.website_mode !== "coming_soon"
       ) {
-        payload[field] = String(
-          payload[field] || ""
-        ).trim();
+        return NextResponse.json(
+          { error: "Website mode must be live or coming_soon." },
+          { status: 400 }
+        );
+      }
+    }
+
+    for (const field of logoFields) {
+      if (Object.prototype.hasOwnProperty.call(payload, field)) {
+        payload[field] = String(payload[field] || "").trim();
 
         if (!validLogoLocation(payload[field])) {
           return NextResponse.json(
@@ -114,80 +119,48 @@ export async function PATCH(request) {
       }
     }
 
-    if (
-      Object.prototype.hasOwnProperty.call(
-        payload,
-        "default_tax_rate"
-      )
-    ) {
+    if (Object.prototype.hasOwnProperty.call(payload, "default_tax_rate")) {
       payload.default_tax_rate =
-        payload.default_tax_rate === "" ||
-        payload.default_tax_rate === null
+        payload.default_tax_rate === "" || payload.default_tax_rate === null
           ? 0
           : Number(payload.default_tax_rate);
 
       if (
-        !Number.isFinite(
-          payload.default_tax_rate
-        ) ||
+        !Number.isFinite(payload.default_tax_rate) ||
         payload.default_tax_rate < 0 ||
         payload.default_tax_rate > 100
       ) {
         return NextResponse.json(
-          {
-            error:
-              "Default tax rate must be between 0 and 100.",
-          },
+          { error: "Default tax rate must be between 0 and 100." },
           { status: 400 }
         );
       }
     }
 
-    if (
-      Object.prototype.hasOwnProperty.call(
-        payload,
-        "tax_invoice_enabled"
-      )
-    ) {
-      payload.tax_invoice_enabled =
-        payload.tax_invoice_enabled === true;
+    if (Object.prototype.hasOwnProperty.call(payload, "tax_invoice_enabled")) {
+      payload.tax_invoice_enabled = payload.tax_invoice_enabled === true;
     }
 
-    const previousRecords =
-      await supabaseRequest(
-        "company_settings",
-        {
-          query:
-            `select=*&id=eq.${encodeURIComponent(
-              SETTINGS_ID
-            )}&limit=1`,
-        }
-      );
+    const previousRecords = await supabaseRequest("company_settings", {
+      query: `select=*&id=eq.${encodeURIComponent(SETTINGS_ID)}&limit=1`,
+    });
 
-    const previousValues =
-      previousRecords?.[0] || null;
+    const previousValues = previousRecords?.[0] || null;
 
-    const result = await supabaseRequest(
-      "company_settings",
-      {
-        method: "PATCH",
-        query:
-          `id=eq.${encodeURIComponent(
-            SETTINGS_ID
-          )}`,
-        body: {
-          ...payload,
-          updated_at: new Date().toISOString(),
-        },
-      }
-    );
-
-    const savedRecord =
-      result?.[0] || {
-        ...(previousValues || {}),
-        id: SETTINGS_ID,
+    const result = await supabaseRequest("company_settings", {
+      method: "PATCH",
+      query: `id=eq.${encodeURIComponent(SETTINGS_ID)}`,
+      body: {
         ...payload,
-      };
+        updated_at: new Date().toISOString(),
+      },
+    });
+
+    const savedRecord = result?.[0] || {
+      ...(previousValues || {}),
+      id: SETTINGS_ID,
+      ...payload,
+    };
 
     await supabaseRequest("audit_logs", {
       method: "POST",
@@ -201,16 +174,10 @@ export async function PATCH(request) {
       },
     });
 
-    return NextResponse.json({
-      record: savedRecord,
-    });
+    return NextResponse.json({ record: savedRecord });
   } catch (error) {
     return NextResponse.json(
-      {
-        error:
-          error?.message ||
-          "Settings could not be updated.",
-      },
+      { error: error?.message || "Settings could not be updated." },
       { status: 500 }
     );
   }
