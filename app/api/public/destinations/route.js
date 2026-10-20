@@ -24,7 +24,7 @@ const publicFields = [
   "map_longitude",
   "enquiry_enabled",
   "show_on_explorer",
-  "featured",,
+  "featured",
   "seo_title",
   "seo_description",
   "sort_order",
