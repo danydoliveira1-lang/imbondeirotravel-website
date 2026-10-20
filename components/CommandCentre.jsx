@@ -3359,6 +3359,7 @@ dateTimeFields.forEach(field => {
   try {
     const { _source, ...payload } = record;
 
+
 if (section === "explorer_destinations") {
   payload.destination_type =
     payload.destination_type || "country";
@@ -3370,17 +3371,17 @@ if (section === "explorer_destinations") {
     payload.supplier_status || "not_started";
 
   [
-   [
-  "enquiry_enabled",
-  "published",
-  "show_on_explorer",
-  "featured"
-].forEach(field => {
-  payload[field] = Boolean(payload[field]);
-});
+    "enquiry_enabled",
+    "published",
+    "show_on_explorer",
+    "featured"
+  ].forEach(field => {
+    payload[field] = Boolean(payload[field]);
+  });
 }
 
 numeric.forEach(field => {
+
   if (
     payload[field] === "" ||
     payload[field] === null
