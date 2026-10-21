@@ -192,13 +192,29 @@ export default function PublicDestinationMap() {
 
   const selectedCountries = useMemo(() => countryData.features.filter(feature => forRegion(feature, region)), [region]);
   const project = useMemo(() => createProjection(selectedCountries, region), [selectedCountries, region]);
-  const visibleDestinations = useMemo(() => destinations
-    .filter(destination => region === "All" || destination.explorer_region === region)
-    // The public endpoint is expected to return only intentionally published destinations.
-    .filter(destination => destination.published !== false && destination.status !== "draft")
-    .map(destination => ({ ...destination, coordinates: getCoordinates(destination) }))
-    .filter(destination => destination.coordinates)
-    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || String(a.name).localeCompare(String(b.name))), [destinations, region]);
+  
+const visibleDestinations = useMemo(
+  () =>
+    destinations
+      .filter(destination => destination.show_on_explorer === true)
+      .filter(
+        destination =>
+          region === "All" ||
+          destination.explorer_region === region
+      )
+      .map(destination => ({
+        ...destination,
+        coordinates: getCoordinates(destination),
+      }))
+      .filter(destination => destination.coordinates)
+      .sort(
+        (a, b) =>
+          Number(Boolean(b.featured)) -
+            Number(Boolean(a.featured)) ||
+          String(a.name).localeCompare(String(b.name))
+      ),
+  [destinations, region]
+);
 
   return (
     <section className={styles.section} aria-labelledby="regional-map-title">
