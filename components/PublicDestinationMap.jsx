@@ -238,7 +238,7 @@ const visibleDestinations = useMemo(
             ))}
             {selectedCountries.map(feature => {
               const label = countryLabel(feature, project);
-              if (label.size < (region === "All" ? 20 : 8)) return null;
+             if (label.size < (region === "All" ? 30 : 18)) return null;
               return <text key={`label-${feature.code}`} x={label.x} y={label.y} className={styles.countryLabel} textAnchor="middle" aria-hidden="true">{feature.name}</text>;
             })}
             {!loading && !error && visibleDestinations.map(destination => {
