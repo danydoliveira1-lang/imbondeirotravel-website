@@ -12,8 +12,39 @@
 .land{fill:#d3c6ae;fill-opacity:.85;stroke:#344c3d;stroke-width:1.25;vector-effect:non-scaling-stroke;transition:fill 180ms ease}
 .land:nth-of-type(3n){fill:#9baa91}.land:nth-of-type(4n){fill:#ad8b56}.land:nth-of-type(5n){fill:#e3d9c6}
 .homeCountry{fill:#d2a74d!important;stroke:#f9df9d;stroke-width:2}
-.countryLabel{fill:#1a352b;font:600 9px Arial,sans-serif;letter-spacing:.35px;pointer-events:none;paint-order:stroke;stroke:rgba(245,239,229,.5);stroke-width:1.6px;stroke-linejoin:round}
-.mapPin{color:#e2bd6e;cursor:pointer;outline:none}.pinHalo{fill:currentColor;fill-opacity:.13;stroke:currentColor;stroke-opacity:.6;stroke-width:1.4}.pinDot{fill:currentColor;stroke:#13231e;stroke-width:2}
+
+.countryLabel{
+  fill:#263c31;
+  font:500 8px Arial,sans-serif;
+  letter-spacing:.1px;
+  pointer-events:none;
+  paint-order:stroke;
+  stroke:rgba(245,239,229,.75);
+  stroke-width:1.8px;
+  stroke-linejoin:round;
+}
+
+.mapPin{
+  color:#e2bd6e;
+  cursor:pointer;
+  outline:none;
+  transition:opacity 180ms ease;
+}
+
+.pinHalo{
+  fill:currentColor;
+  fill-opacity:.08;
+  stroke:currentColor;
+  stroke-opacity:.45;
+  stroke-width:1.2;
+}
+
+.pinDot{
+  fill:currentColor;
+  stroke:#13231e;
+  stroke-width:1.5;
+}
+
 .mapPin:hover .pinHalo,.mapPin:focus-visible .pinHalo{stroke-width:3;fill-opacity:.28}
 .bookable{color:#e2bd6e}.tailorMade{color:#80a591}.comingSoon{color:#e6e4dc}.featured .pinHalo{stroke-width:2.5}
 .legend{display:flex;flex-wrap:wrap;align-items:center;gap:18px 28px;margin-top:22px;color:rgba(245,239,229,.65);font-size:.69rem;letter-spacing:.08em;text-transform:uppercase}
@@ -23,3 +54,20 @@
 @media(max-width:920px){.header{grid-template-columns:1fr}.headerText{max-width:680px}.legendHome{width:100%;margin-left:0}}
 @media(max-width:680px){.section{padding-right:18px;padding-left:18px}.mapFrame{min-height:280px;aspect-ratio:1/1}.countryLabel{font-size:8px}.mobileDestinations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin-top:28px;background:rgba(245,239,229,.12);border:1px solid rgba(245,239,229,.12)}.mobileDestination{display:flex;flex-direction:column;gap:5px;min-height:82px;padding:16px;background:#13231e;color:#f5efe5;text-decoration:none}.mobileDestination strong{font-family:Georgia,'Times New Roman',serif;font-size:1rem;font-weight:400}.mobileDestination span{color:rgba(245,239,229,.6);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase}}
 @media(max-width:420px){.mobileDestinations{grid-template-columns:1fr}}
+
+@media(max-width:680px){
+  .mapFrame{
+    min-height:320px;
+    aspect-ratio:4/5;
+  }
+
+  .countryLabel{
+    font-size:7px;
+    stroke-width:1.5px;
+  }
+
+  .legend{
+    gap:12px 18px;
+    font-size:.62rem;
+  }
+}
