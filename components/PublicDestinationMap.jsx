@@ -1,167 +1,19 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-import styles from "./PublicDestinationMap.module.css";
-import countryData from "../data/world-regions.json";
-
-const COUNTRY_COORDINATES = {
-  DZ: [28.03, 1.66],
-  AO: [-11.2, 17.87],
-  BJ: [9.31, 2.32],
-  BW: [-22.33, 24.68],
-  BF: [12.24, -1.56],
-  BI: [-3.37, 29.92],
-  CV: [15.12, -23.61],
-  CM: [5.69, 12.74],
-  CF: [6.61, 20.94],
-  TD: [15.45, 18.73],
-  KM: [-11.88, 43.87],
-  CD: [-2.88, 23.66],
-  CG: [-0.23, 15.83],
-  CI: [7.54, -5.55],
-  DJ: [11.83, 42.59],
-  EG: [26.82, 30.8],
-  GQ: [1.65, 10.27],
-  ER: [15.18, 39.78],
-  SZ: [-26.52, 31.47],
-  ET: [8.63, 39.6],
-  GA: [-0.8, 11.61],
-  GM: [13.44, -15.31],
-  GH: [7.95, -1.02],
-  GN: [10.44, -10.94],
-  GW: [11.8, -15.18],
-  KE: [0.02, 37.91],
-  LS: [-29.61, 28.23],
-  LR: [6.43, -9.43],
-  LY: [26.34, 17.23],
-  MG: [-18.77, 46.87],
-  MW: [-13.25, 34.3],
-  ML: [17.57, -4.0],
-  MR: [20.25, -10.94],
-  MU: [-20.35, 57.55],
-  MA: [31.79, -7.09],
-  MZ: [-18.67, 35.53],
-  NA: [-22.56, 17.08],
-  NE: [17.61, 8.08],
-  NG: [9.08, 8.68],
-  RW: [-1.94, 29.87],
-  ST: [0.19, 6.61],
-  SN: [14.5, -14.45],
-  SC: [-4.68, 55.49],
-  SL: [8.46, -11.78],
-  SO: [5.15, 46.2],
-  ZA: [-30.56, 22.94],
-  SS: [7.31, 30.05],
-  SD: [15.6, 30.22],
-  TZ: [-6.37, 34.89],
-  TG: [8.62, 0.82],
-  TN: [33.89, 9.54],
-  UG: [1.37, 32.29],
-  ZM: [-13.13, 27.85],
-  ZW: [-19.02, 29.15],
-
-  AM: [40.07, 45.04],
-  AZ: [40.14, 47.58],
-  BH: [26.07, 50.56],
-  CY: [35.13, 33.43],
-  GE: [42.32, 43.36],
-  IR: [32.43, 53.69],
-  IQ: [33.22, 43.68],
-  IL: [31.05, 34.85],
-  JO: [30.59, 36.24],
-  KW: [29.31, 47.48],
-  LB: [33.85, 35.86],
-  OM: [21.47, 55.98],
-  PS: [31.95, 35.23],
-  QA: [25.35, 51.18],
-  SA: [23.89, 45.08],
-  SY: [34.8, 38.99],
-  TR: [38.96, 35.24],
-  AE: [23.42, 53.85],
-  YE: [15.55, 48.52],
-};
-
-const SPECIAL_COORDINATES = {
-  zanzibar: [-6.17, 39.2],
-  dubai: [25.2, 55.27],
-  abu_dhabi: [24.45, 54.38],
-};
-
-const VIEW_WIDTH = 1000;
-const VIEW_HEIGHT = 650;
-const REGION_OPTIONS = ["Africa", "Middle East", "All"];
-const MIDDLE_EAST_CODES = new Set(["ARM", "AZE", "BHR", "CYP", "GEO", "IRN", "IRQ", "ISR", "JOR", "KWT", "LBN", "OMN", "PSE", "QAT", "SAU", "SYR", "TUR", "ARE", "YEM", "EGY"]);
-
-function getCoordinates(destination) {
-  const special = SPECIAL_COORDINATES[String(destination.slug || "").toLowerCase().replaceAll("-", "_")];
-  if (special) return special;
-  if (destination.map_latitude != null && destination.map_longitude != null && destination.map_latitude !== "" && destination.map_longitude !== "") {
-    const lat = Number(destination.map_latitude);
-    const lon = Number(destination.map_longitude);
-    if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+    if (box.left < 8 || box.right > VIEW_WIDTH - 8 ||
+        box.top < 8 || box.bottom > VIEW_HEIGHT - 8) continue;
+    const collides = occupied.some(other =>
+      box.left < other.right + 5 && box.right + 5 > other.left &&
+      box.top < other.bottom + 5 && box.bottom + 5 > other.top
+    );
+    // Avoid placing text over clickable destination markers.
+    const coversPin = pinPoints.some(([x, y]) =>
+      x > box.left - 17 && x < box.right + 17 &&
+      y > box.top - 17 && y < box.bottom + 17
+    );
+    if (collides || coversPin) continue;
+    occupied.push(box);
+    accepted.push(label);
   }
-  return COUNTRY_COORDINATES[String(destination.parent_country_code || destination.country_code || "").toUpperCase()] || null;
-}
-
-function statusInfo(value) {
-  const status = String(value || "").toLowerCase();
-  if (["bookable", "live"].includes(status)) return { label: "Available to Plan", className: styles.bookable };
-  if (status === "tailor_made") return { label: "Tailor Made", className: styles.tailorMade };
-  return { label: "Coming Soon", className: styles.comingSoon };
-}
-
-function forRegion(feature, region) {
-  if (region === "All") return true;
-  if (region === "Africa") return feature.region === "Africa";
-  return feature.region === "Middle East" || MIDDLE_EAST_CODES.has(feature.code);
-}
-
-function coordinatesOf(geometry) {
-  if (geometry.type === "Polygon") return geometry.coordinates.flat(1);
-  return geometry.coordinates.flat(2);
-}
-
-function createProjection(features, region) {
-  const coords = features.flatMap(feature => coordinatesOf(feature.geometry));
-  const longs = coords.map(point => point[0]);
-  const lats = coords.map(point => point[1]);
-  // Geographic aspect adjustment: longitude degrees narrow with latitude.
-  const minLon = Math.min(...longs), maxLon = Math.max(...longs);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const centerLat = (minLat + maxLat) / 2;
-  const longitudeFactor = Math.max(0.65, Math.cos(centerLat * Math.PI / 180));
-  const width = (maxLon - minLon) * longitudeFactor;
-  const height = maxLat - minLat;
-  const padding = region === "Middle East" ? 78 : 52;
-  const scale = Math.min((VIEW_WIDTH - padding * 2) / width, (VIEW_HEIGHT - padding * 2) / height);
-  const xOffset = (VIEW_WIDTH - width * scale) / 2;
-  const yOffset = (VIEW_HEIGHT - height * scale) / 2;
-  return ([lat, lon]) => [xOffset + (lon - minLon) * longitudeFactor * scale, yOffset + (maxLat - lat) * scale];
-}
-
-function polygonPath(rings, project) {
-  return rings.map(ring => ring.map(([lon, lat], i) => {
-    const [x, y] = project([lat, lon]);
-    return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ") + " Z").join(" ");
-}
-
-function countryPath(feature, project) {
-  const geometry = feature.geometry;
-  return geometry.type === "Polygon"
-    ? polygonPath(geometry.coordinates, project)
-    : geometry.coordinates.map(poly => polygonPath(poly, project)).join(" ");
-}
-
-function countryLabel(feature, project) {
-  // Bounding-box centre is an approximate label location; skip tiny territories.
-  const points = coordinatesOf(feature.geometry);
-  const minLon = Math.min(...points.map(p => p[0]));
-  const maxLon = Math.max(...points.map(p => p[0]));
-  const minLat = Math.min(...points.map(p => p[1]));
-  const maxLat = Math.max(...points.map(p => p[1]));
-  const [x, y] = project([(minLat + maxLat) / 2, (minLon + maxLon) / 2]);
-  return { x, y, size: (maxLon - minLon) * (maxLat - minLat) };
+  return accepted;
 }
 
 export default function PublicDestinationMap() {
@@ -216,6 +68,11 @@ const visibleDestinations = useMemo(
   [destinations, region]
 );
 
+  const countryLabels = useMemo(
+    () => selectCountryLabels(selectedCountries, project, region, visibleDestinations),
+    [selectedCountries, project, region, visibleDestinations]
+  );
+
   return (
     <section className={styles.section} aria-labelledby="regional-map-title">
       <div className={styles.inner}>
@@ -236,11 +93,9 @@ const visibleDestinations = useMemo(
                 <title>{feature.name}</title>
               </path>
             ))}
-            {selectedCountries.map(feature => {
-              const label = countryLabel(feature, project);
-              if (label.size < (region === "All" ? 20 : 8)) return null;
-              return <text key={`label-${feature.code}`} x={label.x} y={label.y} className={styles.countryLabel} textAnchor="middle" aria-hidden="true">{feature.name}</text>;
-            })}
+            {countryLabels.map(label => (
+              <text key={`label-${label.feature.code}`} x={label.x} y={label.y} className={styles.countryLabel} textAnchor="middle" aria-hidden="true">{label.feature.name}</text>
+            ))}
             {!loading && !error && visibleDestinations.map(destination => {
               const [x, y] = project(destination.coordinates);
               const status = statusInfo(destination.launch_status);
