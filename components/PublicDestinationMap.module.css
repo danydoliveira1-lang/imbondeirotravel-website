@@ -71,3 +71,23 @@
     font-size:.62rem;
   }
 }
+
+.regionNotice{
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  z-index:5;
+  width:max-content;
+  max-width:calc(100% - 36px);
+  margin:0;
+  padding:12px 18px;
+  border:1px solid rgba(245,239,229,.2);
+  border-radius:6px;
+  background:rgba(19,35,30,.9);
+  color:#f5efe5;
+  font-size:12px;
+  line-height:1.6;
+  text-align:center;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
