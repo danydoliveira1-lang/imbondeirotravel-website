@@ -132,7 +132,7 @@ function createProjection(features, region) {
   const longitudeFactor = Math.max(0.65, Math.cos(centerLat * Math.PI / 180));
   const width = (maxLon - minLon) * longitudeFactor;
   const height = maxLat - minLat;
-  const padding = region === "Middle East" ? 78 : 52;
+  const padding = region === "Middle East" ? 110 : 52;
   const scale = Math.min((VIEW_WIDTH - padding * 2) / width, (VIEW_HEIGHT - padding * 2) / height);
   const xOffset = (VIEW_WIDTH - width * scale) / 2;
   const yOffset = (VIEW_HEIGHT - height * scale) / 2;
