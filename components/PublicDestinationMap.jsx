@@ -164,6 +164,48 @@ function countryLabel(feature, project) {
   return { x, y, size: (maxLon - minLon) * (maxLat - minLat) };
 }
 
+function selectCountryLabels(features, project, region) {
+  const minimumSize = region === "All" ? 30 : 18;
+  const accepted = [];
+
+  const candidates = features
+    .map(feature => ({
+      feature,
+      ...countryLabel(feature, project),
+    }))
+    .filter(label => label.size >= minimumSize)
+    .sort((a, b) => {
+      if (a.feature.code === "AGO") return -1;
+      if (b.feature.code === "AGO") return 1;
+      return b.size - a.size;
+    });
+
+  for (const label of candidates) {
+    const name = String(label.feature.name || "");
+
+    // Approximate label dimensions in SVG coordinates.
+    const width = name.length * 5.2 + 8;
+    const height = 13;
+
+    const overlaps = accepted.some(existing =>
+      Math.abs(label.x - existing.x) <
+        (width + existing.width) / 2 + 5 &&
+      Math.abs(label.y - existing.y) <
+        (height + existing.height) / 2 + 5
+    );
+
+    if (!overlaps) {
+      accepted.push({
+        ...label,
+        width,
+        height,
+      });
+    }
+  }
+
+  return accepted;
+}
+
 export default function PublicDestinationMap() {
   const [destinations, setDestinations] = useState([]);
   const [region, setRegion] = useState("Africa");
@@ -236,11 +278,20 @@ const visibleDestinations = useMemo(
                 <title>{feature.name}</title>
               </path>
             ))}
-            {selectedCountries.map(feature => {
-              const label = countryLabel(feature, project);
-             if (label.size < (region === "All" ? 30 : 18)) return null;
-              return <text key={`label-${feature.code}`} x={label.x} y={label.y} className={styles.countryLabel} textAnchor="middle" aria-hidden="true">{feature.name}</text>;
-            })}
+           
+{selectCountryLabels(selectedCountries, project, region).map(label => (
+  <text
+    key={`label-${label.feature.code}`}
+    x={label.x}
+    y={label.y}
+    className={styles.countryLabel}
+    textAnchor="middle"
+    aria-hidden="true"
+  >
+    {label.feature.name}
+  </text>
+))}
+
             {!loading && !error && visibleDestinations.map(destination => {
               const [x, y] = project(destination.coordinates);
               const status = statusInfo(destination.launch_status);
