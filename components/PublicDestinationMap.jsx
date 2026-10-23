@@ -306,7 +306,14 @@ const visibleDestinations = useMemo(
           </svg>
           {loading && <div className={styles.empty}>Preparing the destination map…</div>}
           {error && <div className={styles.empty}>{error}</div>}
-          {!loading && !error && visibleDestinations.length === 0 && <div className={styles.empty}>No mapped destinations are currently available in this region.</div>}
+          
+{!loading && !error && visibleDestinations.length === 0 && (
+  <p className={styles.regionNotice}>
+    Our curated journeys in this region are taking shape.
+    Explore the map and discover more destinations soon.
+  </p>
+)}
+
         </div>
         <div className={styles.legend} aria-label="Map status legend">
           <span className={`${styles.legendItem} ${styles.bookable}`}><i className={styles.legendDot} />Available to Plan</span>
