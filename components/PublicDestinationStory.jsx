@@ -202,9 +202,14 @@ export default function DestinationStory({ slug }) {
             </h2>
 
             {destination.description ? (
-              <p className={styles.description}>
-                {destination.description}
-              </p>
+              <div className={styles.description}>
+                {destination.description
+                  .split(/\n\s*\n/)
+                  .filter(paragraph => paragraph.trim())
+                  .map((paragraph, index) => (
+                    <p key={index}>{paragraph.trim()}</p>
+                  ))}
+              </div>
             ) : (
               <p className={styles.placeholderText}>
                 Our destination specialists are preparing a richer
