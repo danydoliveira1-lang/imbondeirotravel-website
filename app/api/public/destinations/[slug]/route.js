@@ -58,7 +58,7 @@ export async function GET(request, { params }) {
     if (!destination) {
       return NextResponse.json(
         { error: "Destination not found." },
-        { status: 404 }
+        { status: 404, headers: { "Cache-Control": "no-store" } }
       );
     }
 
@@ -66,8 +66,7 @@ export async function GET(request, { params }) {
       { destination },
       {
         headers: {
-          "Cache-Control":
-            "public, s-maxage=300, stale-while-revalidate=600",
+          "Cache-Control": "no-store",
         },
       }
     );
@@ -76,7 +75,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(
       { error: "The destination is temporarily unavailable." },
-      { status: 500 }
+      { status: 500, headers: { "Cache-Control": "no-store" } }
     );
   }
 }
