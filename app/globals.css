@@ -1814,3 +1814,38 @@ button:disabled{opacity:.6;cursor:not-allowed}
   height: auto;
   object-fit: contain;
 }
+
+/* STEP 22.1 — Compact mobile navigation while scrolling.
+   Preserve the two-row navigation at the top; collapse only on scroll. */
+@media (max-width: 700px) {
+  .site-header.chapter-header {
+    transition: height 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .site-header.chapter-header.is-scrolled {
+    height: 68px;
+    grid-template-rows: 68px 0;
+    background: rgba(13, 48, 40, 0.97);
+  }
+
+  .site-header.chapter-header.is-scrolled .chapter-nav {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    height: 0;
+    border-top: 0;
+  }
+
+  .site-header.chapter-header.is-scrolled .brand img {
+    width: 96px;
+  }
+
+  .site-header.chapter-header.is-scrolled .header-actions {
+    align-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header.chapter-header { transition: none; }
+}
