@@ -93,3 +93,17 @@
     top: 76px;
   }
 }
+
+/* Step 24.7 — Private preview mobile spacing */
+
+@media (max-width: 768px) {
+  .destination-preview .site-header {
+    top: 76px;
+    z-index: 100;
+  }
+
+  .destination-preview main > section:first-child > a:first-of-type {
+    top: 145px;
+  }
+}
+
