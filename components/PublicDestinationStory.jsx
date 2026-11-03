@@ -27,7 +27,10 @@ function displayValue(value, fallback = "To be confirmed") {
   return value;
 }
 
-export default function DestinationStory({ slug }) {
+export default function DestinationStory({
+  slug,
+  preview = false,
+}) {
   const [destination, setDestination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,13 +50,15 @@ export default function DestinationStory({ slug }) {
       setError("");
 
       try {
-        const response = await fetch(
-          `/api/public/destinations/${encodeURIComponent(slug)}`,
-          {
-            cache: "no-store",
-            signal: controller.signal,
-          }
-        );
+       const endpoint = preview
+  ? `/api/admin/preview/destinations/${encodeURIComponent(slug)}`
+  : `/api/public/destinations/${encodeURIComponent(slug)}`;
+
+const response = await fetch(endpoint, {
+  cache: "no-store",
+  credentials: "same-origin",
+  signal: controller.signal,
+});
 
         const body = await response.json();
 
@@ -81,7 +86,7 @@ export default function DestinationStory({ slug }) {
     loadDestination();
 
     return () => controller.abort();
-  }, [slug]);
+  }, [slug, preview]);
 
   if (loading) {
     return (
