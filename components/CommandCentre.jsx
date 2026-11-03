@@ -3970,6 +3970,18 @@ const reservationOutstanding = Math.max(
     Cancel
   </button>
 
+  {section === "explorer_destinations" && initial.id && initial.slug && (
+    <a
+      href={`/admin/preview/destinations/${encodeURIComponent(initial.slug)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Preview last saved destination in a new tab"
+      style={{ display: "inline-flex", alignItems: "center", padding: "10px 16px", border: "1px solid currentColor", borderRadius: 8 }}
+    >
+      Preview Destination ↗
+    </a>
+  )}
+
   <button
     className="cc-primary"
     type="submit"
