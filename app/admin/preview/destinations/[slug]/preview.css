@@ -107,3 +107,17 @@
   }
 }
 
+/* Step 24.8 — Desktop private preview spacing */
+
+@media (min-width: 769px) {
+  .destination-preview .site-header {
+    top: 40px;
+  }
+
+  /* Position the Explorer back-link below the navigation */
+  .destination-preview main > section:first-child > a:first-of-type {
+    top: 160px;
+  }
+}
+
+
