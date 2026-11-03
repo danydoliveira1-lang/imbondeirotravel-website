@@ -314,7 +314,9 @@ const response = await fetch(endpoint, {
 
             <h2>
               Begin planning your journey to{" "}
-              {destination.name}.
+{destination.slug === "united-arab-emirates"
+  ? "the United Arab Emirates"
+  : destination.name}.
             </h2>
 
             <p>
