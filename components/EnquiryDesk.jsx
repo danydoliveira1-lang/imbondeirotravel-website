@@ -126,22 +126,42 @@ export default function EnquiryDesk({ customers = [], reservations = [] }) {
     setFormOpen(true);
   }
 
-  function startEdit(item) {
-    setEditingId(item.id);
-    setForm({
-      ...emptyForm,
-      ...item,
-      customer_id: item.customer_id || "",
-      reservation_id: item.reservation_id || "",
-      travel_start_date: item.travel_start_date || "",
-      travel_end_date: item.travel_end_date || "",
-      travellers: item.travellers ?? "",
-      follow_up_due_at: localDateTime(item.follow_up_due_at),
-    });
-    setError("");
-    setNotice("");
-    setFormOpen(true);
-  }
+  
+function startEdit(item) {
+  setEditingId(item.id);
+
+  setForm({
+    ...emptyForm,
+    ...item,
+
+    customer_name: item.customer_name || "",
+    customer_email: item.customer_email || "",
+    customer_phone: item.customer_phone || "",
+    customer_id: item.customer_id || "",
+    reservation_id: item.reservation_id || "",
+
+    source: item.source || "manual",
+    subject: item.subject || "",
+    destination: item.destination || "",
+
+    travel_start_date: item.travel_start_date || "",
+    travel_end_date: item.travel_end_date || "",
+    travellers: item.travellers ?? "",
+
+    message: item.message || "",
+    internal_notes: item.internal_notes || "",
+
+    status: item.status || "new",
+    assigned_to: item.assigned_to || "",
+
+    follow_up_due_at: localDateTime(item.follow_up_due_at),
+  });
+
+  setError("");
+  setNotice("");
+  setFormOpen(true);
+}
+
 
   function selectCustomer(id) {
     const customer = customers.find(item => item.id === id);
@@ -166,7 +186,7 @@ export default function EnquiryDesk({ customers = [], reservations = [] }) {
 
     try {
       const payload = {
-        customer_name: form.customer_name.trim(),
+        customer_name: String(form.customer_name ?? "").trim(),
         customer_email: form.customer_email.trim() || null,
         customer_phone: form.customer_phone.trim() || null,
         customer_id: form.customer_id || null,
