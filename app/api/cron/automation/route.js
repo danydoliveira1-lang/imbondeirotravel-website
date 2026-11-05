@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { runAutomation } from "../../../../lib/automationEngine.js";
 
@@ -18,7 +19,9 @@ export async function GET(request) {
   }
 
   try {
-    const result = await runAutomation();
+    const result = await runAutomation({
+      mode: "scheduled",
+    });
 
     return NextResponse.json({
       ok: true,
@@ -29,9 +32,7 @@ export async function GET(request) {
     console.error("Scheduled automation failed:", error);
 
     return NextResponse.json(
-      {
-        error: "Scheduled automation failed.",
-      },
+      { error: "Scheduled automation failed." },
       { status: 500 }
     );
   }
