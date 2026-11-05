@@ -568,7 +568,7 @@ function AutomationCentre({ data, reload, flash, openReservation, resolveTask,})
             {
               activeTasks.filter(task =>
                 ["critical", "high"].includes(
-                  String(task.priority || "").toLowerCase()
+                  String(task.severity || "").toLowerCase()
                 )
               ).length
             }
@@ -640,10 +640,10 @@ function AutomationCentre({ data, reload, flash, openReservation, resolveTask,})
 
               <em
                 className={`cc-status ${String(
-                  task.priority || "medium"
+                 task.severity || "medium"
                 ).toLowerCase()}`}
               >
-                {String(task.priority || "Medium").toUpperCase()}
+                {String(task.severity || "Medium").toUpperCase()}
               </em>
 
              <div className="cc-automation-actions">
