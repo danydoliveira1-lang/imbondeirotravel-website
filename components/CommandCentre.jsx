@@ -11,6 +11,7 @@ import InvoiceRegister from "./InvoiceRegister";
 import OperationsDesk from "./OperationsDesk";
 import AuditLog from "./AuditLog";
 import BrandAssets from "./BrandAssets";
+import EnquiryDesk from "./EnquiryDesk";
 
 const seed = {
   tours: [
@@ -49,7 +50,8 @@ const nav = [
   ["explorer_destinations", "◌", "Destination Explorer"],
   ["departures", "□", "Departures"],
   ["reservations", "◇", "Reservations"],
-  ["customers", "◎", "Customers"],
+["enquiries", "✉", "Enquiry Desk"],
+["customers", "◎", "Customers"],
   ["media", "▣", "Media Library"],
   ["payments", "€", "Payments"],
   ["operations", "↗", "Operations"],
@@ -382,9 +384,40 @@ export default function CommandCentre() {
       </div><div className="cc-top-actions"><label className="cc-search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Command Centre" /></label><button className="cc-icon-btn" title={`${notificationCount} reservation item${notificationCount === 1 ? "" : "s"} need attention`} onClick={() => setActive("reservations")}>♢<b>{notificationCount}</b></button></div></header>
 
       {notice && <div className="cc-notice">✓ {notice}</div>}
-      {active === "dashboard" && <Dashboard stats={stats} data={data} open={(section, record = {}) => { setActive(section); setModal({ section, record }); }} navigate={setActive} />}
-      {active === "operations" && ( <OperationsDesk data={data} reload={loadData} flash={flash} />)}
-      {active === "reports" && ( <Reports data={data} />)}
+      
+{notice && <div className="cc-notice">✓ {notice}</div>}
+
+{active === "dashboard" && (
+  <Dashboard
+    stats={stats}
+    data={data}
+    open={(section, record = {}) => {
+      setActive(section);
+      setModal({ section, record });
+    }}
+    navigate={setActive}
+  />
+)}
+
+{active === "enquiries" && (
+  <EnquiryDesk
+    customers={data.customers || []}
+    reservations={data.reservations || []}
+  />
+)}
+
+{active === "operations" && (
+  <OperationsDesk
+    data={data}
+    reload={loadData}
+    flash={flash}
+  />
+)}
+
+{active === "reports" && (
+  <Reports data={data} />
+)}
+
       {active === "automation" && ( <AutomationCentre data={data} reload={loadData} flash={flash} openReservation={task => {
       const reservationId =
         task.entity_id ||
