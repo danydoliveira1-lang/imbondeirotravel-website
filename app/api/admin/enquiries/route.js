@@ -5,14 +5,17 @@ import { supabaseRequest } from "../../../../lib/supabaseRest";
 
 export const dynamic = "force-dynamic";
 
+
 const SOURCES = new Set([
   "manual",
   "website",
   "whatsapp",
+  "instagram",
   "email",
   "telephone",
   "other",
 ]);
+
 
 const STATUSES = new Set([
   "new",
