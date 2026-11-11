@@ -24,7 +24,7 @@ const emptyForm = {
 
 const sources = [
   "manual", "website", "whatsapp",
-  "email", "telephone", "other",
+  "instagram", "email", "telephone", "other",
 ];
 
 const statuses = [
@@ -246,10 +246,12 @@ function startEdit(item) {
         <div>
           <span>IMBONDEIRO TRAVEL · CUSTOMER RELATIONS</span>
           <h2>Every enquiry.<br />One thoughtful response.</h2>
-          <p>
-            Register and manage travel enquiries from WhatsApp,
-            email, the website and direct customer contact.
-          </p>
+          
+<p>
+  Register and manage travel enquiries from Instagram,
+  WhatsApp, email, the website and direct customer contact.
+</p>
+
           <button type="button" className="cc-primary" onClick={startNew}>
             + Register New Enquiry
           </button>
