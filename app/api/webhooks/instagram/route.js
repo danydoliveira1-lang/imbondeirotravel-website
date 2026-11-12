@@ -5,6 +5,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const MAX_BODY_BYTES = 1024 * 1024;
+const MAX_MESSAGE_LENGTH = 10000;
+
 // Existing GET verification — preserved.
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -41,7 +44,7 @@ export async function GET(request) {
   });
 }
 
-// Verify Meta's HMAC-SHA256 signature.
+// Existing HMAC-SHA256 verification — preserved.
 function verifyMetaSignature(rawBody, signature, appSecret) {
   if (!signature || !appSecret) return false;
 
@@ -61,14 +64,97 @@ function verifyMetaSignature(rawBody, signature, appSecret) {
   );
 }
 
-// Secure POST endpoint — no database writes yet.
+// Extract only supported incoming text messages.
+// No customer information is written to the database.
+function extractInstagramMessages(event) {
+  const messages = [];
+  const seenMessageIds = new Set();
+
+  let inspected = 0;
+  let ignored = 0;
+
+  for (const entry of event.entry) {
+    if (
+      !entry ||
+      typeof entry !== "object" ||
+      !Array.isArray(entry.messaging)
+    ) {
+      continue;
+    }
+
+    for (const item of entry.messaging) {
+      inspected += 1;
+
+      if (!item || typeof item !== "object") {
+        ignored += 1;
+        continue;
+      }
+
+      const senderId = item.sender?.id;
+      const recipientId = item.recipient?.id;
+      const messageId = item.message?.mid;
+      const messageText = item.message?.text;
+
+      const isValid =
+        typeof senderId === "string" &&
+        senderId.length > 0 &&
+        senderId.length <= 255 &&
+        typeof recipientId === "string" &&
+        recipientId.length > 0 &&
+        typeof messageId === "string" &&
+        messageId.length > 0 &&
+        messageId.length <= 255 &&
+        typeof messageText === "string" &&
+        messageText.trim().length > 0 &&
+        messageText.length <= MAX_MESSAGE_LENGTH &&
+        item.message?.is_echo !== true &&
+        senderId !== recipientId &&
+        !seenMessageIds.has(messageId);
+
+      if (!isValid) {
+        ignored += 1;
+        continue;
+      }
+
+      seenMessageIds.add(messageId);
+
+      messages.push({
+        source: "instagram",
+        status: "new",
+        customer_name: "Instagram customer",
+        customer_email: null,
+        customer_phone: null,
+        subject: "Instagram Direct Message",
+        message: messageText.trim(),
+        external_message_id: messageId,
+        external_thread_id: senderId,
+      });
+    }
+  }
+
+  return {
+    messages,
+    inspected,
+    ignored,
+  };
+}
+
+function jsonResponse(body, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: {
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 export async function POST(request) {
   const appSecret = process.env.META_APP_SECRET;
 
   if (!appSecret) {
-    return NextResponse.json(
+    return jsonResponse(
       { error: "Webhook security is not configured." },
-      { status: 503 }
+      503
     );
   }
 
@@ -76,16 +162,17 @@ export async function POST(request) {
     "x-hub-signature-256"
   );
 
-  // Limit the request size before processing.
   const contentLength = Number(
     request.headers.get("content-length")
   );
 
   if (
     Number.isFinite(contentLength) &&
-    contentLength > 1024 * 1024
+    contentLength > MAX_BODY_BYTES
   ) {
-    return new Response("Payload too large", { status: 413 });
+    return new Response("Payload too large", {
+      status: 413,
+    });
   }
 
   let rawBody;
@@ -93,15 +180,21 @@ export async function POST(request) {
   try {
     rawBody = Buffer.from(await request.arrayBuffer());
   } catch {
-    return new Response("Invalid request", { status: 400 });
+    return new Response("Invalid request", {
+      status: 400,
+    });
   }
 
-  if (rawBody.length > 1024 * 1024) {
-    return new Response("Payload too large", { status: 413 });
+  if (rawBody.length > MAX_BODY_BYTES) {
+    return new Response("Payload too large", {
+      status: 413,
+    });
   }
 
   if (!verifyMetaSignature(rawBody, signature, appSecret)) {
-    return new Response("Forbidden", { status: 403 });
+    return new Response("Forbidden", {
+      status: 403,
+    });
   }
 
   let event;
@@ -109,7 +202,9 @@ export async function POST(request) {
   try {
     event = JSON.parse(rawBody.toString("utf8"));
   } catch {
-    return new Response("Invalid JSON", { status: 400 });
+    return new Response("Invalid JSON", {
+      status: 400,
+    });
   }
 
   if (
@@ -119,19 +214,34 @@ export async function POST(request) {
     event.object !== "instagram" ||
     !Array.isArray(event.entry)
   ) {
-    return new Response("Unsupported event", { status: 400 });
+    return new Response("Unsupported event", {
+      status: 400,
+    });
   }
 
-  // Phase 6.3E: authenticate only.
-  // Do not write to Supabase or process messages yet.
-  return NextResponse.json(
-    {
+  // Default: no message processing.
+  const processingMode =
+    process.env.INSTAGRAM_WEBHOOK_MODE === "dry_run"
+      ? "dry_run"
+      : "disabled";
+
+  if (processingMode === "disabled") {
+    return jsonResponse({
       received: true,
       processing: "disabled",
-    },
-    {
-      status: 200,
-      headers: { "Cache-Control": "no-store" },
-    }
-  );
+    });
+  }
+
+  const result = extractInstagramMessages(event);
+
+  // Dry run: no Supabase reads or writes.
+  // Never return customer message content or identifiers.
+  return jsonResponse({
+    received: true,
+    processing: "dry_run",
+    inspected_events: result.inspected,
+    accepted_messages: result.messages.length,
+    ignored_events: result.ignored,
+    database_writes: 0,
+  });
 }
