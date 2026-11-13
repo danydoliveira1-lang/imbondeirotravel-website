@@ -1,6 +1,6 @@
-
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { instagramSupabaseRequest } from "../../../../lib/instagramSupabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -220,9 +220,12 @@ export async function POST(request) {
   }
 
   // Default: no message processing.
+  const requestedMode = process.env.INSTAGRAM_WEBHOOK_MODE;
+
   const processingMode =
-    process.env.INSTAGRAM_WEBHOOK_MODE === "dry_run"
-      ? "dry_run"
+    requestedMode === "dry_run" ||
+    requestedMode === "dev_read_test"
+      ? requestedMode
       : "disabled";
 
   if (processingMode === "disabled") {
@@ -233,7 +236,41 @@ export async function POST(request) {
   }
 
   const result = extractInstagramMessages(event);
+  
+  // Optional development-only, read-only database check.
+  // Never activated by dry_run mode.
+  if (
+    process.env.INSTAGRAM_WEBHOOK_MODE === "dev_read_test"
+  ) {
+    try {
+      await instagramSupabaseRequest("enquiries", {
+        method: "GET",
+        query: "select=id&limit=1",
+      });
 
+      return jsonResponse({
+        received: true,
+        processing: "dev_read_test",
+        development_database_connected: true,
+        database_writes: 0,
+      });
+    } catch (error) {
+      console.error(
+        "Instagram development database connection failed:",
+        error.message
+      );
+
+      return jsonResponse(
+        {
+          received: false,
+          processing: "dev_read_test",
+          development_database_connected: false,
+          database_writes: 0,
+        },
+        503
+      );
+    }
+  }
   // Dry run: no Supabase reads or writes.
   // Never return customer message content or identifiers.
   return jsonResponse({
