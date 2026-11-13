@@ -239,9 +239,8 @@ export async function POST(request) {
   
   // Optional development-only, read-only database check.
   // Never activated by dry_run mode.
-  if (
-    process.env.INSTAGRAM_WEBHOOK_MODE === "dev_read_test"
-  ) {
+  if (processingMode === "dev_read_test") {
+    
     try {
       await instagramSupabaseRequest("enquiries", {
         method: "GET",
