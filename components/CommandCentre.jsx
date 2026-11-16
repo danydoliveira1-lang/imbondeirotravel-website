@@ -12,6 +12,8 @@ import OperationsDesk from "./OperationsDesk";
 import AuditLog from "./AuditLog";
 import BrandAssets from "./BrandAssets";
 import EnquiryDesk from "./EnquiryDesk";
+import InstagramInbox from "./InstagramInbox";
+
 
 const seed = {
   tours: [
@@ -51,6 +53,7 @@ const nav = [
   ["departures", "□", "Departures"],
   ["reservations", "◇", "Reservations"],
 ["enquiries", "✉", "Enquiry Desk"],
+["instagram_inbox", "✉", "Instagram Inbox"],
 ["customers", "◎", "Customers"],
   ["media", "▣", "Media Library"],
   ["payments", "€", "Payments"],
@@ -404,6 +407,10 @@ export default function CommandCentre() {
     customers={data.customers || []}
     reservations={data.reservations || []}
   />
+)}
+      
+{active === "instagram_inbox" && (
+  <InstagramInbox />
 )}
 
 {active === "operations" && (
